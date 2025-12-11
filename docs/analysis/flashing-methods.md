@@ -143,15 +143,17 @@ dd if=sdcard-update.img of=/dev/sdX bs=4M
 
 UART provides console access for debugging and may allow interrupting boot.
 
-#### Expected UART Settings
+#### UART Settings (Verified from DTS)
 
-| Parameter | Value |
-|-----------|-------|
-| Baud Rate | 1500000 (typical for Rockchip) |
-| Data Bits | 8 |
-| Parity | None |
-| Stop Bits | 1 |
-| Flow Control | None |
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| Baud Rate | 1500000 | ✅ DTS: `rockchip,baudrate = <0x16e360>` |
+| Data Bits | 8 | Standard |
+| Parity | None | Standard |
+| Stop Bits | 1 | Standard |
+| Flow Control | None | Standard |
+| Console Device | ttyFIQ0 | ✅ DTS: `console=ttyFIQ0` |
+| UART Address | 0xff570000 | ✅ DTS: serial2, fiq-debugger |
 
 #### Finding UART Pins
 
@@ -343,6 +345,8 @@ The device includes OP-TEE (Trusted Execution Environment):
 | OP-TEE present | ✅ Verified | tee.bin in image |
 | OTA accepts unsigned firmware | ✅ Verified | Binary strings analysis |
 | Uses MD5/CRC32 checksums | ✅ Verified | Binary strings analysis |
+| UART baud rate 1500000 | ✅ Verified | Device tree (fiq-debugger) |
+| Console is ttyFIQ0 | ✅ Verified | Device tree (chosen/bootargs) |
 
 ## Needs Verification
 
