@@ -2,6 +2,10 @@
 
 ---
 
+### Getting Started
+
+- [Usage Guide](Usage-Guide)
+
 ### GPL Compliance
 
 - [GPL Compliance Analysis](GPL-COMPLIANCE-ANALYSIS)
