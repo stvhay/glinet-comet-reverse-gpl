@@ -1,5 +1,13 @@
 name: CI
 
+# This workflow allows forks to generate fresh analysis reports without
+# needing a local Nix installation. Analysis results are:
+# 1. Available as artifacts on every push/PR
+# 2. Attached to GitHub Releases when tags are pushed
+#
+# The docs/analysis/ directory contains curated reports committed to the repo
+# for easy browsing. CI-generated reports may differ as firmware versions change.
+
 on:
   push:
     branches: [main]

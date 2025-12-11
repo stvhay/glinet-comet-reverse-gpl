@@ -105,7 +105,9 @@ This performs **read-only** operations on the device - no data is written. Parti
 | [License Files](docs/analysis/license-files.md) | License files in firmware |
 | [Shared Libraries](docs/analysis/packages.md) | LGPL/GPL libraries |
 
-To regenerate analysis locally: `./scripts/analyze.sh && cp output/*.md docs/analysis/`
+To regenerate locally: `./scripts/analyze.sh && cp output/*.md docs/analysis/`
+
+**For forks:** CI automatically generates fresh analysis on every push - check the Actions tab for artifacts, or tag a release to get reports attached automatically.
 
 ## Directory Structure
 
