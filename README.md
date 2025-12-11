@@ -104,6 +104,8 @@ This performs **read-only** operations on the device - no data is written. Parti
 | [Build Info](docs/analysis/build-info.md) | Buildroot 2018.02-rc3 |
 | [License Files](docs/analysis/license-files.md) | License files in firmware |
 | [Shared Libraries](docs/analysis/packages.md) | LGPL/GPL libraries |
+| [Network Services](docs/analysis/network-services.md) | Attack surface, API endpoints, authentication |
+| [Proprietary Blobs](docs/analysis/proprietary-blobs.md) | Rockchip binary libraries and open alternatives |
 
 To regenerate locally: `./scripts/analyze.sh && cp output/*.md docs/analysis/`
 
