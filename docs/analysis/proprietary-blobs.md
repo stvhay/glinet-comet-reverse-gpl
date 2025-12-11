@@ -1,12 +1,28 @@
-# Proprietary Rockchip Blobs Inventory
+# Proprietary Rockchip Libraries
 
-**GL.iNet Comet (GL-RM1) Firmware**
+[← Analysis Reports](SUMMARY.md)
 
-Generated: 2025-12-11
+---
 
-## Executive Summary
+The firmware contains Rockchip media libraries for hardware-accelerated video encoding. Most critical libraries (MPP, RGA) are actually open source under Apache 2.0.
 
-The GL.iNet Comet firmware contains several proprietary binary libraries from Rockchip for hardware acceleration and media processing on the RK3588 SoC. This document inventories these closed-source components, documents their functionality, identifies open-source alternatives where available, and assesses which are required for basic device operation versus optional features.
+**Platform:** Rockchip RV1126
+
+## Key Findings
+
+| Library | Purpose | License | Required |
+|---------|---------|---------|----------|
+| librockchip_mpp.so | Video encoding | Apache 2.0 | Critical |
+| librga.so | 2D graphics | Apache 2.0 | High |
+| libeasymedia.so | Media framework | Apache 2.0 | High |
+| libRKAP_3A.so | Audio processing | Proprietary | Medium |
+| librkdb.so | Vendor storage | Proprietary | Medium |
+
+**Good news:** The video encoding stack (MPP, RGA) is open source. Only audio processing and vendor storage libraries are proprietary.
+
+---
+
+## Detailed Inventory
 
 ## Proprietary Library Inventory
 

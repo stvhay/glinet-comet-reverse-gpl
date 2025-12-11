@@ -1,6 +1,24 @@
 # Device Tree Analysis
 
-Device Trees found in the firmware image.
+[← Analysis Reports](SUMMARY.md)
+
+---
+
+The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip RV1126 EVB DDR3 V13 board.
+
+## Summary
+
+| DTB | Size | Purpose |
+|-----|------|---------|
+| 0x1323B4 | 13 KB | U-Boot device tree |
+| 0x49B9B4 | 97 KB | Linux kernel DTB |
+| 0x28F1B4 | 2 KB | Bootloader FIT (Slot B) |
+
+**Compatible:** `rockchip,rv1126-evb-ddr3-v13`
+
+---
+
+## Device Trees Found
 
 ## DTB #1: `system.dtb` (offset 0x1323B4)
 

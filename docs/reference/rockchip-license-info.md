@@ -1,5 +1,9 @@
 # Rockchip Component Licensing
 
+[← Analysis Reports](../analysis/SUMMARY.md)
+
+---
+
 Reference information about licensing of common Rockchip components.
 
 ## Proprietary Libraries

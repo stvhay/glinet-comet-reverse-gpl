@@ -1,12 +1,32 @@
-# Network Services & Attack Surface Analysis
+# Network Services & Attack Surface
 
-**GL.iNet Comet (GL-RM1) Firmware**
+[← Analysis Reports](SUMMARY.md)
 
-Generated: 2025-12-11
+---
 
-## Executive Summary
+The Comet exposes HTTPS (443), SSH (22), and WebRTC services. The web API requires authentication except for the one-time initialization endpoint.
 
-The GL.iNet Comet is a KVM-over-IP device based on the PiKVM architecture, running Buildroot 2018.02-rc3 on a Rockchip RK3588 SoC. This analysis identifies network services, listening ports, API endpoints, authentication mechanisms, and potential security considerations in firmware version **V1.7.2 release1**.
+**Platform:** Rockchip RV1126, Buildroot 2018.02-rc3, PiKVM-based
+**Firmware:** V1.7.2
+
+## Key Attack Surface
+
+| Service | Port | Auth Required | Risk |
+|---------|------|---------------|------|
+| KVMD API | 443/tcp | Yes (except init) | Medium |
+| SSH | 22/tcp | Yes | Medium |
+| Janus WebRTC | 8088/tcp | Via KVMD | Medium |
+| VNC | 5900/tcp | Yes (if enabled) | High |
+| mDNS | 5353/udp | No | Low |
+
+**Notable findings:**
+- `/api/init/init` endpoint is unauthenticated on unconfigured devices
+- Debug tools (GDB, valgrind) present in production firmware
+- Buildroot 2018.02-rc3 may have outdated packages with known CVEs
+
+---
+
+## Detailed Analysis
 
 ## Network Services Inventory
 

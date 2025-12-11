@@ -1,5 +1,9 @@
 # Rockchip RV1126 Secure Boot Architecture
 
+[← Analysis Reports](../analysis/SUMMARY.md)
+
+---
+
 Reference documentation for Rockchip secure boot implementation.
 
 ## Security Architecture

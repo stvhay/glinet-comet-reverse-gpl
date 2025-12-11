@@ -1,22 +1,20 @@
-# Copyleft License Compliance Analysis: GL.iNet Comet (GL-RM1)
+# GPL Compliance Analysis
 
-**Document Version:** 0.3
-**Analysis Date:** December 2025
-**Firmware Analyzed:** glkvm-RM1-1.7.2-1128-1764344791.img
-**Firmware SHA256:** `6044860b839b7ba74de2ec77b2a0764cd0c16ae27ad0f94deb715429c37e8f19`
-**Device:** GL.iNet Comet (GL-RM1) KVM-over-IP
+[← Back to README](../README.md) · [Analysis Reports →](analysis/SUMMARY.md)
 
 ---
 
-## Executive Summary
+**GL.iNet has not released the GPL-required source code for the Comet (GL-RM1).**
 
-This document provides a technical analysis of copyleft-licensed software components distributed in the GL.iNet Comet (GL-RM1) firmware. The analysis identifies components subject to source code disclosure requirements under various copyleft licenses (GPL, LGPL, MPL, etc.) and assesses the current compliance status.
+The firmware contains Linux kernel 4.19.111, U-Boot 2017.09, BusyBox, and other GPL components. Users have requested source code on the GL.iNet forum. As of December 2025, only the application layer (KVMD) has been released.
 
-**Key Findings:**
-- The device contains multiple copyleft-licensed components including Linux kernel 4.19.111, U-Boot 2017.09, BusyBox 1.27.2, GNU coreutils, FFmpeg, and numerous LGPL libraries
-- GL.iNet has released application-layer source code (KVMD) on GitHub
-- **Kernel source code, U-Boot source code, and device-specific modifications have not been made publicly available**
-- Users on the GL.iNet forum have requested this source code; GL.iNet indicated they would "check with Rockchip" but no release has been confirmed
+| Status | Components |
+|--------|------------|
+| **Not Released** | Linux kernel, U-Boot, BusyBox, bcmdhd WiFi driver |
+| **Released** | KVMD application ([github.com/gl-inet/glkvm](https://github.com/gl-inet/glkvm)) |
+
+**Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img
+**SHA256:** `6044860b839b7ba74de2ec77b2a0764cd0c16ae27ad0f94deb715429c37e8f19`
 
 ---
 

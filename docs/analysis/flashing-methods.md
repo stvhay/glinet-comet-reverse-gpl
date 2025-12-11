@@ -1,8 +1,12 @@
-# Flashing Methods and Hardware Requirements
+# Flashing Methods
 
-**GL.iNet Comet (GL-RM1)**
+[← Analysis Reports](SUMMARY.md)
 
-Generated: 2025-12-11
+---
+
+Custom firmware can be flashed via OTA update (no signatures required), USB Rockchip mode, or UART/SD card recovery.
+
+**Platform:** Rockchip RV1126
 
 ## Overview
 

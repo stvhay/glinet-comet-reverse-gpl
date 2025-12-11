@@ -1,29 +1,53 @@
 # GPL-Licensed Binaries
 
+[← Analysis Reports](SUMMARY.md)
+
+---
+
+The firmware contains BusyBox, GNU Coreutils, and several other GPL-licensed tools that require source code disclosure.
+
 ## BusyBox
 
-```
--rwxr-xr-x 1 hays wheel 895608 Nov 27 03:14 /tmp/nix-shell.sHUi63/tmp.fQRSjUYNK5/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root/bin/busybox
-/tmp/nix-shell.sHUi63/tmp.fQRSjUYNK5/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root/bin/busybox: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
-```
+| Property | Value |
+|----------|-------|
+| Version | 1.27.2 |
+| Build Date | 2025-11-27 08:14:38 UTC |
+| Location | /bin/busybox |
+| Size | 895,608 bytes |
+| License | GPL-2.0 |
 
-**Version:** `BusyBox v1.27.2 (2025-11-27 08:14:38 UTC)`
+BusyBox provides most shell utilities as a single binary with symlinks.
 
 ## GNU Coreutils
 
-```
--rwxr-xr-x 1 hays wheel 1050516 Nov 27 03:21 /tmp/nix-shell.sHUi63/tmp.fQRSjUYNK5/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root/usr/bin/coreutils
-/tmp/nix-shell.sHUi63/tmp.fQRSjUYNK5/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root/usr/bin/coreutils: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 3.2.0, with debug_info, not stripped
-```
+| Property | Value |
+|----------|-------|
+| Location | /usr/bin/coreutils |
+| Size | 1,050,516 bytes |
+| License | GPL-3.0+ |
 
 ## Other GPL Tools
 
-| Tool | Found |
-|------|-------|
-| bash | Yes |
-| gzip | Yes |
-| tar | Yes |
-| grep | Yes |
-| sed | Yes |
-| awk | Yes |
-| vim | Yes |
+| Tool | License | Found |
+|------|---------|-------|
+| bash | GPL-3.0+ | Yes |
+| gzip | GPL-3.0+ | Yes |
+| tar | GPL-3.0+ | Yes |
+| grep | GPL-3.0+ | Yes |
+| sed | GPL-3.0+ | Yes |
+| awk | GPL-3.0+ | Yes |
+| vim | Vim (GPL-compatible) | Yes |
+
+## GPL Compliance
+
+For each GPL-licensed binary, GL.iNet must provide:
+
+- Source code (or reference to exact upstream version)
+- Build configuration
+- Any patches applied
+- Build instructions
+
+## See Also
+
+- [Automated License Detection](licenses.md)
+- [GPL Compliance Analysis](../GPL-COMPLIANCE-ANALYSIS.md)

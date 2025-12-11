@@ -1,5 +1,9 @@
 # Rockchip RV1126 Boot Chain
 
+[← Analysis Reports](../analysis/SUMMARY.md)
+
+---
+
 Standard boot chain for Rockchip RV1126 SoC devices.
 
 ## Boot Sequence

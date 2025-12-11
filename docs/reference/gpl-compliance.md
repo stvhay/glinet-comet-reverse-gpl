@@ -1,5 +1,9 @@
 # GPL Compliance Reference
 
+[← Analysis Reports](../analysis/SUMMARY.md)
+
+---
+
 Reference information for GPL compliance in embedded Linux systems.
 
 ## Common GPL Components
