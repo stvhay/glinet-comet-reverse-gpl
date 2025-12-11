@@ -96,14 +96,32 @@ if [ -n "$ROOTFS_DIR" ] && [ -d "$ROOTFS_DIR" ]; then
     {
         echo "# Kernel Version"
         echo ""
-        # List module directories which contain kernel version
+        # Try to get vermagic from kernel modules (most reliable)
+        KERNEL_MODULE=$(find "$ROOTFS_DIR" -name "*.ko" -type f 2>/dev/null | head -1)
+        if [ -n "$KERNEL_MODULE" ]; then
+            VERMAGIC=$(strings "$KERNEL_MODULE" | grep -E "^vermagic=" | head -1 | sed 's/vermagic=//' || true)
+            if [ -n "$VERMAGIC" ]; then
+                echo "Kernel version from module vermagic:"
+                echo ""
+                echo '```'
+                echo "$VERMAGIC"
+                echo '```'
+                echo ""
+                # Extract just the version number
+                KERNEL_VER=$(echo "$VERMAGIC" | awk '{print $1}')
+                echo "**Version:** \`$KERNEL_VER\`"
+            fi
+        fi
+        # Also check module directories
         if ls -d "$ROOTFS_DIR/lib/modules/"*/ >/dev/null 2>&1; then
-            echo "Kernel version from module directory:"
+            echo ""
+            echo "## Module directory"
             echo ""
             echo '```'
             find "$ROOTFS_DIR/lib/modules" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;
             echo '```'
-        else
+        fi
+        if [ -z "$VERMAGIC" ] && ! ls -d "$ROOTFS_DIR/lib/modules/"*/ >/dev/null 2>&1; then
             echo "*Could not determine kernel version*"
         fi
     } > "$OUTPUT_DIR/kernel-version.md"
@@ -221,6 +239,9 @@ echo "=== Searching for U-Boot version ==="
 {
     echo "# U-Boot Information"
     echo ""
+    UBOOT_VERS=""
+    UBOOT_DECOMPRESSED=""
+    UBOOT_EXTRACTED=""
     UBOOT_VERS=$(strings "$WORK_DIR/$FIRMWARE_FILE" | grep -E "U-Boot [0-9]" | sort -u | head -10 || true)
     if [ -n "$UBOOT_VERS" ]; then
         echo "Version strings found in firmware:"
@@ -228,8 +249,22 @@ echo "=== Searching for U-Boot version ==="
         echo '```'
         echo "$UBOOT_VERS"
         echo '```'
-    else
-        echo "*No U-Boot version string found in firmware image*"
+    fi
+    # Check for decompressed binaries from binwalk extraction (typically u-boot)
+    DECOMPRESSED_BINS=$(find "$WORK_DIR/$EXTRACT_DIR" -name "decompressed.bin" -type f 2>/dev/null || true)
+    if [ -n "$DECOMPRESSED_BINS" ]; then
+        while IFS= read -r bin_file; do
+            UBOOT_DECOMPRESSED=$(strings "$bin_file" | grep -E "U-Boot 20[0-9]{2}\.[0-9]{2}" | sort -u | head -5 || true)
+            if [ -n "$UBOOT_DECOMPRESSED" ]; then
+                echo ""
+                echo "## From decompressed binary"
+                echo ""
+                echo '```'
+                echo "$UBOOT_DECOMPRESSED"
+                echo '```'
+                break
+            fi
+        done <<< "$DECOMPRESSED_BINS"
     fi
     # Also check extracted u-boot binary
     UBOOT_BIN=$(find "$WORK_DIR/$EXTRACT_DIR" -name "u-boot-nodtb.bin" 2>/dev/null | head -1 || true)
@@ -246,8 +281,95 @@ echo "=== Searching for U-Boot version ==="
             echo "*No version string found*"
         fi
     fi
+    if [ -z "$UBOOT_VERS" ] && [ -z "$UBOOT_DECOMPRESSED" ] && [ -z "$UBOOT_EXTRACTED" ]; then
+        echo "*No U-Boot version string found in firmware image*"
+    fi
 } > "$OUTPUT_DIR/uboot-version.md"
 echo "Wrote uboot-version.md"
+
+echo "=== Extracting Device Trees ==="
+{
+    echo "# Device Tree Analysis"
+    echo ""
+    echo "Device Trees found in the firmware image."
+    echo ""
+
+    # Find all DTB files extracted by binwalk
+    DTB_FILES=$(find "$WORK_DIR/$EXTRACT_DIR" -name "*.dtb" -type f 2>/dev/null | sort || true)
+
+    if [ -n "$DTB_FILES" ]; then
+        DTB_COUNT=0
+        while IFS= read -r dtb_file; do
+            DTB_COUNT=$((DTB_COUNT + 1))
+            dtb_name=$(basename "$dtb_file")
+            dtb_offset=$(basename "$(dirname "$dtb_file")" | grep -oE "^[0-9A-Fa-f]+" || echo "unknown")
+
+            echo "## DTB #$DTB_COUNT: \`$dtb_name\` (offset 0x$dtb_offset)"
+            echo ""
+
+            # Get basic info
+            dtb_size=$(stat -f%z "$dtb_file" 2>/dev/null || stat -c%s "$dtb_file" 2>/dev/null || echo "unknown")
+            echo "- **Size:** $dtb_size bytes"
+
+            # Check if file is binary DTB or already decompiled DTS
+            file_type=$(file "$dtb_file")
+            if echo "$file_type" | grep -q "ASCII text"; then
+                # Already decompiled to DTS by binwalk
+                DTS_CONTENT=$(cat "$dtb_file")
+            else
+                # Binary DTB, need to decompile
+                DTS_CONTENT=$(dtc -I dtb -O dts "$dtb_file" 2>/dev/null || echo "")
+            fi
+
+            if [ -z "$DTS_CONTENT" ]; then
+                echo "- **Type:** Could not parse"
+                echo ""
+                continue
+            fi
+
+            # Determine type based on content
+            if echo "$DTS_CONTENT" | grep -q "u-boot,dm-"; then
+                echo "- **Type:** U-Boot Device Tree"
+            elif echo "$DTS_CONTENT" | grep -q "description.*FIT"; then
+                echo "- **Type:** FIT Image (Flattened Image Tree)"
+            elif echo "$DTS_CONTENT" | grep -q "linux,"; then
+                echo "- **Type:** Linux Kernel Device Tree"
+            else
+                echo "- **Type:** Device Tree"
+            fi
+
+            # Extract model and compatible strings
+            MODEL=$(echo "$DTS_CONTENT" | grep -E "^\s*model\s*=" | head -1 | sed 's/.*= *"\([^"]*\)".*/\1/' || true)
+            COMPAT=$(echo "$DTS_CONTENT" | grep -E "^\s*compatible\s*=" | head -1 | sed 's/.*= *"\([^"]*\)".*/\1/' || true)
+
+            if [ -n "$MODEL" ]; then
+                echo "- **Model:** $MODEL"
+            fi
+            if [ -n "$COMPAT" ]; then
+                echo "- **Compatible:** \`$COMPAT\`"
+            fi
+
+            # Check if this is a FIT image (contains images/configurations nodes)
+            if echo "$DTS_CONTENT" | grep -q "description.*FIT"; then
+                echo ""
+                echo "### FIT Image Contents"
+                echo ""
+                echo '```'
+                echo "$DTS_CONTENT" | grep -E "^\s*(description|type|arch|os|compression)\s*=" | head -20 || true
+                echo '```'
+            fi
+
+            echo ""
+        done <<< "$DTB_FILES"
+
+        echo "---"
+        echo ""
+        echo "**Total Device Trees found:** $DTB_COUNT"
+    else
+        echo "*No Device Trees found in extracted firmware*"
+    fi
+} > "$OUTPUT_DIR/device-trees.md"
+echo "Wrote device-trees.md"
 
 echo "=== Generating Summary ==="
 {
@@ -297,6 +419,7 @@ echo "=== Generating Summary ==="
     echo "|------|-------------|"
     echo "| [binwalk-scan.md](binwalk-scan.md) | Firmware structure analysis |"
     echo "| [build-info.md](build-info.md) | OS and version information |"
+    echo "| [device-trees.md](device-trees.md) | Device Tree Blob analysis |"
     echo "| [gpl-binaries.md](gpl-binaries.md) | GPL-licensed binaries found |"
     echo "| [kernel-modules.md](kernel-modules.md) | Kernel modules (.ko files) |"
     echo "| [kernel-version.md](kernel-version.md) | Linux kernel version |"
