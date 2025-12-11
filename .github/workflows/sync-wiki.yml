@@ -28,8 +28,9 @@ jobs:
           cp wiki/_Sidebar.md wiki-build/ 2>/dev/null || true
           cp wiki/_Footer.md wiki-build/ 2>/dev/null || true
 
-          # Copy Home page
+          # Copy wiki pages (Home, Usage-Guide, etc.)
           cp wiki/Home.md wiki-build/
+          cp wiki/Usage-Guide.md wiki-build/
 
           # Copy GPL compliance analysis as main content
           cp docs/GPL-COMPLIANCE-ANALYSIS.md wiki-build/
