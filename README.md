@@ -56,26 +56,32 @@ If you have physical access to a GL.iNet Comet device, you can extract the raw e
 
 This performs **read-only** operations on the device - no data is written. Partitions are saved to `partitions/`.
 
-## Output
+## Analysis Results
 
-The analysis produces markdown files documenting:
+See the [Analysis Summary](docs/analysis/SUMMARY.md) for the full GPL compliance report.
 
-- **SUMMARY.md** - Overview of findings
-- **build-info.md** - OS and build system information
-- **gpl-binaries.md** - GPL-licensed binaries (BusyBox, coreutils, etc.)
-- **kernel-modules.md** - Linux kernel modules
-- **license-files.md** - License files found in firmware
+| Report | Description |
+|--------|-------------|
+| [Summary](docs/analysis/SUMMARY.md) | Overview of findings |
+| [Kernel Version](docs/analysis/kernel-version.md) | Linux kernel 4.19.111 |
+| [U-Boot Version](docs/analysis/uboot-version.md) | U-Boot 2017.09 |
+| [Device Trees](docs/analysis/device-trees.md) | DTB/FIT image analysis |
+| [GPL Binaries](docs/analysis/gpl-binaries.md) | BusyBox, coreutils, etc. |
+| [Kernel Modules](docs/analysis/kernel-modules.md) | Loadable kernel modules |
+| [Build Info](docs/analysis/build-info.md) | Buildroot 2018.02-rc3 |
+| [License Files](docs/analysis/license-files.md) | License files in firmware |
 
-See [Releases](https://github.com/stvhay/glinet-comet-reverse-gpl/releases) for pre-generated analysis results.
+To regenerate locally, run `./scripts/analyze.sh` and copy output to `docs/analysis/`.
 
 ## Directory Structure
 
 | Directory | Contents | Committed |
 |-----------|----------|-----------|
 | `scripts/` | Analysis scripts | Yes |
-| `docs/` | SDK documentation (submodule) | Yes |
+| `docs/analysis/` | Analysis reports | Yes |
+| `docs/rockchip-sdk/` | SDK documentation (submodule) | Yes |
 | `downloads/` | Cached firmware `.img` | No |
-| `output/` | Generated analysis results | No |
+| `output/` | Local analysis output | No |
 | `partitions/` | Raw eMMC partition dumps | No |
 
 ### Firmware vs Partitions
