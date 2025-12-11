@@ -101,6 +101,7 @@ This performs **read-only** operations on the device - no data is written. Parti
 | [Device Trees](docs/analysis/device-trees.md) | DTB/FIT image analysis |
 | [GPL Binaries](docs/analysis/gpl-binaries.md) | BusyBox, coreutils, etc. |
 | [Kernel Modules](docs/analysis/kernel-modules.md) | Loadable kernel modules |
+| [Boot Process](docs/analysis/boot-process.md) | Boot chain, partition layout, A/B slots |
 | [Build Info](docs/analysis/build-info.md) | Buildroot 2018.02-rc3 |
 | [License Files](docs/analysis/license-files.md) | License files in firmware |
 | [Licenses](docs/analysis/licenses.md) | Automated license detection |
