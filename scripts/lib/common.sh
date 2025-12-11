@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+# Common functions and variables for analysis scripts
+#
+# Usage: source "$(dirname "$0")/lib/common.sh"
+#
+# Provides:
+#   - Color output functions (info, warn, error, success)
+#   - SCRIPT_DIR, PROJECT_ROOT, OUTPUT_DIR, WORK_DIR variables
+#   - require_command() - Check for required commands
+#   - download_firmware() - Download firmware if needed
+#   - extract_firmware() - Run binwalk extraction
+#   - find_rootfs() - Locate SquashFS rootfs in extractions
+
+set -euo pipefail
+
+# Determine paths
+SCRIPT_DIR="${SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)}"
+PROJECT_ROOT="${PROJECT_ROOT:-$(dirname "$SCRIPT_DIR")}"
+OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_ROOT/output}"
+WORK_DIR="${WORK_DIR:-/tmp/fw_analysis}"
+DOWNLOAD_DIR="${DOWNLOAD_DIR:-$PROJECT_ROOT/downloads}"
+
+# Default firmware URL
+DEFAULT_FIRMWARE_URL="https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Output functions
+info() { echo -e "${GREEN}[INFO]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*" >&2; }
+error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
+success() { echo -e "${GREEN}[OK]${NC} $*"; }
+section() { echo -e "\n${BLUE}=== $* ===${NC}"; }
+
+# Check for required command
+require_command() {
+    local cmd="$1"
+    if ! command -v "$cmd" &> /dev/null; then
+        error "Required command not found: $cmd"
+        error "Please run this script within 'nix develop' shell"
+        exit 1
+    fi
+}
+
+# Initialize directories
+init_dirs() {
+    mkdir -p "$OUTPUT_DIR"
+    mkdir -p "$WORK_DIR"
+    mkdir -p "$DOWNLOAD_DIR"
+}
+
+# Get firmware path, downloading if necessary
+# Usage: FIRMWARE=$(get_firmware "$URL_OR_PATH")
+get_firmware() {
+    local source="${1:-$DEFAULT_FIRMWARE_URL}"
+
+    if [[ -f "$source" ]]; then
+        # Local file
+        echo "$source"
+        return 0
+    fi
+
+    # URL - download to work dir
+    local filename
+    filename=$(basename "$source")
+    local dest="$WORK_DIR/$filename"
+
+    if [[ ! -f "$dest" ]]; then
+        info "Downloading firmware: $source"
+        curl -L -o "$dest" "$source"
+    fi
+
+    echo "$dest"
+}
+
+# Extract firmware version from filename
+# Usage: VERSION=$(extract_version "$FIRMWARE_PATH")
+extract_version() {
+    local firmware="$1"
+    local filename
+    filename=$(basename "$firmware")
+
+    # Try to extract version like "1.7.2" from filename
+    if [[ "$filename" =~ RM1-([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+        echo "${BASH_REMATCH[1]}"
+    else
+        echo "unknown"
+    fi
+}
+
+# Run binwalk extraction if needed
+# Usage: EXTRACT_DIR=$(extract_firmware "$FIRMWARE")
+extract_firmware() {
+    local firmware="$1"
+    local extract_base="$WORK_DIR/extractions"
+    local filename
+    filename=$(basename "$firmware")
+    local extract_dir="$extract_base/${filename}.extracted"
+
+    mkdir -p "$extract_base"
+
+    if [[ ! -d "$extract_dir" ]]; then
+        info "Extracting firmware with binwalk..."
+        (cd "$extract_base" && binwalk -e --run-as=root "$firmware" 2>/dev/null) || true
+    fi
+
+    echo "$extract_dir"
+}
+
+# Find SquashFS rootfs in extractions
+# Usage: ROOTFS=$(find_rootfs "$EXTRACT_DIR")
+find_rootfs() {
+    local extract_dir="$1"
+    local rootfs
+
+    # Look for squashfs-root directory
+    rootfs=$(find "$extract_dir" -type d -name "squashfs-root" 2>/dev/null | head -1)
+
+    if [[ -z "$rootfs" || ! -d "$rootfs" ]]; then
+        error "Could not find SquashFS rootfs in $extract_dir"
+        return 1
+    fi
+
+    echo "$rootfs"
+}
+
+# Find FIT image DTS files in extractions
+# Usage: FIT_FILES=$(find_fit_images "$EXTRACT_DIR")
+find_fit_images() {
+    local extract_dir="$1"
+    find "$extract_dir" -name "system.dtb" -type f 2>/dev/null | sort
+}
+
+# Generate markdown header for output files
+# Usage: generate_header "Title" "Description"
+generate_header() {
+    local title="$1"
+    local description="${2:-}"
+    local timestamp
+    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    echo "# $title"
+    echo ""
+    echo "**GL.iNet Comet (GL-RM1) Firmware**"
+    echo ""
+    echo "Generated: $timestamp"
+    if [[ -n "$description" ]]; then
+        echo ""
+        echo "$description"
+    fi
+    echo ""
+}
+
+# Write content to output file with logging
+# Usage: write_output "filename.md" "$content"
+write_output() {
+    local filename="$1"
+    local content="$2"
+    local filepath="$OUTPUT_DIR/$filename"
+
+    echo "$content" > "$filepath"
+    info "Wrote $filename"
+}
