@@ -4,12 +4,82 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-FIRMWARE_URL="https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-FIRMWARE_FILE="glkvm-RM1-1.7.2-1128-1764344791.img"
+# Default firmware (can be overridden via argument or environment variable)
+DEFAULT_FIRMWARE_URL="https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
+
+usage() {
+    echo "Usage: $0 [OPTIONS] [FIRMWARE_URL]"
+    echo ""
+    echo "Analyze GL.iNet Comet (GL-RM1) firmware for GPL compliance."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help     Show this help message"
+    echo "  -l, --list     List known firmware versions"
+    echo "  -o DIR         Output directory (default: output/)"
+    echo ""
+    echo "Arguments:"
+    echo "  FIRMWARE_URL   URL to firmware .img file (optional)"
+    echo ""
+    echo "Environment Variables:"
+    echo "  FIRMWARE_URL   Override firmware URL"
+    echo "  OUTPUT_DIR     Override output directory"
+    echo "  DOWNLOAD_DIR   Override download cache directory"
+    echo ""
+    echo "Examples:"
+    echo "  $0                                    # Analyze default (1.7.2)"
+    echo "  $0 https://example.com/firmware.img  # Analyze specific URL"
+    echo "  FIRMWARE_URL=https://... $0          # Via environment variable"
+    echo ""
+    echo "Known Firmware Versions:"
+    list_versions
+}
+
+list_versions() {
+    echo "  1.7.2 - https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
+    echo ""
+    echo "Note: Check https://dl.gl-inet.com/kvm/rm1/ for other versions."
+}
+
+# Parse command-line arguments
+OUTPUT_DIR_ARG=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -l|--list)
+            echo "Known GL-RM1 Firmware Versions:"
+            list_versions
+            exit 0
+            ;;
+        -o)
+            OUTPUT_DIR_ARG="$2"
+            shift 2
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+        *)
+            # Positional argument - firmware URL
+            FIRMWARE_URL="$1"
+            shift
+            ;;
+    esac
+done
+
+# Set firmware URL (priority: CLI arg > env var > default)
+FIRMWARE_URL="${FIRMWARE_URL:-$DEFAULT_FIRMWARE_URL}"
+FIRMWARE_FILE=$(basename "$FIRMWARE_URL")
+
+# Extract version from filename (e.g., "1.7.2" from "glkvm-RM1-1.7.2-1128-1764344791.img")
+FIRMWARE_VERSION=$(echo "$FIRMWARE_FILE" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
 
 # Downloads directory persists for caching; work directory is temporary
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-$PROJECT_DIR/downloads}"
-OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_DIR/output}"
+OUTPUT_DIR="${OUTPUT_DIR_ARG:-${OUTPUT_DIR:-$PROJECT_DIR/output}}"
 WORK_DIR="$(mktemp -d)"
 
 mkdir -p "$DOWNLOAD_DIR" "$OUTPUT_DIR"
@@ -22,6 +92,15 @@ cleanup() {
     rm -rf "$WORK_DIR"
 }
 trap cleanup EXIT
+
+echo "=============================================="
+echo "GL.iNet Comet (GL-RM1) Firmware Analysis"
+echo "=============================================="
+echo "Firmware: $FIRMWARE_FILE"
+echo "Version:  $FIRMWARE_VERSION"
+echo "Output:   $OUTPUT_DIR"
+echo "=============================================="
+echo ""
 
 echo "=== Downloading firmware ==="
 if [ -f "$DOWNLOAD_DIR/$FIRMWARE_FILE" ]; then
@@ -729,8 +808,9 @@ echo "=== Generating Summary ==="
     echo ""
     echo "| Property | Value |"
     echo "|----------|-------|"
-    echo "| URL | $FIRMWARE_URL |"
+    echo "| Version | $FIRMWARE_VERSION |"
     echo "| Filename | \`$FIRMWARE_FILE\` |"
+    echo "| URL | $FIRMWARE_URL |"
     echo ""
     echo "## GPL Components Identified"
     echo ""
