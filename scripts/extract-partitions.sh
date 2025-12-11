@@ -71,29 +71,73 @@ remote_cmd "mount" | tee "$OUTPUT_DIR/mounts.txt"
 echo ""
 echo "=== Extracting partitions ==="
 
-# Define partitions to extract
-# Format: "device:description"
+# Identify partition content type from magic bytes
+# Returns: description string based on content analysis
+identify_partition_content() {
+    local file="$1"
+    local magic
+
+    # Read first 16 bytes as hex
+    magic=$(xxd -l 16 -p "$file" 2>/dev/null || echo "")
+
+    case "$magic" in
+        d00dfeed*)
+            # FDT/DTB magic - could be FIT image or device tree
+            if strings "$file" 2>/dev/null | grep -q "U-Boot"; then
+                echo "fit-uboot"
+            elif strings "$file" 2>/dev/null | grep -q "linux,initrd"; then
+                echo "fit-kernel"
+            else
+                echo "dtb"
+            fi
+            ;;
+        68737173*)
+            echo "squashfs"  # "hsqs" in ASCII
+            ;;
+        ubi#*)
+            echo "ubifs"
+            ;;
+        53ef*)
+            echo "ext4"  # ext2/3/4 superblock at offset 0x438
+            ;;
+        1f8b*)
+            echo "gzip"
+            ;;
+        *)
+            # Check for ext4 at standard superblock offset (0x438)
+            local sb_magic
+            sb_magic=$(xxd -s 0x438 -l 2 -p "$file" 2>/dev/null || echo "")
+            if [[ "$sb_magic" == "53ef" ]]; then
+                echo "ext4"
+            elif [[ -z "$magic" ]] || [[ "$magic" =~ ^0+$ ]]; then
+                echo "empty"
+            else
+                echo "unknown"
+            fi
+            ;;
+    esac
+}
+
+# Partitions to extract (descriptions determined by content analysis after extraction)
 PARTITIONS=(
-    "mmcblk0p1:uboot"
-    "mmcblk0p2:reserved"
-    "mmcblk0p3:dtb1"
-    "mmcblk0p4:dtb2"
-    "mmcblk0p5:unknown"
-    "mmcblk0p6:rootfs"
-    "mmcblk0p7:oem"
-    "mmcblk0p8:userdata"
-    "mmcblk0p9:config"
-    "mmcblk0p10:extended"
+    "mmcblk0p1"
+    "mmcblk0p2"
+    "mmcblk0p3"
+    "mmcblk0p4"
+    "mmcblk0p5"
+    "mmcblk0p6"
+    "mmcblk0p7"
+    "mmcblk0p8"
+    "mmcblk0p9"
+    "mmcblk0p10"
 )
 
-for part_info in "${PARTITIONS[@]}"; do
-    part="${part_info%%:*}"
-    desc="${part_info##*:}"
+for part in "${PARTITIONS[@]}"; do
     device="/dev/$part"
     output_file="$OUTPUT_DIR/$part.bin"
 
     echo ""
-    echo "--- Extracting $part ($desc) ---"
+    echo "--- Extracting $part ---"
 
     # Check if partition exists
     if ! remote_cmd "test -b $device" 2>/dev/null; then
@@ -127,6 +171,23 @@ for part_info in "${PARTITIONS[@]}"; do
 done
 
 echo ""
+echo "=== Analyzing partition contents ==="
+echo ""
+echo "| Partition | Size | Content Type |"
+echo "|-----------|------|--------------|"
+
+for part in "${PARTITIONS[@]}"; do
+    output_file="$OUTPUT_DIR/$part.bin"
+    if [[ -f "$output_file" ]]; then
+        local_size=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null)
+        size_mb=$((local_size / 1024 / 1024))
+        content_type=$(identify_partition_content "$output_file")
+        echo "| $part | ${size_mb}MB | $content_type |"
+    fi
+done
+
+echo ""
 echo "=== Extraction complete ==="
 echo "Files written to: $OUTPUT_DIR"
-ls -la "$OUTPUT_DIR"
+find "$OUTPUT_DIR" -maxdepth 1 -type f -name "*.bin" -printf "  %f (%s bytes)\n" 2>/dev/null || \
+    find "$OUTPUT_DIR" -maxdepth 1 -type f -name "*.bin" -exec stat -f "  %N (%z bytes)" {} \;

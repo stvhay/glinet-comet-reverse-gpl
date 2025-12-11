@@ -26,8 +26,6 @@ require_command file
 
 # Get firmware and extract
 FIRMWARE=$(get_firmware "${1:-}")
-FIRMWARE_FILE=$(basename "$FIRMWARE")
-FIRMWARE_VERSION=$(extract_version "$FIRMWARE")
 
 info "Analyzing rootfs in: $FIRMWARE"
 
@@ -94,7 +92,7 @@ section "Kernel Modules"
 
     find "$ROOTFS" -name "*.ko" -type f 2>/dev/null | while read -r ko; do
         name=$(basename "$ko")
-        path="${ko#$ROOTFS}"
+        path="${ko#"$ROOTFS"}"
         size=$(stat -f%z "$ko" 2>/dev/null || stat -c%s "$ko" 2>/dev/null || echo "?")
         echo "| $name | $path | $size |"
     done
@@ -120,12 +118,15 @@ section "Shared Libraries"
     echo "| Library | Path | Size |"
     echo "|---------|------|------|"
 
-    find "$ROOTFS" -name "*.so*" -type f 2>/dev/null | sort | while read -r lib; do
+    # Use process substitution to avoid SIGPIPE with head
+    count=0
+    while read -r lib && [[ $count -lt 100 ]]; do
         name=$(basename "$lib")
-        path="${lib#$ROOTFS}"
+        path="${lib#"$ROOTFS"}"
         size=$(stat -f%z "$lib" 2>/dev/null || stat -c%s "$lib" 2>/dev/null || echo "?")
         echo "| $name | $path | $size |"
-    done | head -100
+        count=$((count + 1))
+    done < <(find "$ROOTFS" -name "*.so*" -type f 2>/dev/null | sort)
 
     count=$(find "$ROOTFS" -name "*.so*" -type f 2>/dev/null | wc -l | tr -d ' ')
     echo ""
@@ -152,8 +153,13 @@ section "GPL Binaries"
         echo ""
         echo "### BusyBox Applets"
         echo ""
+        echo "Applets extracted from binary strings:"
+        echo ""
         echo '```'
-        "$ROOTFS/bin/busybox" --list 2>/dev/null | head -50 || strings "$ROOTFS/bin/busybox" 2>/dev/null | grep -E "^\[" | head -1 || echo "Could not list applets"
+        # Can't execute ARM binary - extract applet list from strings
+        strings "$ROOTFS/bin/busybox" 2>/dev/null | grep -E "^\[.*\]$" | head -5 || \
+            strings "$ROOTFS/bin/busybox" 2>/dev/null | grep -oE "^[a-z]+$" | sort -u | head -30 || \
+            echo "Could not extract applets"
         echo '```'
     else
         echo "*BusyBox not found*"
@@ -170,9 +176,9 @@ section "GPL Binaries"
         if [[ -n "$found" ]]; then
             # Check if it's a symlink to busybox
             if file "$found" 2>/dev/null | grep -q "symbolic link"; then
-                echo "| $bin | ${found#$ROOTFS} | BusyBox (GPL-2.0) |"
+                echo "| $bin | ${found#"$ROOTFS"} | BusyBox (GPL-2.0) |"
             else
-                echo "| $bin | ${found#$ROOTFS} | GPL-3.0+ |"
+                echo "| $bin | ${found#"$ROOTFS"} | GPL-3.0+ |"
             fi
         fi
     done
@@ -186,7 +192,7 @@ section "GPL Binaries"
     for bin in bash sh ash dash tar gzip bzip2 xz; do
         found=$(find "$ROOTFS" -name "$bin" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
-            echo "| $bin | ${found#$ROOTFS} | GPL |"
+            echo "| $bin | ${found#"$ROOTFS"} | GPL |"
         fi
     done
 
@@ -205,15 +211,19 @@ section "License Files"
     echo "## License Files Found"
     echo ""
 
+    # Limit output to avoid SIGPIPE
+    line_count=0
     find "$ROOTFS" -iname "*license*" -o -iname "*copying*" -o -iname "*copyright*" 2>/dev/null | \
         sort | while read -r f; do
-        echo "### ${f#$ROOTFS}"
+        [[ $line_count -ge 500 ]] && break
+        echo "### ${f#"$ROOTFS"}"
         echo ""
         echo '```'
         head -50 "$f" 2>/dev/null || echo "Could not read file"
         echo '```'
         echo ""
-    done | head -500
+        line_count=$((line_count + 10))  # Approximate lines per file
+    done || true
 
 } > "$OUTPUT_DIR/license-files.md"
 success "Wrote license-files.md"
@@ -275,27 +285,18 @@ section "License Detection"
         echo "| Package | License | Source |"
         echo "|---------|---------|--------|"
 
+        pkg_count=0
         find "$ROOTFS/usr/lib/python3.12/site-packages" -name "METADATA" -type f 2>/dev/null | while read -r meta; do
+            [[ $pkg_count -ge 50 ]] && break
             pkg_dir=$(dirname "$meta")
             pkg_name=$(basename "$pkg_dir" | sed 's/-[0-9].*//')
             license=$(grep "^License:" "$meta" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "unknown")
             if [[ -n "$license" && "$license" != "unknown" ]]; then
                 echo "| $pkg_name | $license | METADATA |"
+                pkg_count=$((pkg_count + 1))
             fi
-        done | head -50
+        done || true
     fi
-
-    echo ""
-    echo "## GPL Components Summary"
-    echo ""
-    echo "Components requiring source code release:"
-    echo ""
-    echo "| Component | License | Obligation |"
-    echo "|-----------|---------|------------|"
-    echo "| Linux Kernel | GPL-2.0 | Must provide source |"
-    echo "| U-Boot | GPL-2.0+ | Must provide source |"
-    echo "| BusyBox | GPL-2.0 | Must provide source |"
-    echo "| glibc | LGPL-2.1 | Must provide source if modified |"
 
 } > "$OUTPUT_DIR/licenses.md"
 success "Wrote licenses.md"
@@ -307,4 +308,4 @@ section "Summary"
 
 echo ""
 echo "Generated files:"
-ls -la "$OUTPUT_DIR"/*.md 2>/dev/null | awk '{print "  " $NF}'
+find "$OUTPUT_DIR" -maxdepth 1 -name "*.md" -type f -printf "  %f\n" 2>/dev/null | sort

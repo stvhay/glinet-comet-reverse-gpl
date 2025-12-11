@@ -39,8 +39,6 @@ section "Scanning for proprietary binaries"
 
     echo "## Rockchip Proprietary Libraries"
     echo ""
-    echo "The RV1126 SoC requires several proprietary Rockchip libraries for hardware acceleration."
-    echo ""
 
     echo "### Media Processing Platform (MPP)"
     echo ""
@@ -52,7 +50,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$lib*" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             size=$(stat -f%z "$found" 2>/dev/null || stat -c%s "$found" 2>/dev/null || echo "?")
-            echo "| $lib | ${found#$ROOTFS} | Video codec ($size bytes) |"
+            echo "| $lib | ${found#"$ROOTFS"} | Video codec ($size bytes) |"
         fi
     done
 
@@ -67,7 +65,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$lib*" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             size=$(stat -f%z "$found" 2>/dev/null || stat -c%s "$found" 2>/dev/null || echo "?")
-            echo "| $lib | ${found#$ROOTFS} | 2D graphics ($size bytes) |"
+            echo "| $lib | ${found#"$ROOTFS"} | 2D graphics ($size bytes) |"
         fi
     done
 
@@ -82,7 +80,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$lib*" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             size=$(stat -f%z "$found" 2>/dev/null || stat -c%s "$found" 2>/dev/null || echo "?")
-            echo "| $lib | ${found#$ROOTFS} | Camera ISP ($size bytes) |"
+            echo "| $lib | ${found#"$ROOTFS"} | Camera ISP ($size bytes) |"
         fi
     done
 
@@ -97,7 +95,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$lib*" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             size=$(stat -f%z "$found" 2>/dev/null || stat -c%s "$found" 2>/dev/null || echo "?")
-            echo "| $lib | ${found#$ROOTFS} | AI inference ($size bytes) |"
+            echo "| $lib | ${found#"$ROOTFS"} | AI inference ($size bytes) |"
         fi
     done
 
@@ -109,7 +107,7 @@ section "Scanning for proprietary binaries"
     echo '```'
     find "$ROOTFS" -name "librockchip*" -o -name "librk*" -o -name "*rga*" -o -name "*mpp*" 2>/dev/null | \
         grep -v ".pyc" | sort -u | while read -r lib; do
-        echo "${lib#$ROOTFS}"
+        echo "${lib#"$ROOTFS"}"
     done || echo "None found"
     echo '```'
     echo ""
@@ -128,7 +126,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$blob" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             ftype=$(file -b "$found" 2>/dev/null | cut -d, -f1 || echo "unknown")
-            echo "| $blob | ${found#$ROOTFS} | $ftype |"
+            echo "| $blob | ${found#"$ROOTFS"} | $ftype |"
         fi
     done
 
@@ -137,7 +135,7 @@ section "Scanning for proprietary binaries"
         found=$(find "$ROOTFS" -name "$blob" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
             ftype=$(file -b "$found" 2>/dev/null | cut -d, -f1 || echo "unknown")
-            echo "| $blob | ${found#$ROOTFS} | $ftype |"
+            echo "| $blob | ${found#"$ROOTFS"} | $ftype |"
         fi
     done
 
@@ -150,7 +148,7 @@ section "Scanning for proprietary binaries"
         echo '```'
         find "$ROOTFS/lib/firmware" -type f 2>/dev/null | while read -r fw; do
             size=$(stat -f%z "$fw" 2>/dev/null || stat -c%s "$fw" 2>/dev/null || echo "?")
-            echo "${fw#$ROOTFS} ($size bytes)"
+            echo "${fw#"$ROOTFS"} ($size bytes)"
         done | head -50 || echo "None found"
         echo '```'
     else
@@ -171,7 +169,7 @@ section "Scanning for proprietary binaries"
         size=$(stat -f%z "$ko" 2>/dev/null || stat -c%s "$ko" 2>/dev/null || echo "?")
         # Check if it's likely proprietary (no GPL string)
         if ! strings "$ko" 2>/dev/null | grep -qi "GPL"; then
-            echo "| $name | ${ko#$ROOTFS} | $size bytes (no GPL) |"
+            echo "| $name | ${ko#"$ROOTFS"} | $size bytes (no GPL) |"
         fi
     done | head -30
 
@@ -212,13 +210,6 @@ section "Scanning for proprietary binaries"
     echo "| Rockchip libraries | $rk_count |"
     echo "| Firmware blobs | $fw_count |"
     echo "| Kernel modules | $ko_count |"
-    echo ""
-
-    echo "## License Implications"
-    echo ""
-    echo "- **Rockchip MPP/RGA/ISP**: Proprietary, Apache-2.0 headers for API only"
-    echo "- **Firmware blobs**: Typically redistributable but not open source"
-    echo "- **Kernel modules**: Must be GPL-compatible if linked with kernel"
 
 } > "$OUTPUT_DIR/proprietary-blobs.md"
 

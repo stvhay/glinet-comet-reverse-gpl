@@ -47,7 +47,9 @@ section "Scanning for network services"
     echo ""
     echo '```'
     if [[ -d "$ROOTFS/etc/init.d" ]]; then
-        ls -la "$ROOTFS/etc/init.d/" 2>/dev/null | head -30 || echo "No init.d scripts found"
+        # List init scripts with size
+        find "$ROOTFS/etc/init.d" -maxdepth 1 -type f -printf "%f %s\n" 2>/dev/null | \
+            sort | head -30 || echo "No init.d scripts found"
     fi
     echo '```'
     echo ""
@@ -74,7 +76,7 @@ section "Scanning for network services"
     for webserver in nginx lighttpd httpd apache2 uvicorn gunicorn; do
         found=$(find "$ROOTFS" -name "$webserver*" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
-            echo "| $webserver | ${found#$ROOTFS} | Found |"
+            echo "| $webserver | ${found#"$ROOTFS"} | Found |"
         fi
     done
 
@@ -111,7 +113,7 @@ section "Scanning for network services"
     dropbear=$(find "$ROOTFS" -name "dropbear" -type f 2>/dev/null | head -1 || true)
 
     if [[ -n "$sshd" ]]; then
-        echo "- **OpenSSH sshd found:** ${sshd#$ROOTFS}"
+        echo "- **OpenSSH sshd found:** ${sshd#"$ROOTFS"}"
         sshd_config=$(find "$ROOTFS" -name "sshd_config" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$sshd_config" ]]; then
             echo ""
@@ -122,7 +124,7 @@ section "Scanning for network services"
             echo '```'
         fi
     elif [[ -n "$dropbear" ]]; then
-        echo "- **Dropbear SSH found:** ${dropbear#$ROOTFS}"
+        echo "- **Dropbear SSH found:** ${dropbear#"$ROOTFS"}"
     else
         echo "- No SSH server found"
     fi
@@ -153,7 +155,7 @@ section "Scanning for network services"
     for svc in "${!services[@]}"; do
         found=$(find "$ROOTFS" -name "$svc" -type f 2>/dev/null | head -1 || true)
         if [[ -n "$found" ]]; then
-            echo "| $svc | ${found#$ROOTFS} | ${services[$svc]} |"
+            echo "| $svc | ${found#"$ROOTFS"} | ${services[$svc]} |"
         fi
     done
 
@@ -194,6 +196,7 @@ section "Scanning for network services"
                 echo "- **$user**: Weak/short hash (potential issue)"
             else
                 hash_type="${hash:0:3}"
+                # shellcheck disable=SC2016 # These are literal password hash prefixes, not variables
                 case "$hash_type" in
                     '$1$') echo "- **$user**: MD5 hash (weak)" ;;
                     '$5$') echo "- **$user**: SHA-256 hash" ;;
@@ -212,7 +215,8 @@ section "Scanning for network services"
     echo "Files containing potential credentials:"
     echo ""
     echo '```'
-    grep -r -l -i "password\|secret\|api.key\|token" "$ROOTFS/etc" 2>/dev/null | head -20 || echo "None found in /etc"
+    grep -r -l -i "password\|secret\|api.key\|token" "$ROOTFS/etc" 2>/dev/null | \
+        sed "s|^$ROOTFS||" | head -20 || echo "None found in /etc"
     echo '```'
     echo ""
 

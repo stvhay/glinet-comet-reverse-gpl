@@ -166,3 +166,28 @@ write_output() {
     echo "$content" > "$filepath"
     info "Wrote $filename"
 }
+
+# Load firmware offsets from binwalk analysis artifact
+# Usage: load_firmware_offsets
+# Sets: BOOTLOADER_FIT_OFFSET, KERNEL_FIT_OFFSET, SQUASHFS_OFFSET, etc.
+load_firmware_offsets() {
+    local offsets_file="$OUTPUT_DIR/binwalk-offsets.sh"
+
+    if [[ ! -f "$offsets_file" ]]; then
+        error "Firmware offsets not found: $offsets_file"
+        error "Run analyze-binwalk.sh first to generate offset artifacts"
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    source "$offsets_file"
+    info "Loaded firmware offsets from binwalk analysis"
+}
+
+# Require firmware offsets to be available
+# Usage: require_firmware_offsets
+require_firmware_offsets() {
+    if [[ -z "${BOOTLOADER_FIT_OFFSET:-}" ]]; then
+        load_firmware_offsets
+    fi
+}

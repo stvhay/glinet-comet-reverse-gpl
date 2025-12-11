@@ -44,7 +44,7 @@ info "Found $DTB_COUNT DTB/DTS files"
             DTB_NUM=$((DTB_NUM + 1))
 
             # Get relative path for display
-            rel_path="${dtb_file#$EXTRACT_DIR/}"
+            rel_path="${dtb_file#"$EXTRACT_DIR"/}"
             offset_dir=$(dirname "$rel_path" | head -1)
 
             echo "## DTB #$DTB_NUM: \`$(basename "$dtb_file")\` (offset $offset_dir)"

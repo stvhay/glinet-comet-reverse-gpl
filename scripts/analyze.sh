@@ -191,16 +191,23 @@ Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 Each module can be run individually for specific analysis:
 
-| Module | Output | Description |
-|--------|--------|-------------|
-| \`analyze-binwalk.sh\` | [binwalk-scan.md](binwalk-scan.md) | Firmware structure |
-| \`analyze-device-trees.sh\` | [device-trees.md](device-trees.md) | Device tree blobs |
-| \`analyze-uboot.sh\` | [uboot-version.md](uboot-version.md) | Bootloader info |
-| \`analyze-boot-process.sh\` | [boot-process.md](boot-process.md) | Boot chain |
-| \`analyze-rootfs.sh\` | Multiple | Licenses, packages, binaries |
-| \`analyze-network-services.sh\` | [network-services.md](network-services.md) | Network attack surface |
-| \`analyze-proprietary-blobs.sh\` | [proprietary-blobs.md](proprietary-blobs.md) | Vendor binaries |
-| \`analyze-secure-boot.sh\` | [secure-boot-analysis.md](secure-boot-analysis.md) | Secure boot config |
+| Module | Output |
+|--------|--------|
+EOF
+
+    # Generate module table dynamically from script headers
+    for script in "$SCRIPT_DIR"/analyze-*.sh; do
+        [[ -f "$script" ]] || continue
+        name=$(basename "$script")
+        # Extract output file from "# Outputs:" line in header
+        output=$(grep -m1 "^# Outputs:" "$script" 2>/dev/null | sed 's/^# Outputs: *//' || echo "-")
+        [[ -z "$output" ]] && output="-"
+        # Clean up output path to just filename
+        output=$(basename "$output" 2>/dev/null || echo "$output")
+        echo "| \`$name\` | $output |"
+    done
+
+    cat << 'EOF'
 
 ## Output Files
 
@@ -250,7 +257,7 @@ section "Analysis Complete"
 
 echo ""
 echo "Output files:"
-ls -la "$OUTPUT_DIR"/*.md 2>/dev/null | awk '{printf "  %-40s %s\n", $NF, $5}'
+find "$OUTPUT_DIR" -maxdepth 1 -name "*.md" -type f -printf "  %-40f %s\n" 2>/dev/null | sort
 echo ""
 echo "Run individual modules with:"
 echo "  ./scripts/analyze-<module>.sh $FIRMWARE"
