@@ -33,3 +33,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+
+# Claude Code local settings
+.claude/settings.local.json
