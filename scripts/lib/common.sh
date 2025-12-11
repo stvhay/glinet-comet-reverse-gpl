@@ -191,3 +191,107 @@ require_firmware_offsets() {
         load_firmware_offsets
     fi
 }
+
+# ==============================================================================
+# FDT (Flattened Device Tree) / DTB helper functions
+# Reference: https://devicetree-specification.readthedocs.io/en/stable/flattened-format.html
+# ==============================================================================
+
+# FDT magic number: 0xd00dfeed (big-endian)
+# This 4-byte value appears at offset 0 of every valid DTB/FIT image
+# Reference: Device Tree Specification Section 5.2 "Header"
+FDT_MAGIC="d00dfeed"
+
+# FDT header field offsets (all big-endian 32-bit values)
+# Reference: Device Tree Specification Section 5.2
+FDT_HEADER_TOTALSIZE_OFFSET=4    # Offset 4: totalsize - total size of DTB in bytes
+
+# Read a big-endian 32-bit value from a file
+# Usage: value=$(read_be32 "$file" $offset)
+read_be32() {
+    local file="$1"
+    local offset="$2"
+    local hex
+    hex=$(dd if="$file" bs=1 skip="$offset" count=4 2>/dev/null | xxd -p)
+    printf "%d" "0x$hex"
+}
+
+# Check if data at offset has FDT magic
+# Usage: if has_fdt_magic "$file" $offset; then ...
+has_fdt_magic() {
+    local file="$1"
+    local offset="$2"
+    local magic
+    magic=$(dd if="$file" bs=1 skip="$offset" count=4 2>/dev/null | xxd -p)
+    [[ "$magic" == "$FDT_MAGIC" ]]
+}
+
+# Get DTB total size from FDT header
+# Usage: size=$(get_fdt_size "$file" $dtb_offset)
+get_fdt_size() {
+    local file="$1"
+    local offset="$2"
+    read_be32 "$file" $((offset + FDT_HEADER_TOTALSIZE_OFFSET))
+}
+
+# Find FDT magic within a region of a file (4-byte aligned search)
+# Usage: offset=$(find_fdt_magic "$file" $start $length) || echo "not found"
+# Returns: decimal offset of FDT magic, or fails if not found
+find_fdt_magic() {
+    local file="$1"
+    local start="$2"
+    local length="$3"
+
+    # Read region and convert to hex
+    local hex_dump
+    hex_dump=$(dd if="$file" bs=1 skip="$start" count="$length" 2>/dev/null | xxd -p | tr -d '\n')
+
+    # Search for FDT magic at 4-byte aligned positions
+    local pos=0
+    while [[ $pos -lt ${#hex_dump} ]]; do
+        if [[ "${hex_dump:$pos:8}" == "$FDT_MAGIC" ]]; then
+            # Convert hex position to byte offset (2 hex chars per byte)
+            echo $((start + pos / 2))
+            return 0
+        fi
+        # DTBs are 4-byte aligned, so check every 4 bytes (8 hex chars)
+        pos=$((pos + 8))
+    done
+
+    return 1
+}
+
+# Extract a DTB from firmware to a file
+# Usage: extract_fdt "$firmware" $offset $size "$output_file"
+extract_fdt() {
+    local file="$1"
+    local offset="$2"
+    local size="$3"
+    local output="$4"
+
+    dd if="$file" of="$output" bs=1 skip="$offset" count="$size" 2>/dev/null
+
+    # Verify magic
+    if ! has_fdt_magic "$output" 0; then
+        error "Extracted file does not have valid FDT magic"
+        return 1
+    fi
+}
+
+# Decompile DTB to DTS using dtc
+# Usage: decompile_dtb "$dtb_file" "$dts_file"
+decompile_dtb() {
+    local dtb_file="$1"
+    local dts_file="$2"
+
+    if dtc -I dtb -O dts -o "$dts_file" "$dtb_file" 2>/dev/null; then
+        return 0
+    fi
+
+    # dtc may fail on FIT images; try with force flag
+    if dtc -I dtb -O dts -f -o "$dts_file" "$dtb_file" 2>/dev/null; then
+        return 0
+    fi
+
+    return 1
+}
