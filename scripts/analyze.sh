@@ -191,6 +191,352 @@ if [ -n "$ROOTFS_DIR" ] && [ -d "$ROOTFS_DIR" ]; then
     } > "$OUTPUT_DIR/license-files.md"
     echo "Wrote license-files.md"
 
+    echo "=== Automated license detection ==="
+    {
+        echo "# Automated License Detection"
+        echo ""
+        echo "Automated analysis of licenses in GL.iNet Comet firmware."
+        echo ""
+        echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo ""
+
+        # Function to identify license from text content
+        identify_license() {
+            local content="$1"
+            # Check patterns in order of specificity
+            if echo "$content" | grep -qi "GNU GENERAL PUBLIC LICENSE" && echo "$content" | grep -qi "Version 3"; then
+                echo "GPL-3.0"
+            elif echo "$content" | grep -qi "GPLv3\|GPL-3\.0\|GPL version 3"; then
+                echo "GPL-3.0"
+            elif echo "$content" | grep -qi "GNU GENERAL PUBLIC LICENSE" && echo "$content" | grep -qi "Version 2"; then
+                echo "GPL-2.0"
+            elif echo "$content" | grep -qiE "GPLv2|GPL-2\.0|GPL version 2|Licensed under GPLv2"; then
+                echo "GPL-2.0"
+            elif echo "$content" | grep -qi "GNU LESSER GENERAL PUBLIC LICENSE" && echo "$content" | grep -qi "Version 3"; then
+                echo "LGPL-3.0"
+            elif echo "$content" | grep -qiE "LGPLv3|LGPL-3\.0|LGPL version 3"; then
+                echo "LGPL-3.0"
+            elif echo "$content" | grep -qi "GNU LESSER GENERAL PUBLIC LICENSE" && echo "$content" | grep -qi "Version 2\.1"; then
+                echo "LGPL-2.1"
+            elif echo "$content" | grep -qiE "LGPLv2\.1|LGPL-2\.1|LGPL version 2\.1"; then
+                echo "LGPL-2.1"
+            elif echo "$content" | grep -qi "GNU LESSER GENERAL PUBLIC LICENSE"; then
+                echo "LGPL"
+            elif echo "$content" | grep -qi "GNU LIBRARY GENERAL PUBLIC LICENSE"; then
+                echo "LGPL-2.0"
+            elif echo "$content" | grep -qi "Mozilla Public License.*2\.0\|MPL-2\.0"; then
+                echo "MPL-2.0"
+            elif echo "$content" | grep -qi "Apache License.*2\.0\|Apache-2\.0"; then
+                echo "Apache-2.0"
+            elif echo "$content" | grep -qi "Permission is hereby granted, free of charge"; then
+                echo "MIT"
+            elif echo "$content" | grep -qi "BSD-3-Clause\|BSD 3-Clause"; then
+                echo "BSD-3-Clause"
+            elif echo "$content" | grep -qi "BSD-2-Clause\|BSD 2-Clause\|Simplified BSD"; then
+                echo "BSD-2-Clause"
+            elif echo "$content" | grep -qi "Redistribution and use in source and binary forms"; then
+                echo "BSD"
+            elif echo "$content" | grep -qi "ISC License\|ISC license"; then
+                echo "ISC"
+            elif echo "$content" | grep -qi "zlib License\|zlib/libpng"; then
+                echo "Zlib"
+            elif echo "$content" | grep -qi "Public Domain\|public domain\|CC0"; then
+                echo "Public-Domain"
+            elif echo "$content" | grep -qi "Boost Software License"; then
+                echo "BSL-1.0"
+            elif echo "$content" | grep -qi "OpenSSL License"; then
+                echo "OpenSSL"
+            else
+                echo "Unknown"
+            fi
+        }
+
+        # Categorize license type
+        categorize_license() {
+            local license="$1"
+            case "$license" in
+                GPL-2.0|GPL-3.0|LGPL-2.0|LGPL-2.1|LGPL-3.0|LGPL|MPL-2.0)
+                    echo "Copyleft"
+                    ;;
+                MIT|BSD|BSD-2-Clause|BSD-3-Clause|ISC|Zlib|Apache-2.0|BSL-1.0|OpenSSL|Public-Domain)
+                    echo "Permissive"
+                    ;;
+                *)
+                    echo "Unknown"
+                    ;;
+            esac
+        }
+
+        # Check if license requires source disclosure
+        requires_source() {
+            local license="$1"
+            case "$license" in
+                GPL-2.0|GPL-3.0)
+                    echo "Yes (full)"
+                    ;;
+                LGPL-2.0|LGPL-2.1|LGPL-3.0|LGPL)
+                    echo "Yes (library only)"
+                    ;;
+                MPL-2.0)
+                    echo "Yes (modified files)"
+                    ;;
+                *)
+                    echo "No"
+                    ;;
+            esac
+        }
+
+        # Known library licenses (for libraries without embedded license info)
+        declare -A KNOWN_LICENSES
+        KNOWN_LICENSES["libc-"]="LGPL-2.1"
+        KNOWN_LICENSES["libpthread"]="LGPL-2.1"
+        KNOWN_LICENSES["libm-"]="LGPL-2.1"
+        KNOWN_LICENSES["libdl-"]="LGPL-2.1"
+        KNOWN_LICENSES["librt-"]="LGPL-2.1"
+        KNOWN_LICENSES["libresolv"]="LGPL-2.1"
+        KNOWN_LICENSES["libnsl"]="LGPL-2.1"
+        KNOWN_LICENSES["libnss"]="LGPL-2.1"
+        KNOWN_LICENSES["libcrypt-"]="LGPL-2.1"
+        KNOWN_LICENSES["libutil-"]="LGPL-2.1"
+        KNOWN_LICENSES["ld-"]="LGPL-2.1"
+        KNOWN_LICENSES["libstdc++"]="GPL-3.0-with-GCC-exception"
+        KNOWN_LICENSES["libgcc"]="GPL-3.0-with-GCC-exception"
+        KNOWN_LICENSES["libatomic"]="GPL-3.0-with-GCC-exception"
+        KNOWN_LICENSES["libssl"]="OpenSSL"
+        KNOWN_LICENSES["libcrypto"]="OpenSSL"
+        KNOWN_LICENSES["libz.so"]="Zlib"
+        KNOWN_LICENSES["libpng"]="Zlib"
+        KNOWN_LICENSES["libjpeg"]="IJG"
+        KNOWN_LICENSES["libsqlite"]="Public-Domain"
+        KNOWN_LICENSES["libexpat"]="MIT"
+        KNOWN_LICENSES["libcurl"]="MIT"
+        KNOWN_LICENSES["libevent"]="BSD-3-Clause"
+        KNOWN_LICENSES["libpcre"]="BSD-3-Clause"
+        KNOWN_LICENSES["libffi"]="MIT"
+        KNOWN_LICENSES["liblzma"]="Public-Domain"
+        KNOWN_LICENSES["libgmp"]="LGPL-3.0"
+        KNOWN_LICENSES["libnettle"]="LGPL-3.0"
+        KNOWN_LICENSES["libgnutls"]="LGPL-2.1"
+        KNOWN_LICENSES["libglib"]="LGPL-2.1"
+        KNOWN_LICENSES["libgio"]="LGPL-2.1"
+        KNOWN_LICENSES["libgobject"]="LGPL-2.1"
+        KNOWN_LICENSES["libgmodule"]="LGPL-2.1"
+        KNOWN_LICENSES["libgthread"]="LGPL-2.1"
+        KNOWN_LICENSES["libdbus"]="GPL-2.0"
+        KNOWN_LICENSES["libbluetooth"]="GPL-2.0"
+        KNOWN_LICENSES["libasound"]="LGPL-2.1"
+        KNOWN_LICENSES["libavcodec"]="LGPL-2.1"
+        KNOWN_LICENSES["libavformat"]="LGPL-2.1"
+        KNOWN_LICENSES["libavutil"]="LGPL-2.1"
+        KNOWN_LICENSES["libavfilter"]="LGPL-2.1"
+        KNOWN_LICENSES["libavdevice"]="LGPL-2.1"
+        KNOWN_LICENSES["libswscale"]="LGPL-2.1"
+        KNOWN_LICENSES["libswresample"]="LGPL-2.1"
+        KNOWN_LICENSES["libmad"]="GPL-2.0"
+        KNOWN_LICENSES["libogg"]="BSD-3-Clause"
+        KNOWN_LICENSES["libopus"]="BSD-3-Clause"
+        KNOWN_LICENSES["libspeex"]="BSD-3-Clause"
+        KNOWN_LICENSES["libreadline"]="GPL-3.0"
+        KNOWN_LICENSES["libncurses"]="MIT"
+        KNOWN_LICENSES["librockchip_mpp"]="Apache-2.0"
+        KNOWN_LICENSES["librga"]="Apache-2.0"
+        KNOWN_LICENSES["libeasymedia"]="Apache-2.0"
+        KNOWN_LICENSES["liblua"]="MIT"
+        KNOWN_LICENSES["libjansson"]="MIT"
+        KNOWN_LICENSES["libjson-c"]="MIT"
+        KNOWN_LICENSES["libxml2"]="MIT"
+        KNOWN_LICENSES["libxslt"]="MIT"
+        KNOWN_LICENSES["libnl"]="LGPL-2.1"
+        KNOWN_LICENSES["libmnl"]="LGPL-2.1"
+        KNOWN_LICENSES["libdrm"]="MIT"
+        KNOWN_LICENSES["libpython"]="PSF-2.0"
+        KNOWN_LICENSES["libboost"]="BSL-1.0"
+
+        # Arrays to track results
+        declare -a COPYLEFT_COMPONENTS=()
+        declare -a PERMISSIVE_COMPONENTS=()
+        declare -a UNKNOWN_COMPONENTS=()
+
+        echo "## License Detection Methods"
+        echo ""
+        echo "1. **Binary string extraction** - Search for license text in executables"
+        echo "2. **Python package metadata** - Parse \`*.dist-info/METADATA\` files"
+        echo "3. **License file analysis** - Identify license type from COPYING/LICENSE files"
+        echo "4. **Known library lookup** - Cross-reference against known open source licenses"
+        echo ""
+
+        # =====================================================
+        # Section 1: Binary License Strings
+        # =====================================================
+        echo "## Binary License Strings"
+        echo ""
+        echo "License information extracted from executable binaries:"
+        echo ""
+        echo "| Binary | License String | Detected License |"
+        echo "|--------|----------------|------------------|"
+
+        # Check key binaries for license strings
+        for bin_path in "$ROOTFS_DIR/bin/busybox" "$ROOTFS_DIR/usr/bin/coreutils" "$ROOTFS_DIR/usr/bin/bash" "$ROOTFS_DIR/usr/bin/gdb" "$ROOTFS_DIR/usr/bin/vim"; do
+            if [ -f "$bin_path" ]; then
+                bin_name=$(basename "$bin_path")
+                # Use more specific patterns to avoid false positives
+                license_str=$(strings "$bin_path" 2>/dev/null | grep -iE "licensed under|GNU General Public|GNU Lesser|GPLv[23]|LGPLv|BSD License|MIT License|Apache License" | head -1 | cut -c1-60 || true)
+                if [ -n "$license_str" ]; then
+                    detected=$(identify_license "$license_str")
+                    echo "| \`$bin_name\` | ${license_str}... | $detected |"
+                fi
+            fi
+        done
+        echo ""
+
+        # =====================================================
+        # Section 2: Python Package Metadata
+        # =====================================================
+        echo "## Python Package Licenses"
+        echo ""
+        echo "Licenses from Python package metadata (\`*.dist-info/METADATA\`):"
+        echo ""
+        echo "| Package | Version | License |"
+        echo "|---------|---------|---------|"
+
+        PYTHON_PKGS=$(find "$ROOTFS_DIR" -path "*/dist-info/METADATA" -type f 2>/dev/null | head -50 || true)
+        if [ -n "$PYTHON_PKGS" ]; then
+            while IFS= read -r metadata_file; do
+                pkg_name=$(grep -E "^Name:" "$metadata_file" 2>/dev/null | head -1 | sed 's/Name: *//' || true)
+                pkg_ver=$(grep -E "^Version:" "$metadata_file" 2>/dev/null | head -1 | sed 's/Version: *//' || true)
+                pkg_license=$(grep -E "^License:" "$metadata_file" 2>/dev/null | head -1 | sed 's/License: *//' || true)
+                if [ -n "$pkg_name" ]; then
+                    echo "| $pkg_name | $pkg_ver | $pkg_license |"
+                    # Categorize
+                    detected=$(identify_license "$pkg_license")
+                    category=$(categorize_license "$detected")
+                    if [ "$category" = "Copyleft" ]; then
+                        COPYLEFT_COMPONENTS+=("Python: $pkg_name ($detected)")
+                    elif [ "$category" = "Permissive" ]; then
+                        PERMISSIVE_COMPONENTS+=("Python: $pkg_name ($detected)")
+                    fi
+                fi
+            done <<< "$PYTHON_PKGS"
+        else
+            echo "| *No Python packages found* | - | - |"
+        fi
+        echo ""
+
+        # =====================================================
+        # Section 3: License File Analysis
+        # =====================================================
+        echo "## License File Analysis"
+        echo ""
+        echo "License types identified from LICENSE/COPYING file contents:"
+        echo ""
+        echo "| File | Detected License | Category |"
+        echo "|------|------------------|----------|"
+
+        LICENSE_FILE_LIST=$(find "$ROOTFS_DIR" \( -iname "COPYING*" -o -iname "LICENSE*" \) -type f 2>/dev/null | head -30 || true)
+        if [ -n "$LICENSE_FILE_LIST" ]; then
+            while IFS= read -r lic_file; do
+                rel_path=$(echo "$lic_file" | sed "s|$ROOTFS_DIR||")
+                content=$(head -100 "$lic_file" 2>/dev/null || true)
+                if [ -n "$content" ]; then
+                    detected=$(identify_license "$content")
+                    category=$(categorize_license "$detected")
+                    echo "| \`$rel_path\` | $detected | $category |"
+                    if [ "$category" = "Copyleft" ]; then
+                        COPYLEFT_COMPONENTS+=("File: $rel_path ($detected)")
+                    fi
+                fi
+            done <<< "$LICENSE_FILE_LIST"
+        else
+            echo "| *No license files found* | - | - |"
+        fi
+        echo ""
+
+        # =====================================================
+        # Section 4: Shared Library License Lookup
+        # =====================================================
+        echo "## Shared Library Licenses"
+        echo ""
+        echo "Licenses for shared libraries (from known database):"
+        echo ""
+        echo "| Library | License | Category | Source Disclosure |"
+        echo "|---------|---------|----------|-------------------|"
+
+        SO_FILES=$(find "$ROOTFS_DIR" -name "*.so*" -type f 2>/dev/null | head -100 || true)
+        if [ -n "$SO_FILES" ]; then
+            while IFS= read -r so_file; do
+                lib_name=$(basename "$so_file")
+                detected_license=""
+
+                # Check against known licenses
+                for pattern in "${!KNOWN_LICENSES[@]}"; do
+                    if [[ "$lib_name" == *"$pattern"* ]]; then
+                        detected_license="${KNOWN_LICENSES[$pattern]}"
+                        break
+                    fi
+                done
+
+                if [ -n "$detected_license" ]; then
+                    category=$(categorize_license "$detected_license")
+                    disclosure=$(requires_source "$detected_license")
+                    echo "| \`$lib_name\` | $detected_license | $category | $disclosure |"
+
+                    if [ "$category" = "Copyleft" ]; then
+                        COPYLEFT_COMPONENTS+=("Library: $lib_name ($detected_license)")
+                    elif [ "$category" = "Permissive" ]; then
+                        PERMISSIVE_COMPONENTS+=("Library: $lib_name ($detected_license)")
+                    fi
+                fi
+            done <<< "$SO_FILES"
+        fi
+        echo ""
+
+        # =====================================================
+        # Section 5: Summary
+        # =====================================================
+        echo "## Summary"
+        echo ""
+        echo "### Components Requiring Source Disclosure"
+        echo ""
+        echo "The following components are under copyleft licenses and require source code disclosure:"
+        echo ""
+
+        # Deduplicate and list copyleft components
+        if [ ${#COPYLEFT_COMPONENTS[@]} -gt 0 ]; then
+            printf '%s\n' "${COPYLEFT_COMPONENTS[@]}" | sort -u | while read -r comp; do
+                echo "- $comp"
+            done
+        else
+            echo "*None detected*"
+        fi
+        echo ""
+
+        echo "### License Category Counts"
+        echo ""
+        copyleft_count=$(printf '%s\n' "${COPYLEFT_COMPONENTS[@]}" 2>/dev/null | sort -u | wc -l | tr -d ' ')
+        permissive_count=$(printf '%s\n' "${PERMISSIVE_COMPONENTS[@]}" 2>/dev/null | sort -u | wc -l | tr -d ' ')
+        echo "| Category | Count |"
+        echo "|----------|-------|"
+        echo "| Copyleft (GPL, LGPL, MPL) | $copyleft_count |"
+        echo "| Permissive (MIT, BSD, Apache) | $permissive_count |"
+        echo ""
+
+        echo "### Source Disclosure Requirements"
+        echo ""
+        echo "| License | Disclosure Scope |"
+        echo "|---------|------------------|"
+        echo "| GPL-2.0, GPL-3.0 | Complete source for derivative work |"
+        echo "| LGPL-2.1, LGPL-3.0 | Library source + re-linking capability |"
+        echo "| MPL-2.0 | Modified files only |"
+        echo "| MIT, BSD, Apache-2.0 | None (permissive) |"
+        echo ""
+
+        echo "---"
+        echo ""
+        echo "*Note: This is automated detection and may not be comprehensive. Manual verification recommended for legal compliance.*"
+
+    } > "$OUTPUT_DIR/licenses.md"
+    echo "Wrote licenses.md"
+
     echo "=== Extracting build information ==="
     {
         echo "# Build Information"
@@ -424,6 +770,7 @@ echo "=== Generating Summary ==="
     echo "| [kernel-modules.md](kernel-modules.md) | Kernel modules (.ko files) |"
     echo "| [kernel-version.md](kernel-version.md) | Linux kernel version |"
     echo "| [license-files.md](license-files.md) | License files in filesystem |"
+    echo "| [licenses.md](licenses.md) | Automated license detection |"
     echo "| [packages.md](packages.md) | Shared libraries |"
     echo "| [uboot-version.md](uboot-version.md) | U-Boot bootloader info |"
 } > "$OUTPUT_DIR/SUMMARY.md"

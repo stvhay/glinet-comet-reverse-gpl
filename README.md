@@ -103,6 +103,7 @@ This performs **read-only** operations on the device - no data is written. Parti
 | [Kernel Modules](docs/analysis/kernel-modules.md) | Loadable kernel modules |
 | [Build Info](docs/analysis/build-info.md) | Buildroot 2018.02-rc3 |
 | [License Files](docs/analysis/license-files.md) | License files in firmware |
+| [Licenses](docs/analysis/licenses.md) | Automated license detection |
 | [Shared Libraries](docs/analysis/packages.md) | LGPL/GPL libraries |
 | [Network Services](docs/analysis/network-services.md) | Attack surface, API endpoints, authentication |
 | [Proprietary Blobs](docs/analysis/proprietary-blobs.md) | Rockchip binary libraries and open alternatives |
