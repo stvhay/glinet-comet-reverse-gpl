@@ -1,0 +1,29 @@
+# Device credentials - NEVER commit
+config.env
+
+# Downloaded and extracted firmware - do not commit
+downloads/
+output/
+partitions/
+
+# Extracted filesystems
+rootfs/
+oem/
+userdata/
+
+# Extracted/unpacked firmware
+_*.extracted/
+extractions/
+
+# Binary files (in case any end up in root)
+*.bin
+*.img
+*.squashfs
+*.dts
+
+# Nix
+result
+result-*
+
+# direnv
+.direnv/
