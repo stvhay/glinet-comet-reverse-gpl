@@ -1,0 +1,7 @@
+# Analysis results manifest
+# Tracks firmware and script hashes for cache invalidation
+
+[test]
+firmware_hash = "no-firmware-yet"
+script_hash = "de1db430c048fdcd"
+last_updated = "2025-12-11T17:49:44.178431"

@@ -38,6 +38,12 @@
 
               # Development
               shellcheck
+
+              # Documentation generation
+              python311
+              python311Packages.jinja2
+              python311Packages.tomlkit
+              python311Packages.pytest
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               # Linux-only tools
               rkdeveloptool

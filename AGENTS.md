@@ -4,7 +4,16 @@ Instructions for AI coding agents working on this repository.
 
 ## Project
 
-GPL compliance analysis for GL.iNet Comet (RM1) KVM device. We reverse engineer publicly available firmware to identify GPL-licensed components.
+**Black box reverse engineering** of GL.iNet Comet (RM1) KVM device to identify GPL-licensed components.
+
+### Critical Methodology
+
+**All findings must be derivable from scripts. No magic numbers. Replicable methodology only.**
+
+- Scripts are the source of truth - document what they discover
+- Every offset, address, or value must trace to script output
+- Anyone running our scripts must reach identical conclusions
+- If you discover something manually, encode it into a script first
 
 ## Commands
 
@@ -31,6 +40,7 @@ shellcheck scripts/*.sh
 - Bash: Quote variables, use `shellcheck`, follow [Bash Guide](https://mywiki.wooledge.org/FullBashGuide)
 - Commits: Conventional format (`feat:`, `fix:`, `docs:`, `chore:`)
 - Comments: Explain why, not what
+- **Scripts must show their work**: Output reasoning and trace all discovered values
 
 ## Project Structure
 
@@ -66,4 +76,6 @@ shellcheck scripts/*.sh
 - Commit binary files (*.bin, *.img)
 - Commit extracted firmware contents
 - Commit proprietary code or data
+- Use "magic numbers" without documenting their derivation
+- Document findings that cannot be reproduced by running scripts
 - Push without explicit permission
