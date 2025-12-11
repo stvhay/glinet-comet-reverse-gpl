@@ -94,7 +94,7 @@ Standard methods for RV1126:
 3. **Software method:** Corrupt bootloader to force maskrom
 4. **U-Boot command:** `rockusb 0 mmc 0` (if U-Boot accessible)
 
-⚠️ **Needs verification:** Which method works on GL-RM1
+⚠️ **Needs verification:** Which method works on GL-RM1 ([#17](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/17))
 
 #### USB IDs (Expected)
 
@@ -138,7 +138,7 @@ Some RV1126 boards support booting from SD card, which can be used for recovery.
 dd if=sdcard-update.img of=/dev/sdX bs=4M
 ```
 
-⚠️ **Needs verification:** Whether GL-RM1 has SD card slot or supports SD boot
+⚠️ **Needs verification:** Whether GL-RM1 has SD card slot or supports SD boot ([#19](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/19))
 
 ### 4. UART Console Access ⚠️
 
@@ -166,7 +166,7 @@ Look for:
 - Test points near SoC labeled TX, RX, GND
 - Unpopulated header footprint
 
-⚠️ **Needs verification:** UART pin locations on GL-RM1 PCB
+⚠️ **Needs verification:** UART pin locations on GL-RM1 PCB ([#9](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/9))
 
 #### Using UART for Flashing
 
@@ -294,7 +294,7 @@ calculate crc32: %x.
 
 ### Secure Boot (Bootloader Level) ⚠️
 
-**Unknown status** at the bootloader level. The bootloader may still have:
+**Unknown status** at the bootloader level ([#18](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/18)). The bootloader may still have:
 - Signed bootloader verification (separate from OTA)
 - eFuse-burned keys for early boot stages
 
@@ -354,14 +354,14 @@ The device includes OP-TEE (Trusted Execution Environment):
 
 ## Needs Verification
 
-| Item | Method to Verify |
-|------|------------------|
-| Maskrom mode entry | Physical device testing |
-| UART pin locations | PCB inspection |
-| Bootloader secure boot | Attempt custom U-Boot flash |
-| SD card boot support | Check for SD slot |
-| Recovery button | Physical inspection |
-| USB maskrom VID:PID | Connect in maskrom mode |
+| Item | Method to Verify | Issue |
+|------|------------------|-------|
+| Maskrom mode entry | Physical device testing | [#17](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/17) |
+| UART pin locations | PCB inspection | [#9](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/9) |
+| Bootloader secure boot | Attempt custom U-Boot flash | [#18](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/18) |
+| SD card boot support | Check for SD slot | [#19](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/19) |
+| Recovery button | Physical inspection | [#20](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/20) |
+| USB maskrom VID:PID | Connect in maskrom mode | [#17](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/17) |
 
 ## References
 
