@@ -796,6 +796,17 @@ echo "=== Extracting Device Trees ==="
 } > "$OUTPUT_DIR/device-trees.md"
 echo "Wrote device-trees.md"
 
+echo "=== Analyzing Secure Boot Configuration ==="
+# Run secure boot analysis script (uses same firmware file)
+if [[ -x "$SCRIPT_DIR/analyze-secure-boot.sh" ]]; then
+    "$SCRIPT_DIR/analyze-secure-boot.sh" "$FIRMWARE" || echo "[WARN] Secure boot analysis had errors"
+    if [[ -f "$OUTPUT_DIR/secure-boot-analysis.md" ]]; then
+        echo "Wrote secure-boot-analysis.md"
+    fi
+else
+    echo "[WARN] analyze-secure-boot.sh not found or not executable"
+fi
+
 echo "=== Generating Summary ==="
 {
     echo "# GPL Compliance Analysis Summary"
@@ -852,6 +863,7 @@ echo "=== Generating Summary ==="
     echo "| [license-files.md](license-files.md) | License files in filesystem |"
     echo "| [licenses.md](licenses.md) | Automated license detection |"
     echo "| [packages.md](packages.md) | Shared libraries |"
+    echo "| [secure-boot-analysis.md](secure-boot-analysis.md) | Secure boot configuration |"
     echo "| [uboot-version.md](uboot-version.md) | U-Boot bootloader info |"
 } > "$OUTPUT_DIR/SUMMARY.md"
 cat "$OUTPUT_DIR/SUMMARY.md"
