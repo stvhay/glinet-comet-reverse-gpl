@@ -27,6 +27,20 @@ jobs:
       - name: Build devShell
         run: nix build .#devShells.x86_64-linux.default
 
+  test:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: cachix/install-nix-action@v27
+
+      - name: Run shellcheck
+        run: nix develop --command bash -c 'shellcheck scripts/*.sh'
+
+      - name: Run pytest
+        run: nix develop --command pytest tests/ -v
+
   analyze:
     runs-on: ubuntu-latest
     needs: check
