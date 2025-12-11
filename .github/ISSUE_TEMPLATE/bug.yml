@@ -1,0 +1,133 @@
+name: Bug Report
+description: Report incorrect analysis, broken scripts, or framework issues
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+
+        Use this template for:
+        - Incorrect analysis results
+        - Broken or failing scripts
+        - Framework/tooling bugs
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Bug Category
+      description: What component has the bug?
+      options:
+        - Analysis script (incorrect output)
+        - Template rendering
+        - Caching / hash invalidation
+        - Test failure
+        - CI/CD workflow
+        - Documentation generation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Clear description of what's wrong
+      placeholder: |
+        Example:
+        - analyze_kernel.sh reports wrong kernel version
+        - Cache not invalidated when script changes
+        - Template fails to render with TypeError
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: Minimal steps to reproduce the bug
+      placeholder: |
+        1. Run `nix develop`
+        2. Execute `./scripts/analyze_kernel.sh`
+        3. Observe incorrect version in results/kernel.toml
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: |
+        Example:
+        kernel.toml should contain:
+        kernel_version = "5.10.110"
+        kernel_version_method = "strings kernel.img | grep 'Linux version'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+      placeholder: |
+        Example:
+        kernel.toml contains:
+        kernel_version = "5.10.0"  # Wrong version
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: System information
+      value: |
+        - OS: [e.g., macOS 14.0, Ubuntu 22.04]
+        - Nix version: [run `nix --version`]
+        - Python version: [run `python3 --version` in nix shell]
+        - Firmware version: [if applicable]
+      render: markdown
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Output
+      description: Relevant error messages or logs
+      render: shell
+
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Validation
+      options:
+        - label: I can reproduce this bug consistently
+          required: false
+        - label: I've checked this isn't already reported
+          required: true
+        - label: I've verified this happens in nix develop environment
+          required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria for Fix
+      value: |
+        - [ ] Root cause identified
+        - [ ] Fix implemented
+        - [ ] Regression test added (if applicable)
+        - [ ] All existing tests still pass
+        - [ ] Bug cannot be reproduced after fix
+        - [ ] Documentation updated (if behavior changed)
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Screenshots, related issues, attempted fixes

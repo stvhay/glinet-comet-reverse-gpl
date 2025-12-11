@@ -36,6 +36,56 @@ This project follows strict **black box reverse engineering** principles:
 3. Never commit findings that cannot be reproduced by running the scripts
 4. If you discover something manually, encode that discovery method into a script
 
+## Documentation System
+
+### Jinja Templates with Source Tracking
+
+All documentation is generated from Jinja templates that automatically cite their sources:
+
+**Analysis scripts output JSON with source metadata:**
+```json
+{
+  "kernel_offset": "0x2000",
+  "kernel_offset_source": "kernel",
+  "kernel_offset_method": "binwalk -e firmware.img | grep 'Kernel'"
+}
+```
+
+**Templates use `| src` filter for automatic footnotes:**
+```jinja
+{% set kernel = analyze('kernel') %}
+Kernel at {{ kernel.kernel_offset | src }}
+
+{{ render_footnotes() }}
+```
+
+**Renders as:**
+```markdown
+Kernel at 0x2000[^1]
+
+## Sources
+[^1]: [scripts/analyze_kernel.sh](../scripts/analyze_kernel.sh) - `binwalk -e firmware.img | grep 'Kernel'`
+```
+
+### Results Directory
+
+**`results/`** - Committed analysis data in TOML format
+- `results/*.toml` - Cached analysis results with source metadata
+- `results/.manifest.toml` - Hash tracking for cache invalidation
+- These files prove findings derive from specific firmware + script versions
+
+### Template Rendering
+
+```bash
+# Render single template
+./scripts/render_template.py templates/wiki/Kernel.md.j2 wiki/Kernel.md
+
+# Render all templates (future)
+./scripts/render_wiki.sh
+```
+
+See `docs/design-jinja-documentation.md` for complete architecture.
+
 ## Legal Constraints
 
 **Allowed in repo:**
@@ -90,6 +140,18 @@ EOF
 - Test scripts before committing
 - **Scripts must output their reasoning**: Show what was found and how
 - **Trace all values**: Every offset, signature, or identifier must be discoverable from script output
+
+### Issue Templates
+
+Use GitHub issue templates to maintain consistency and enforce methodology:
+
+- **Analysis Task** - New analysis scripts (enforces source metadata, JSON output)
+- **Infrastructure** - Framework/tooling improvements
+- **Bug Report** - Issues with scripts or framework
+- **Documentation** - Template/wiki updates (must trace to script changes)
+- **Chore** - Maintenance, dependencies, refactoring
+
+Templates enforce black box principles with required fields and acceptance criteria checklists.
 
 ## Subagents
 

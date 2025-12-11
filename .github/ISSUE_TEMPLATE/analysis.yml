@@ -1,0 +1,105 @@
+name: Analysis Task
+description: Add new analysis script or expand existing analysis
+title: "[Analysis] "
+labels: ["type:analysis"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Black Box Analysis Task
+
+        This template is for creating new analysis scripts or expanding existing ones.
+
+        **Remember:** All findings must be derivable from scripts. No magic numbers!
+
+  - type: input
+    id: script_name
+    attributes:
+      label: Script Name
+      description: Name of the analysis script (e.g., analyze_kernel, analyze_filesystem)
+      placeholder: analyze_example
+    validations:
+      required: true
+
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Analysis Purpose
+      description: What are we trying to discover? What questions does this answer?
+      placeholder: |
+        Example:
+        - Identify kernel version and configuration
+        - Locate GPL-licensed kernel modules
+        - Extract bootloader information
+    validations:
+      required: true
+
+  - type: textarea
+    id: methodology
+    attributes:
+      label: Methodology
+      description: How will the script discover this information? What tools/commands?
+      placeholder: |
+        Example:
+        - Use binwalk to locate kernel partition
+        - Extract with dd and decompress
+        - Run strings to find version info
+        - Parse output with awk/grep
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_outputs
+    attributes:
+      label: Expected Outputs
+      description: What data should the script output? (JSON structure)
+      placeholder: |
+        Example JSON output:
+        {
+          "kernel_version": "5.10.110",
+          "kernel_version_source": "kernel",
+          "kernel_version_method": "strings kernel.img | grep 'Linux version'",
+          "config_options": ["CONFIG_GPL_MODULE=y"],
+          "config_options_source": "kernel",
+          "config_options_method": "extract-ikconfig kernel.img"
+        }
+      render: json
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: methodology_compliance
+    attributes:
+      label: Black Box Methodology Compliance
+      description: Ensure this follows our principles
+      options:
+        - label: All findings will be traceable to script output
+          required: true
+        - label: No manual observations or magic numbers
+          required: true
+        - label: Script outputs source metadata (_source, _method fields)
+          required: true
+        - label: Results will be committed to results/ directory
+          required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this task?
+      value: |
+        - [ ] Script created in scripts/analyze_*.sh or scripts/analyze_*.py
+        - [ ] Script outputs valid JSON with source metadata
+        - [ ] Script passes shellcheck (bash) or has type hints (python)
+        - [ ] Results cached in results/*.toml
+        - [ ] Manifest updated in results/.manifest.toml
+        - [ ] Tests added to tests/test_*.py
+        - [ ] All tests passing
+        - [ ] Template created (if needed) in templates/wiki/*.md.j2
+        - [ ] Documentation generated shows footnotes linking to script
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information

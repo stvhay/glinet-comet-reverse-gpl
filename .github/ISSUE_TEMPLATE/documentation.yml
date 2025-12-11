@@ -1,0 +1,119 @@
+name: Documentation Update
+description: Update documentation templates, wiki pages, or methodology docs
+title: "[Docs] "
+labels: ["type:documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Documentation Update
+
+        **Important:** Per our black box methodology, documentation must reflect what scripts discovered.
+
+        If analysis scripts changed → their findings changed → documentation must update.
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation Type
+      description: What kind of documentation?
+      options:
+        - Wiki template (Jinja .md.j2)
+        - Methodology docs (CLAUDE.md, AGENTS.md)
+        - Design documentation
+        - README / getting started
+        - Code comments / docstrings
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason for Update
+      description: Why does this documentation need to change?
+      placeholder: |
+        Example:
+        - analyze_kernel.sh now extracts additional config options
+        - New analysis script requires wiki page
+        - Methodology updated to include new principles
+        - README missing instructions for template rendering
+    validations:
+      required: true
+
+  - type: textarea
+    id: script_changes
+    attributes:
+      label: Related Script Changes
+      description: Which analysis scripts changed? (If applicable)
+      placeholder: |
+        Example:
+        - scripts/analyze_kernel.sh - Added config extraction
+        - scripts/analyze_filesystem.sh - New script
+        - None - This is methodology/process documentation
+      value: "None - "
+
+  - type: textarea
+    id: affected_files
+    attributes:
+      label: Files to Update
+      description: Which documentation files need changes?
+      placeholder: |
+        - templates/wiki/Kernel-Analysis.md.j2
+        - docs/README.md
+        - CLAUDE.md
+      value: |
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_changes
+    attributes:
+      label: Proposed Changes
+      description: What should be updated?
+      placeholder: |
+        Example:
+
+        In templates/wiki/Kernel-Analysis.md.j2:
+        - Add section for kernel config options
+        - Use {{ kernel.config_options | src }} with footnotes
+
+        In CLAUDE.md:
+        - Update "Core Principles" with template rendering workflow
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: methodology_check
+    attributes:
+      label: Methodology Compliance
+      description: For wiki/analysis documentation
+      options:
+        - label: Changes reflect script output (not manual observations)
+          required: false
+        - label: All values use | src filter for footnotes
+          required: false
+        - label: Footnotes link to source scripts
+          required: false
+        - label: N/A - This is process/methodology documentation
+          required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      value: |
+        - [ ] Documentation files updated
+        - [ ] Templates render without errors (if applicable)
+        - [ ] Footnotes generate correctly (if applicable)
+        - [ ] Links are valid and not broken
+        - [ ] Spelling and grammar checked
+        - [ ] No "magic numbers" or undocumented findings
+        - [ ] CI passes (if docs trigger wiki sync)
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Examples, screenshots, related issues

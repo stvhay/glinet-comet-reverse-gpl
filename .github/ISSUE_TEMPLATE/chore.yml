@@ -1,0 +1,127 @@
+name: Chore / Maintenance
+description: Dependency updates, refactoring, cleanup, or routine maintenance
+title: "[Chore] "
+labels: ["type:chore"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Chore / Maintenance Task
+
+        For routine maintenance that doesn't add features or fix bugs:
+        - Dependency updates
+        - Code refactoring
+        - Cleanup / tech debt
+        - Performance optimization
+        - CI/CD maintenance
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Chore Category
+      description: What kind of maintenance?
+      options:
+        - Dependency update
+        - Refactoring
+        - Code cleanup / tech debt
+        - Performance optimization
+        - CI/CD maintenance
+        - Test improvements
+        - Repository maintenance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done?
+      placeholder: |
+        Example:
+        - Update Python dependencies (tomlkit 0.13.3 → 0.14.0)
+        - Refactor analyze() function to reduce complexity
+        - Add type checking with mypy to CI
+        - Clean up duplicate code in analysis scripts
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why should this be done?
+      placeholder: |
+        Example:
+        - Security update for tomlkit
+        - Improve code maintainability
+        - Catch type errors before runtime
+        - Reduce maintenance burden
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope of Changes
+      description: What will be affected?
+      placeholder: |
+        Example:
+        - Files: flake.nix, flake.lock
+        - Impact: None (dependency update only)
+        - Breaking: No
+      value: |
+        - Files:
+        - Impact:
+        - Breaking:
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety Checks
+      options:
+        - label: No breaking changes to analysis scripts
+          required: true
+        - label: Existing tests will still pass
+          required: true
+        - label: No loss of functionality
+          required: true
+        - label: Changes are backward compatible (or migration plan exists)
+          required: true
+
+  - type: textarea
+    id: testing_plan
+    attributes:
+      label: Testing Plan
+      description: How will you verify this doesn't break anything?
+      placeholder: |
+        Example:
+        - Run full test suite (pytest)
+        - Verify all analysis scripts still work
+        - Check template rendering still produces same output
+        - Run CI locally before pushing
+      value: |
+        - [ ] Run pytest
+        - [ ] Run shellcheck
+        - [ ] Verify analysis scripts work
+        - [ ] Check CI passes
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      value: |
+        - [ ] Changes implemented
+        - [ ] All tests passing
+        - [ ] No regressions
+        - [ ] CI passes (shellcheck, pytest)
+        - [ ] Documentation updated (if needed)
+        - [ ] Breaking changes documented (if any)
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Links, references, related issues

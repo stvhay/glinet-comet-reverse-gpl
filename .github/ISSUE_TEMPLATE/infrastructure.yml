@@ -1,0 +1,109 @@
+name: Infrastructure / Tooling
+description: Improvements to analysis framework, build system, or tooling
+title: "[Infra] "
+labels: ["type:infrastructure"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Infrastructure Improvement
+
+        This template is for changes to the analysis framework, build system, CI/CD, or development tooling.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of infrastructure change?
+      options:
+        - Analysis framework (analysis.py, render_template.py)
+        - Build system (flake.nix, dependencies)
+        - CI/CD (GitHub Actions workflows)
+        - Development tooling (scripts, utilities)
+        - Testing infrastructure
+        - Documentation system
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve? What's the current limitation?
+      placeholder: |
+        Example:
+        - Template rendering is slow for large numbers of wiki pages
+        - Cache invalidation doesn't detect changes to imported modules
+        - No way to validate JSON schema from analysis scripts
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: How should this be implemented?
+      placeholder: |
+        Example:
+        - Add parallel template rendering using ThreadPoolExecutor
+        - Track imports in manifest using importlib metadata
+        - Add JSON Schema validation in analyze() function
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches did you consider?
+      placeholder: |
+        Example:
+        - Multiprocessing instead of threading (rejected: overhead for IO-bound work)
+        - Pre-render all templates in CI (rejected: want lazy evaluation)
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: What's affected? Breaking changes? Migration needed?
+      placeholder: |
+        - Affects: All template rendering
+        - Breaking: No (backward compatible)
+        - Migration: None required
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: Requirements
+      options:
+        - label: Does not break existing analysis scripts
+          required: true
+        - label: Maintains black box methodology principles
+          required: true
+        - label: Includes tests for new functionality
+          required: true
+        - label: Updates documentation if API changes
+          required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this task?
+      value: |
+        - [ ] Implementation complete
+        - [ ] Tests added and passing
+        - [ ] Documentation updated (if needed)
+        - [ ] No regressions in existing functionality
+        - [ ] CI passes (shellcheck, pytest)
+        - [ ] Performance measured (if relevant)
+        - [ ] Breaking changes documented in commit message
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Links, references, related issues
