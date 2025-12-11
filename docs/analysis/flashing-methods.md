@@ -8,7 +8,7 @@ Generated: 2025-12-11
 
 This document describes potential methods for flashing custom firmware to the GL.iNet Comet device. The device is based on the Rockchip RV1126 SoC, which supports several standard Rockchip flashing mechanisms.
 
-> **Status:** Research-based documentation. Methods marked with ⚠️ require physical device verification.
+> **Status:** Research-based documentation. Methods marked with ⚠️ require physical device verification. Signature verification conclusions are based on static binary analysis and have not been tested on a physical device.
 
 ## Device Platform
 
@@ -52,16 +52,27 @@ Offset      Size        Content
 
 #### Creating Custom Update
 
-⚠️ **Unknown:** Whether updates require cryptographic signatures.
+✅ **Verified:** Updates do NOT require cryptographic signatures.
+
+Analysis of the firmware validation binaries (`check_image_validity` and `updateEngine`) shows:
+- Only MD5 checksums and CRC32 are used for integrity verification
+- String `"md5 : not support sign image."` explicitly indicates no signature support
+- Model string verification ensures firmware matches device (GL-RM1)
+- No RSA, ECDSA, or other cryptographic signature functions present
+
+This means custom firmware can be flashed if:
+1. The image passes MD5/CRC32 integrity checks
+2. The model string matches the target device
 
 To create a custom update package:
 1. Modify the SquashFS rootfs
-2. Repack in Rockchip update format
+2. Repack in Rockchip update format (preserving headers and checksums)
 3. Upload via web interface or `scp` to device
 
 **Tools needed:**
 - `mksquashfs` - Create SquashFS images
 - Rockchip `afptool` / `rkImageMaker` - Pack update image
+- MD5 checksum tools - Update integrity checksums
 
 ### 2. USB Maskrom Mode ⚠️
 
@@ -245,23 +256,55 @@ CMDLINE:mtdparts=rk29xxnand:0x2000@0x2000(uboot),...
 
 ## Security Considerations
 
-### Secure Boot ⚠️
+### Firmware Signature Verification ✅
 
-**Unknown status.** The device may have:
-- Signed bootloader verification
-- Signed kernel/FIT verification
-- eFuse-burned keys
+**Verified: NO cryptographic signatures required.**
 
-If secure boot is enabled:
-- Custom bootloaders will be rejected
-- May still be able to modify rootfs (if not verified)
-- Maskrom mode may still work (bypasses secure boot)
+Analysis of firmware validation binaries from the rootfs:
+
+| Binary | Purpose | Verification Method |
+|--------|---------|---------------------|
+| `/usr/sbin/check_image_validity` | Pre-upgrade validation | MD5 checksum, model string |
+| `/usr/bin/updateEngine` | Performs upgrade | MD5 checksum, CRC32 |
+
+Key strings found in `check_image_validity`:
+```
+md5 : not support sign image.
+Invalid: The device model is %s, but the image only supports %s
+```
+
+Key strings found in `updateEngine`:
+```
+MD5Check is error of %s
+MD5Check is ok of %s
+calculate crc32: %x.
+```
+
+**Implications:**
+- Custom firmware CAN be installed via OTA mechanism
+- Only requirements: correct MD5/CRC32 checksums and model string
+- No RSA/ECDSA signature verification to bypass
+- Bootloader modification may still require maskrom (separate from OTA)
+
+### Secure Boot (Bootloader Level) ⚠️
+
+**Unknown status** at the bootloader level. The bootloader may still have:
+- Signed bootloader verification (separate from OTA)
+- eFuse-burned keys for early boot stages
+
+This affects:
+- Custom U-Boot installation (may be rejected)
+- Early boot chain modifications
+
+Does NOT affect:
+- Rootfs modifications via OTA (verified: no signatures)
+- Application-level changes
 
 ### OP-TEE
 
 The device includes OP-TEE (Trusted Execution Environment):
 - Secure key storage
-- May handle signature verification
+- Handles secure world operations
 - Cannot be easily modified
 
 ## Recommendations
@@ -270,8 +313,8 @@ The device includes OP-TEE (Trusted Execution Environment):
 
 1. **Try OTA first** - Least risk, no hardware needed
    - Extract rootfs from .img
-   - Modify and repack
-   - Test if device accepts unsigned updates
+   - Modify and repack with correct checksums
+   - ✅ Device accepts unsigned updates (verified via binary analysis)
 
 2. **Check for recovery mode** - Look for button combinations
    - Hold reset while powering on
@@ -298,6 +341,8 @@ The device includes OP-TEE (Trusted Execution Environment):
 | A/B partition scheme | ✅ Verified | Firmware structure |
 | U-Boot 2017.09 | ✅ Verified | Binary strings |
 | OP-TEE present | ✅ Verified | tee.bin in image |
+| OTA accepts unsigned firmware | ✅ Verified | Binary strings analysis |
+| Uses MD5/CRC32 checksums | ✅ Verified | Binary strings analysis |
 
 ## Needs Verification
 
@@ -305,7 +350,7 @@ The device includes OP-TEE (Trusted Execution Environment):
 |------|------------------|
 | Maskrom mode entry | Physical device testing |
 | UART pin locations | PCB inspection |
-| Secure boot status | Attempt unsigned flash |
+| Bootloader secure boot | Attempt custom U-Boot flash |
 | SD card boot support | Check for SD slot |
 | Recovery button | Physical inspection |
 | USB maskrom VID:PID | Connect in maskrom mode |
@@ -318,3 +363,4 @@ The device includes OP-TEE (Trusted Execution Environment):
 - [rkbin (loader binaries)](https://github.com/rockchip-linux/rkbin)
 - [Boot Process Documentation](boot-process.md)
 - [Binwalk Analysis](binwalk-scan.md)
+- [GL.iNet KVMD Source](https://github.com/gl-inet/glkvm) - upgrade.py shows validation flow

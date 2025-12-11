@@ -1,0 +1,3 @@
+[submodule "docs/glkvm"]
+	path = docs/glkvm
+	url = https://github.com/gl-inet/glkvm.git
