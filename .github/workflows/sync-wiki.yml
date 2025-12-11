@@ -1,0 +1,66 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'wiki/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare wiki content
+        run: |
+          # Copy docs into wiki build directory
+          mkdir -p wiki-build
+
+          # Copy wiki-specific files (sidebar, footer)
+          cp wiki/_Sidebar.md wiki-build/ 2>/dev/null || true
+          cp wiki/_Footer.md wiki-build/ 2>/dev/null || true
+
+          # Copy Home page
+          cp wiki/Home.md wiki-build/
+
+          # Copy GPL compliance analysis as main content
+          cp docs/GPL-COMPLIANCE-ANALYSIS.md wiki-build/
+
+          # Copy analysis reports
+          cp docs/analysis/*.md wiki-build/
+
+          # Copy reference docs
+          for f in docs/reference/*.md; do
+            name=$(basename "$f")
+            cp "$f" "wiki-build/reference-${name}"
+          done
+
+          # Fix internal links for wiki format
+          # Convert relative links like (../README.md) to absolute repo links
+          # Convert links like (analysis/kernel-version.md) to wiki links (kernel-version)
+          cd wiki-build
+          for f in *.md; do
+            # Remove .md extension from internal links
+            sed -i 's/\](\([^)]*\)\.md)/](\1)/g' "$f"
+            # Fix analysis/ prefix
+            sed -i 's/](analysis\//](/g' "$f"
+            # Fix reference/ prefix - these become reference-filename
+            sed -i 's/](\.\.\/reference\/\([^)]*\))/](reference-\1)/g' "$f"
+            # Fix parent directory references to repo
+            sed -i 's/](\.\.\/README)/](https:\/\/github.com\/stvhay\/glinet-comet-reverse-gpl)/g' "$f"
+            sed -i 's/](\.\.\/\.\.\/README)/](https:\/\/github.com\/stvhay\/glinet-comet-reverse-gpl)/g' "$f"
+          done
+
+      - name: Sync to wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: wiki-build/
+          token: ${{ secrets.GITHUB_TOKEN }}
