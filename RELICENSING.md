@@ -14,7 +14,7 @@ This project was originally licensed under:
 As the sole copyright holder of this work, I hereby relicense ALL versions of this project, including all past commits and future versions, under:
 
 - **GNU Affero General Public License v3.0 (AGPL-3.0)**
-- **With additional restrictions** (see LICENSE.ADDENDUM)
+- **With additional restrictions** (see LICENSE.ADDENDUM.md)
 
 This relicensing applies retroactively to the entire repository history.
 
