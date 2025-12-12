@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UPDATE_SCRIPT="$SCRIPT_DIR/update-status-gist.sh"
+UPDATE_SCRIPT="$SCRIPT_DIR/update-status-gist.py"
 GIST_ID_FILE="/tmp/claude-glinet-comet-reversing/gist-id.txt"
 
 if [[ ! -f "$GIST_ID_FILE" ]]; then

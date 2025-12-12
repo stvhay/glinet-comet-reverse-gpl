@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Render gist status from scratchpad using Jinja template."""
+"""Update GitHub gist with current scratchpad status."""
 
 import re
+import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -14,7 +16,7 @@ TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 
 
 def main():
-    """Render gist template with current scratchpad content."""
+    """Render and update gist with current scratchpad content."""
     # Read scratchpad
     if not SCRATCHPAD_PATH.exists():
         print(f"Error: Scratchpad not found at {SCRATCHPAD_PATH}", file=sys.stderr)
@@ -50,8 +52,20 @@ def main():
         gist_id=gist_id,
     )
 
-    # Output to stdout
-    print(rendered, end='')
+    # Write to temp file and update gist
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write(rendered)
+        temp_path = f.name
+
+    try:
+        subprocess.run(
+            ['gh', 'gist', 'edit', gist_id, temp_path, '--filename', 'scratchpad.md'],
+            check=True,
+            capture_output=True
+        )
+        print(f"✓ Updated: https://gist.github.com/{gist_id}")
+    finally:
+        Path(temp_path).unlink()
 
 
 if __name__ == "__main__":
