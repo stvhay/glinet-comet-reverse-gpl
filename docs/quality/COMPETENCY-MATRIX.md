@@ -1,7 +1,7 @@
 # Competency Management and Agent Matrix
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
-**Version:** 1.0
+**Version:** 1.1
 **Effective Date:** 2025-12-12
 **Last Updated:** 2025-12-12
 **Review Frequency:** Annually
@@ -80,6 +80,193 @@ For this project:
 - Maintain competence through continuous project work
 - Annual review of ISO 9001 requirements
 - Stay current on GPL enforcement landscape
+
+---
+
+## Maintainer Profiles
+
+### Overview
+
+This section tracks maintainer competency profiles for both human and AI collaboration purposes. Each maintainer has a **dual profile system** per [USER-PROFILE-SCHEMA.md](USER-PROFILE-SCHEMA.md):
+
+1. **Agent Reference Profile** (`.claude/agents/<username>.md`) - AI agent collaboration context
+2. **QMS Competency Profile** (`docs/quality/maintainers/<username>.md`) - ISO 9001 evidence
+
+**Purpose:**
+- Enable expertise-weighted AI agent collaboration (defer to experts, lead novices)
+- Provide QMS evidence of competence (ISO 9001:2015 Clause 7.2)
+- Establish communication preferences and authority boundaries
+- Track competency development over time
+
+**Onboarding:** New maintainers follow [ONBOARDING-PROCESS.md](ONBOARDING-PROCESS.md) to create profiles.
+
+### Current Maintainers
+
+| Maintainer | Role | Agent Reference | QMS Profile | Status | Last Review |
+|------------|------|-----------------|-------------|--------|-------------|
+| *[No maintainers fully onboarded yet]* | - | - | - | - | - |
+
+**Status Legend:**
+- 🟢 Active - Profile current and accurate
+- 🟡 Review Needed - Profile requires update
+- 🔴 Stale - Profile significantly outdated
+- ⏸️ Inactive - Maintainer not currently active
+
+**Note:** Maintainer profiles will be added as the onboarding process (Issue #67+) is completed.
+
+### Profile Format
+
+Each maintainer has **two profile files** that serve different purposes:
+
+#### Agent Reference Profile (`.claude/agents/<username>.md`)
+
+**Purpose:** AI agent collaboration context (read by main agent for initialization)
+
+**Format:** YAML frontmatter + Markdown
+
+**Contents:**
+- Technical expertise by domain (Expert/Advanced/Intermediate/Novice)
+- When to defer vs. challenge guidelines
+- Communication preferences (Completed Staff Work, detail level, escalation)
+- Authority boundaries (must decide, may decide, autonomous)
+- Evidence base summary
+
+**Audience:** AI agents (main agent reads this to understand how to collaborate)
+
+**Example:**
+```yaml
+---
+name: User Name
+type: maintainer
+user: username
+last_updated: YYYY-MM-DD
+---
+
+# Technical Expertise
+## Expert Domains
+- Reverse Engineering
+- GPL Compliance
+...
+```
+
+See [USER-PROFILE-SCHEMA.md](USER-PROFILE-SCHEMA.md) Section 4.1 for complete structure.
+
+#### QMS Competency Profile (`docs/quality/maintainers/<username>.md`)
+
+**Purpose:** ISO 9001 competency evidence and development tracking
+
+**Format:** Markdown with structured sections
+
+**Contents:**
+- Competency assessment table (domain → level → evidence → verification)
+- Evidence of competence (commit analysis, key contributions, external portfolio)
+- Self-declared competencies (background, training, experience)
+- Competency gaps and development plan
+- Communication preferences
+- Authority and decision rights
+- Review history table
+
+**Audience:** Auditors, project lead, annual reviews
+
+**Example:**
+```markdown
+# Maintainer Profile: [Name]
+
+## Competency Assessment
+| Domain | Level | Evidence | Verification |
+|--------|-------|----------|--------------|
+| Reverse Engineering | Expert | [Links] | [Method] |
+...
+```
+
+See [USER-PROFILE-SCHEMA.md](USER-PROFILE-SCHEMA.md) Section 4.2 for complete structure.
+
+### Profile Review Process
+
+**Review Frequency:**
+- **Quarterly:** Management Review Section 6.1.1 - Quick accuracy check
+- **Annual:** Competency Matrix annual review - Deep competency assessment
+
+**Quarterly Review (Management Review):**
+- Profile accuracy check (expertise levels current?)
+- Collaboration effectiveness (AI agent patterns working?)
+- Identify needed updates (new competencies, changed preferences)
+- Quick adjustments to profiles as needed
+
+See [MANAGEMENT-REVIEW-TEMPLATE.md](MANAGEMENT-REVIEW-TEMPLATE.md) Section 6.1.1 for quarterly review checklist.
+
+**Annual Review (This Document):**
+- Comprehensive competency reassessment
+- Evidence refresh (new projects, certifications, portfolio)
+- Competency gap analysis
+- Development plan update
+- Profile major revisions if needed
+
+**Review Triggers (Ad-Hoc):**
+- Major role change (new responsibilities)
+- Significant skill development (new certification, training)
+- Collaboration issues identified (friction, miscommunication)
+- User request (maintainer feels profile inaccurate)
+
+### Evidence Sources and Retention
+
+**Acceptable Evidence:**
+- **External GitHub repositories** (NOT this AI-assisted repo)
+- **Resume/CV** (professional background, education, certifications)
+- **Self-assessment interview** (user's expertise declarations)
+- **External portfolio** (open source contributions, publications)
+- **Professional certifications** (technical, security, management)
+
+**Evidence Retention:**
+- Agent reference profiles: Permanent (version controlled in `.claude/agents/`)
+- QMS profiles: Permanent (version controlled in `docs/quality/maintainers/`)
+- Evidence links: Maintained in QMS profiles (external URLs preserved)
+- Review history: Tracked in QMS profiles (table format)
+
+### Integration with Collaboration Framework
+
+**Expertise-Weighted Collaboration:**
+
+AI agents adjust behavior based on maintainer's competency level in each domain:
+
+| Competency Level | AI Agent Behavior | Example |
+|-----------------|-------------------|---------|
+| **Expert** | Defer to maintainer | "You mentioned using X approach. Should I proceed with that, or would you prefer Y?" |
+| **Advanced** | Collaborate actively | "I recommend approach X because of Y. What do you think?" |
+| **Intermediate** | Lead with oversight | "I'll use approach X (reasoning). Let me know if you'd like a different approach." |
+| **Novice** | Agent leads, teaches | "I'll implement X. Here's why this approach works best..." |
+
+**Authority Boundaries:**
+
+Profiles define decision rights for each maintainer:
+
+- **Must Decide:** User approval required (e.g., architecture decisions, security changes)
+- **May Decide:** User can override agent (e.g., implementation details, refactoring)
+- **Autonomous:** Agent decides independently (e.g., test writing, documentation)
+
+See [USER-PROFILE-SCHEMA.md](USER-PROFILE-SCHEMA.md) Section 3.4 for complete authority framework.
+
+### Onboarding New Maintainers
+
+**Process:** Follow [ONBOARDING-PROCESS.md](ONBOARDING-PROCESS.md)
+
+**Steps:**
+1. Evidence collection (external repos, resume, portfolio)
+2. Self-assessment interview
+3. Competency mapping (external evidence → verified levels)
+4. Communication preferences capture
+5. Authority boundary definition
+6. Create both profile files (agent reference + QMS)
+7. Add to Maintainer Profiles table (above)
+8. Initial validation (test AI agent collaboration)
+
+**Quality Control:**
+- Evidence must be from external sources (not this AI-assisted repo)
+- Competency levels must be verifiable from evidence
+- Both profiles must be consistent
+- Profiles must pass schema validation
+
+**First Onboarding:** Issue #67 will complete stvhay onboarding, validating this framework.
 
 ---
 
@@ -603,12 +790,14 @@ graph TD
 **Review Questions:**
 - [ ] Are defined competencies still appropriate for project needs?
 - [ ] Have any competency gaps been identified?
+- [ ] Are maintainer profiles accurate and up-to-date?
 - [ ] Are agent model selections still optimal?
 - [ ] Have model updates changed agent capabilities?
 - [ ] Is verification process effective?
 - [ ] Are cost vs. capability trade-offs appropriate?
 - [ ] Do we need new agent roles?
 - [ ] Are agent selection criteria clear and followed?
+- [ ] Is expertise-weighted collaboration working effectively?
 
 **Review Inputs:**
 - Agent usage statistics (tasks by agent type)
@@ -642,8 +831,9 @@ graph TD
 - P3: Quality Assurance - Verification methods defined
 
 **Management Review:**
+- Section 6.1.1: Maintainer Profile Review - Quarterly profile accuracy check
+- Section 6.1.2: General Human Resources - Competency adequacy assessed
 - Section 6.2: AI Agent Resources - Agent effectiveness reviewed quarterly
-- Section 6.1: Human Resources - Competency adequacy assessed
 
 **Risk Register:**
 - R7: Resource/Time Constraints - Agent competency affects capacity
@@ -660,6 +850,7 @@ graph TD
 
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
+| 1.1 | 2025-12-12 | Added Maintainer Profiles section with dual profile system | Project Lead |
 | 1.0 | 2025-12-12 | Initial competency matrix with 5 agent roles | Project Lead |
 
 ---
@@ -668,6 +859,9 @@ graph TD
 
 - ISO 9001:2015, Clause 7.2 - Competence
 - [Quality Policy](QUALITY-POLICY.md) - Commitment 5 (Competence)
+- [User Profile Schema](USER-PROFILE-SCHEMA.md) - Maintainer profile structure
+- [Onboarding Process](ONBOARDING-PROCESS.md) - New maintainer onboarding
+- [Management Review Template](MANAGEMENT-REVIEW-TEMPLATE.md) - Section 6.1.1 (Quarterly profile review)
 - [CLAUDE.md](../../CLAUDE.md) - Agent delegation guidance
 - [Anthropic Model Documentation](https://docs.anthropic.com/en/docs/models-overview)
 
