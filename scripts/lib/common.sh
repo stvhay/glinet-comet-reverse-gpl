@@ -295,3 +295,195 @@ decompile_dtb() {
 
     return 1
 }
+
+# ==============================================================================
+# JSON output helpers for analysis scripts
+# ==============================================================================
+#
+# These functions help generate JSON output with source metadata for the
+# Jinja template system. All analysis results should include _source and
+# _method fields to enable automatic footnoting.
+#
+# Example usage:
+#   json_start
+#   json_field "firmware_size" "$size" "stat" "stat -f%z firmware.img"
+#   json_field "kernel_offset" "0x2000" "binwalk" "binwalk firmware.img | grep Kernel"
+#   json_end
+#
+# Outputs:
+#   {
+#     "firmware_size": "12345",
+#     "firmware_size_source": "stat",
+#     "firmware_size_method": "stat -f%z firmware.img",
+#     "kernel_offset": "0x2000",
+#     "kernel_offset_source": "binwalk",
+#     "kernel_offset_method": "binwalk firmware.img | grep Kernel"
+#   }
+
+# Global tracking for JSON generation
+_JSON_FIRST_FIELD=true
+
+# Escape a string for JSON
+# Usage: escaped=$(json_escape "$string")
+json_escape() {
+    local string="$1"
+
+    # Escape backslashes first (must be first!)
+    string="${string//\\/\\\\}"
+
+    # Escape double quotes
+    string="${string//\"/\\\"}"
+
+    # Escape newlines, tabs, carriage returns
+    string="${string//$'\n'/\\n}"
+    string="${string//$'\t'/\\t}"
+    string="${string//$'\r'/\\r}"
+
+    echo "$string"
+}
+
+# Start a JSON object
+# Usage: json_start
+json_start() {
+    echo "{"
+    _JSON_FIRST_FIELD=true
+}
+
+# End a JSON object
+# Usage: json_end
+json_end() {
+    echo ""
+    echo "}"
+    _JSON_FIRST_FIELD=true
+}
+
+# Add a field to JSON object with optional source metadata
+# Usage: json_field KEY VALUE [SOURCE] [METHOD]
+#
+# Arguments:
+#   KEY    - Field name (will be escaped)
+#   VALUE  - Field value (will be escaped)
+#   SOURCE - Optional: source of this data (e.g., "binwalk", "stat", "strings")
+#   METHOD - Optional: method used to obtain data (command or description)
+#
+# Example:
+#   json_field "kernel_size" "1234567" "binwalk" "binwalk -e firmware.img | grep 'Linux kernel'"
+json_field() {
+    local key="$1"
+    local value="$2"
+    local source="${3:-}"
+    local method="${4:-}"
+
+    # Escape values for JSON
+    local escaped_key
+    local escaped_value
+    local escaped_source
+    local escaped_method
+
+    escaped_key=$(json_escape "$key")
+    escaped_value=$(json_escape "$value")
+
+    # Add comma before field if not first
+    if [[ "$_JSON_FIRST_FIELD" == "true" ]]; then
+        _JSON_FIRST_FIELD=false
+    else
+        echo ","
+    fi
+
+    # Output main field
+    echo -n "  \"$escaped_key\": \"$escaped_value\""
+
+    # Add source metadata if provided
+    if [[ -n "$source" ]]; then
+        escaped_source=$(json_escape "$source")
+        echo ","
+        echo -n "  \"${escaped_key}_source\": \"$escaped_source\""
+    fi
+
+    if [[ -n "$method" ]]; then
+        escaped_method=$(json_escape "$method")
+        echo ","
+        echo -n "  \"${escaped_key}_method\": \"$escaped_method\""
+    fi
+}
+
+# Add a numeric field to JSON object (no quotes around value)
+# Usage: json_field_number KEY VALUE [SOURCE] [METHOD]
+json_field_number() {
+    local key="$1"
+    local value="$2"
+    local source="${3:-}"
+    local method="${4:-}"
+
+    local escaped_key
+    local escaped_source
+    local escaped_method
+
+    escaped_key=$(json_escape "$key")
+
+    # Add comma before field if not first
+    if [[ "$_JSON_FIRST_FIELD" == "true" ]]; then
+        _JSON_FIRST_FIELD=false
+    else
+        echo ","
+    fi
+
+    # Output main field (no quotes around numeric value)
+    echo -n "  \"$escaped_key\": $value"
+
+    # Add source metadata if provided
+    if [[ -n "$source" ]]; then
+        escaped_source=$(json_escape "$source")
+        echo ","
+        echo -n "  \"${escaped_key}_source\": \"$escaped_source\""
+    fi
+
+    if [[ -n "$method" ]]; then
+        escaped_method=$(json_escape "$method")
+        echo ","
+        echo -n "  \"${escaped_key}_method\": \"$escaped_method\""
+    fi
+}
+
+# Start a JSON array field
+# Usage: json_array_start KEY
+json_array_start() {
+    local key="$1"
+    local escaped_key
+    escaped_key=$(json_escape "$key")
+
+    # Add comma before field if not first
+    if [[ "$_JSON_FIRST_FIELD" == "true" ]]; then
+        _JSON_FIRST_FIELD=false
+    else
+        echo ","
+    fi
+
+    echo "  \"$escaped_key\": ["
+    _JSON_FIRST_FIELD=true
+}
+
+# Add an item to a JSON array
+# Usage: json_array_item VALUE
+json_array_item() {
+    local value="$1"
+    local escaped_value
+    escaped_value=$(json_escape "$value")
+
+    # Add comma before item if not first
+    if [[ "$_JSON_FIRST_FIELD" == "true" ]]; then
+        _JSON_FIRST_FIELD=false
+    else
+        echo ","
+    fi
+
+    echo -n "    \"$escaped_value\""
+}
+
+# End a JSON array
+# Usage: json_array_end
+json_array_end() {
+    echo ""
+    echo -n "  ]"
+    _JSON_FIRST_FIELD=false
+}
