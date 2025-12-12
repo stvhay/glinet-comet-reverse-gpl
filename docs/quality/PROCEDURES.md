@@ -1175,6 +1175,110 @@ graph LR
 
 ---
 
+## Communication Standards: Completed Staff Work
+
+### Purpose
+
+All reports, recommendations, and proposals within these procedures shall follow the **Completed Staff Work** doctrine to ensure clarity, actionability, and efficient decision-making.
+
+### Core Principle
+
+**Present solutions, not problems.** Deliverables should be ready for approval/disapproval, not require the reviewer to formulate the action.
+
+### Application Within Procedures
+
+#### P1: Analysis Script Development
+
+**Issue Creation and Planning:**
+- ❌ Bad: "We need to analyze the kernel. What approach should we use?"
+- ✅ Good: "Recommendation: Use binwalk + strings analysis for kernel identification. Rationale: [reasons]. Implementation ready in issue #X."
+
+**Code Review Findings:**
+- ❌ Bad: "This code has issues. What should we fix?"
+- ✅ Good: "Issue identified: [specific problem]. Proposed solution: [detailed fix]. Code ready in branch X for review."
+
+#### P2: Documentation Generation
+
+**Template Design Proposals:**
+- ❌ Bad: "Should we document this component? How?"
+- ✅ Good: "Recommendation: Create wiki page for U-Boot analysis using template Y. Draft complete and ready for review."
+
+**Documentation Review:**
+- ❌ Bad: "This page needs work. Any ideas?"
+- ✅ Good: "Findings: [specific issues]. Proposed revisions: [detailed changes]. Updated draft ready for approval."
+
+#### P3: Quality Assurance
+
+**Test Failure Reports:**
+- ❌ Bad: "Tests are failing. Help?"
+- ✅ Good: "Test failure identified in X. Root cause: Y. Proposed fix: Z. Implementation ready in commit ABC."
+
+**Coverage Improvement:**
+- ❌ Bad: "Coverage is low. What should we test?"
+- ✅ Good: "Coverage gap identified: 55% (target 60%). Recommendation: Add tests for modules X, Y, Z. Test plan attached. Estimated impact: +8% coverage."
+
+#### P4: Corrective Action
+
+**Bug Reports (Enhanced Format):**
+
+All bug reports should include **proposed resolution** from the start:
+
+```markdown
+## Bug Description
+[What's wrong]
+
+## Proposed Resolution
+
+**Immediate Correction:** [How to fix this specific bug]
+
+**Root Cause Hypothesis:** [Suspected underlying cause]
+
+**Corrective Action Plan:**
+1. [Specific action to prevent recurrence]
+2. [Testing strategy]
+3. [Documentation updates if needed]
+
+**Ready for approval:** [Yes/No - if Yes, implementation can proceed immediately]
+```
+
+**Management Review Findings:**
+
+All findings presented in management review shall follow CSW format:
+
+```markdown
+## Finding: [Issue identified]
+
+**Impact:** [What this affects]
+
+**Recommendation:** [Specific proposed action]
+
+**Implementation Plan:**
+- Step 1: [action]
+- Step 2: [action]
+- Resources needed: [list]
+- Timeline: [estimate]
+
+**Alternatives Considered:** [Brief summary of other options and why rejected]
+
+**Decision Required:** Approve recommendation / Select alternative / Defer
+```
+
+### Quality Test
+
+Before submitting any report, recommendation, or proposal, ask:
+
+> **"Would I be willing to approve this myself and stake my reputation on it being right?"**
+
+If the answer is **no**, rework until it passes this test.
+
+### References
+
+- Standards: `standards/Completed Staff Work.txt` (source doctrine)
+- Implementation: `CLAUDE.md` - "Completed Staff Work" section
+- Application: `AGENTS.md` - "Completed Staff Work" section
+
+---
+
 ## Procedure Maintenance
 
 ### Review Triggers

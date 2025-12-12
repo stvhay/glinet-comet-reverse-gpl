@@ -26,6 +26,17 @@ This project uses an ISO 9001:2015-aligned QMS. Follow the documented procedures
 
 See [Procedures](docs/quality/PROCEDURES.md) for full workflow details and [Competency Matrix](docs/quality/COMPETENCY-MATRIX.md) for agent-specific requirements.
 
+## Completed Staff Work
+
+When reporting to the user or making recommendations, apply the **Completed Staff Work** doctrine:
+
+- **Present solutions, not problems** - The user needs answers, not questions
+- **Work out all details yourself** - Don't ask "what should I do?" - advise what they ought to do
+- **Deliver finished work** - Ready for approval/disapproval
+- **Final test:** Would you stake your reputation on this being right?
+
+See CLAUDE.md "Completed Staff Work" section and `standards/Completed Staff Work.txt` for full guidance.
+
 ## Commands
 
 ```bash

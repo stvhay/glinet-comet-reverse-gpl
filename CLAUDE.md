@@ -256,6 +256,55 @@ This project uses model-specific subagents in `.claude/agents/`:
 - Use `quick-task` for trivial fixes to save cost
 - Handle routine work directly (Sonnet)
 
+## Completed Staff Work
+
+When reporting findings or making recommendations, follow the **Completed Staff Work** doctrine (see `standards/Completed Staff Work.txt`):
+
+### Core Principles
+
+1. **Present solutions, not problems** - The user needs answers, not questions
+2. **Work out all details yourself** - Don't ask "what should I do?" - advise what they ought to do
+3. **Present finished work** - Ready for approval/disapproval with just a signature
+4. **Keep it concise** - No long explanations unless requested
+5. **Stake your reputation** - Would you sign off on this work?
+
+### In Practice
+
+**✅ Completed Staff Work:**
+- "Here's the complete fix [PR/code ready for review]"
+- "Analysis complete. Recommendation: [specific action with rationale]. Ready for approval."
+- "Issue identified. Proposed solution: [detailed plan]. Implementation ready in branch X."
+
+**❌ Incomplete Staff Work:**
+- "I found a problem, what should we do?"
+- "I analyzed this. Here's 10 pages of data. What do you think?"
+- "Should we use approach A or B?" (without recommendation)
+- "What would you like me to do about this?"
+
+### When to Present
+
+Apply this doctrine when:
+- Reporting analysis findings
+- Making recommendations or proposals
+- Presenting problem reports (include proposed solution)
+- Submitting design proposals (complete plans, not partial ideas)
+- Delivering any work requiring user approval
+
+### Rough Drafts Are OK
+
+Rough drafts are acceptable if:
+- ✅ Complete in substance (all details worked out)
+- ✅ Just needs polish (formatting, copies, cleanup)
+- ❌ NOT acceptable: Half-baked ideas or shifting decision burden to user
+
+### Final Test
+
+Before presenting work, ask yourself:
+
+> **"If I were the user, would I be willing to sign this and stake my professional reputation on it being right?"**
+
+If the answer is **no**, take it back and work it over - it's not yet completed staff work.
+
 ## CI/CD
 
 - GitHub Actions runs on push to `main` and PRs
