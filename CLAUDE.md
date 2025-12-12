@@ -230,6 +230,32 @@ ruff format scripts/ tests/
 pytest
 ```
 
+### Settings and Authorized Commands
+
+**Always use authorized commands from settings.local.json when available.**
+
+Claude Code has pre-authorized commands in `.claude/settings.local.json`. When performing tasks:
+
+1. **Check authorized commands first** - Use commands from the Bash tool authorization list shown in your system prompt
+2. **Prefer authorized formulations** - Don't use alternative command syntax requiring additional authorization
+3. **Work within limits** - Respect the boundaries defined in settings without trying to escape them
+
+**Examples:**
+
+✅ **Use authorized commands:**
+- `git status` (if authorized)
+- `pytest` (if authorized)
+- `ls /tmp/file.txt` (if path authorized)
+
+❌ **Don't use alternatives requiring new authorization:**
+- `git --no-pager status` (when simple `git status` is authorized)
+- `pytest -v` (when only `pytest` is authorized - use `pytest` and accept default verbosity)
+- `/bin/ls /tmp/file.txt` (when `ls` is authorized - use the authorized form)
+
+**Reference:** The authorized command list is shown in your system prompt under "You can use the following tools without requiring user approval". Check this list before using Bash commands.
+
+**Settings location:** `.claude/settings.local.json`
+
 ### Issue Templates
 
 Use GitHub issue templates to maintain consistency and enforce methodology:
