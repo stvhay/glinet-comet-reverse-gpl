@@ -1,7 +1,7 @@
 # Management Review Template
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
-**Version:** 1.1
+**Version:** 1.2
 **Effective Date:** 2025-12-12
 **Review Frequency:** Quarterly (every 3 months) OR 455 AI work-hours, whichever comes first
 
@@ -353,6 +353,64 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ### 6.1 Human Resources
 
+#### 6.1.1 Maintainer Profile Review
+
+*Reviews maintainer competency profiles per [USER-PROFILE-SCHEMA.md](USER-PROFILE-SCHEMA.md). This quarterly review ensures profiles remain accurate and collaboration remains effective.*
+
+**Profile Accuracy:**
+
+For each maintainer (list profile files from `.claude/agents/` and `docs/quality/maintainers/`):
+
+| Maintainer | Agent Profile | QMS Profile | Last Updated | Review Status |
+|------------|---------------|-------------|--------------|---------------|
+| [username] | [Link to .claude/agents/username.md] | [Link to docs/quality/maintainers/username.md] | [Date] | 🟢/🟡/🔴 |
+
+**Legend:**
+- 🟢 Profile accurate and up-to-date
+- 🟡 Minor updates needed
+- 🔴 Major revision required
+
+**Profile Review Questions:**
+
+For each maintainer profile:
+
+1. **Technical Competency:**
+   - [ ] Expertise levels still accurate? (Expert/Advanced/Intermediate/Novice per domain)
+   - [ ] New competencies developed since last review?
+   - [ ] Evidence sources still valid? (external repos, resume, certifications)
+   - [ ] Competency gaps identified?
+
+2. **Collaboration Effectiveness:**
+   - [ ] AI agent collaboration working well? (defer/collaborate/lead/own pattern)
+   - [ ] Communication preferences being followed? (CSW, detail level, escalation)
+   - [ ] Authority boundaries appropriate? (must decide, may decide, autonomous)
+   - [ ] Any friction or miscommunication issues?
+
+3. **Profile Updates Needed:**
+   - [ ] Update expertise levels (based on new work)
+   - [ ] Update communication preferences
+   - [ ] Update authority boundaries
+   - [ ] Refresh evidence base (new projects, certifications)
+   - [ ] Update QMS competency table
+
+4. **Competency Development:**
+   - [ ] Training completed this quarter?
+   - [ ] Skills development in progress?
+   - [ ] Mentorship or knowledge transfer occurring?
+   - [ ] New domain expertise acquired?
+
+**Actions from Profile Review:**
+- [ ] Update agent reference files (`.claude/agents/`)
+- [ ] Update QMS profiles (`docs/quality/maintainers/`)
+- [ ] Address identified competency gaps
+- [ ] Schedule training or development activities
+- [ ] Adjust collaboration patterns based on expertise evolution
+
+**Notes:**
+[Summary of profile review findings and actions]
+
+#### 6.1.2 General Human Resources
+
 **Current Capacity:**
 - Human lead availability: [Hours/week or %]
 - Sufficient for current workload? [ ] Yes [ ] No
@@ -673,6 +731,10 @@ Use this checklist to ensure comprehensive review:
 - [ ] All risks reviewed (Section 5.1)
 - [ ] New risks identified (Section 5.2)
 - [ ] Resource adequacy assessed (Section 6)
+  - [ ] Maintainer profiles reviewed (Section 6.1.1)
+  - [ ] Human resources evaluated (Section 6.1.2)
+  - [ ] AI agent resources assessed (Section 6.2)
+  - [ ] Infrastructure resources checked (Section 6.3)
 - [ ] Previous actions reviewed (Section 7)
 - [ ] QMS changes considered (Section 8)
 - [ ] Improvements identified (Section 9)
@@ -687,10 +749,18 @@ Use this checklist to ensure comprehensive review:
 - [Quality Objectives](QUALITY-OBJECTIVES.md)
 - [Risk Register](RISK-REGISTER.md)
 - [Procedures](PROCEDURES.md)
+- [User Profile Schema](USER-PROFILE-SCHEMA.md)
+- [Onboarding Process](ONBOARDING-PROCESS.md)
 
 ---
 
-**Template Version:** 1.0
+**Template Version:** 1.2
+**Last Updated:** 2025-12-12
 **Next Template Review:** 2026-12-12
+
+**Version History:**
+- 1.2 (2025-12-12): Added Section 6.1.1 Maintainer Profile Review
+- 1.1 (2025-12-12): Added AI work-hours tracking (Section 2)
+- 1.0 (2025-12-12): Initial template
 
 *This template guides quarterly management reviews. Each review should be saved as a separate file with the date in the filename (e.g., `2025-Q1-management-review.md`). Reviews are maintained in version control for historical tracking.*
