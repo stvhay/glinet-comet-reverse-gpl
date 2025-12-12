@@ -4,13 +4,8 @@
 
 set -euo pipefail
 
-SCRATCHPAD="/tmp/claude-glinet-comet-reversing/scratchpad.md"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIST_ID_FILE="/tmp/claude-glinet-comet-reversing/gist-id.txt"
-
-if [[ ! -f "$SCRATCHPAD" ]]; then
-    echo "Error: Scratchpad not found at $SCRATCHPAD"
-    exit 1
-fi
 
 if [[ ! -f "$GIST_ID_FILE" ]]; then
     echo "Error: Gist not created yet. Run ./scripts/create-status-gist.sh first"
@@ -19,21 +14,11 @@ fi
 
 GIST_ID=$(cat "$GIST_ID_FILE")
 
-# Update timestamp in scratchpad and add minimal footer
-TIMESTAMP=$(date '+%Y-%m-%d %I:%M:%S %p %Z')
+# Render gist content using Jinja template
 TEMP_FILE=$(mktemp)
+"$SCRIPT_DIR/render-gist.py" > "$TEMP_FILE"
 
-# Copy scratchpad with updated timestamp
-sed "s/^\*\*Last Updated:\*\* .*/**Last Updated:** $TIMESTAMP/" "$SCRATCHPAD" > "$TEMP_FILE"
-
-# Add minimal footer with gist URL
-cat >> "$TEMP_FILE" <<EOF
-
----
-_Live URL: https://gist.github.com/${GIST_ID}_
-EOF
-
-# Update the gist (use scratchpad.md filename to match creation)
+# Update the gist
 gh gist edit "$GIST_ID" "$TEMP_FILE" --filename "scratchpad.md" > /dev/null
 
 rm "$TEMP_FILE"
