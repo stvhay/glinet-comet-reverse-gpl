@@ -4,6 +4,23 @@ version = "0.1.0"
 description = "GL.iNet Comet (RM1) firmware reverse engineering"
 requires-python = ">=3.11"
 
+# Python package dependencies
+# NOTE: Currently these are provided via flake.nix for nix develop
+#       Future: Use `uv` for Python package management
+#       Run: uv sync (to install from this file)
+dependencies = [
+    "jinja2>=3.1.0",
+    "tomlkit>=0.12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100
@@ -38,3 +55,35 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--color=yes",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["scripts"]
+omit = [
+    "*/tests/*",
+    "*/lib/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

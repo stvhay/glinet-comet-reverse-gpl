@@ -39,13 +39,20 @@
               # Development
               shellcheck
 
-              # Python and documentation generation
-              python311
-              python311Packages.jinja2
-              python311Packages.tomlkit
-              python311Packages.pytest
+              # Python toolchain and development tools
+              # NOTE: Python package dependencies are managed in pyproject.toml
+              #       This just provides the tools (linters, formatters, test runners)
+              python311                     # Python interpreter
               ruff                          # Python linter and formatter
               python311Packages.mypy        # Type checking
+              python311Packages.pytest      # Test runner
+              python311Packages.pytest-cov  # Test coverage reporting
+
+              # Python runtime dependencies (needed for scripts to run)
+              # TODO: Migrate to `uv` package manager (from pyproject.toml)
+              #       For now, provided by nix for reproducibility
+              python311Packages.jinja2
+              python311Packages.tomlkit
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               # Linux-only tools
               rkdeveloptool

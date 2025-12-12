@@ -30,12 +30,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Output functions
-info() { echo -e "${GREEN}[INFO]${NC} $*"; }
+# Output functions (all go to stderr by default for logging)
+info() { echo -e "${GREEN}[INFO]${NC} $*" >&2; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $*" >&2; }
 error() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
-success() { echo -e "${GREEN}[OK]${NC} $*"; }
-section() { echo -e "\n${BLUE}=== $* ===${NC}"; }
+success() { echo -e "${GREEN}[OK]${NC} $*" >&2; }
+section() { echo -e "\n${BLUE}=== $* ===${NC}" >&2; }
 
 # Check for required command
 require_command() {
