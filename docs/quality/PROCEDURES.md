@@ -1130,6 +1130,310 @@ Problem Occurs → Correction (fix it now)
 
 ---
 
+## Procedure 5: Session Management and Status Tracking
+
+### 5.1 Purpose
+
+Maintain accurate real-time work status for crash recovery, progress visibility, work-hour tracking, and QMS compliance. Ensures scratchpad file remains current during all active development sessions.
+
+### 5.2 Scope
+
+Applies to:
+- All Claude Code development sessions
+- AI agent work (primary)
+- Human maintainer sessions (when using scratchpad)
+- Multi-hour work sessions requiring crash recovery
+
+### 5.3 Process Flow
+
+```mermaid
+graph TD
+    A[Session Start] --> B[Update Scratchpad: Start Time]
+    B --> C[Work on Issue/Task]
+    C --> D{Issue Completed?}
+    D -->|Yes| E[Update Scratchpad: Completion]
+    D -->|No| F{Commit Created?}
+    E --> G{More Work?}
+    F -->|Yes| H[Update Scratchpad: Commit]
+    F -->|No| I{15 Min Elapsed?}
+    H --> G
+    I -->|Yes| J[Update Scratchpad: Status Check]
+    I -->|No| C
+    J --> C
+    G -->|Yes| C
+    G -->|No| K[Update Scratchpad: Session End]
+    K --> L[Trigger Gist Upload]
+
+    style A fill:#e1f5ff
+    style E fill:#d4edda
+    style K fill:#d4edda
+    style L fill:#d4edda
+    style I fill:#fff3cd
+```
+
+### 5.4 Inputs
+
+- **Session start time** (UTC timestamp)
+- **Planned work** (issues from GitHub)
+- **Completion events** (issue closed, commit created)
+- **Session end time** (UTC timestamp)
+
+### 5.5 Step-by-Step Procedure
+
+#### Step 1: Session Start (MANDATORY)
+
+**Action:** Update scratchpad at beginning of session
+
+**File:** `/tmp/claude-glinet-comet-reversing/scratchpad.md`
+
+**Update Required Fields:**
+```markdown
+**Last Updated:** 2025-12-12 HH:MM UTC
+**Current Work:** [Description of planned work]
+```
+
+**Quality Gate:** Session cannot proceed without scratchpad initialization
+
+**Example:**
+```markdown
+**Last Updated:** 2025-12-12 14:30 UTC
+**Current Work:** Starting work on Issue #60 - Add status link to README
+```
+
+---
+
+#### Step 2: After Each Issue Completion (MANDATORY)
+
+**Trigger:** Issue is closed via `gh issue close`
+
+**Action:** Update scratchpad immediately
+
+**Update Sections:**
+1. **Recent Completions** - Add closed issue with link
+2. **Current Work** - Update to next planned work or "Session cleanup"
+3. **Last Updated** - Current UTC timestamp
+
+**Maximum Delay:** 5 minutes after issue closure
+
+**Example:**
+```markdown
+### Issues Closed
+- ✅ [#60](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/60) - Add status link to README (CLOSED)
+
+**Last Updated:** 2025-12-12 15:45 UTC
+**Current Work:** Issue #63 - Simplify settings.local.json permissions
+```
+
+**Quality Gate:** Scratchpad staleness must not exceed 15 minutes during active work
+
+---
+
+#### Step 3: After Each Commit (RECOMMENDED)
+
+**Trigger:** Commit created and pushed
+
+**Action:** Update "Recent Commits" section
+
+**Update Format:**
+```markdown
+## Recent Commits (Last 7)
+
+- <hash> - <commit message>
+- <hash> - <commit message>
+...
+```
+
+**Automation Opportunity:** Could be scripted as git hook
+
+**Frequency:** After each commit or batch of related commits
+
+---
+
+#### Step 4: Periodic Status Updates (RECOMMENDED)
+
+**Trigger:** Every 15 minutes during active work (if no issue/commit updates)
+
+**Action:** Update timestamp and current work status
+
+**Purpose:**
+- Demonstrate session is still active
+- Enable accurate work-hour calculation
+- Provide crash recovery checkpoint
+
+**Example:**
+```markdown
+**Last Updated:** 2025-12-12 16:00 UTC
+**Current Work:** Issue #59 - Creating QMS wiki page (50% complete, writing section 3)
+```
+
+---
+
+#### Step 5: Session End (MANDATORY)
+
+**Trigger:** Work session concluding
+
+**Action:** Update scratchpad with session summary
+
+**Update Sections:**
+1. **Session Summary** - Work completed, commits, test status, next steps
+2. **Last Updated** - Final UTC timestamp
+3. **Current Work** - "Session ended" or next planned work
+
+**Example:**
+```markdown
+## Session Summary
+
+**Work completed:** 5 issues + 1 epic (Epic #64)
+**Commits:** 7 commits pushed to main
+**Tests:** All 647 tests passing
+**Next:** Begin Epic #30 (Refactoring) per user request
+
+**Last Updated:** 2025-12-12 18:30 UTC
+```
+
+**Quality Gate:** Session summary must be created before ending session
+
+---
+
+#### Step 6: Gist Upload (AUTOMATIC)
+
+**Trigger:** Scratchpad file modification
+
+**Mechanism:** Git hook or automated script
+
+**File:** `scripts/update-status-gist.sh` (if exists)
+
+**Frequency:** Every 10 minutes or on file change
+
+**Purpose:**
+- Provide real-time status visibility to user
+- Enable external monitoring of progress
+- Publish to gist badge in README
+
+**Note:** This step is automatic if configured; no manual action required
+
+---
+
+### 5.6 Outputs
+
+- **Updated scratchpad** (`/tmp/claude-glinet-comet-reversing/scratchpad.md`)
+- **Status gist** (published to GitHub gist, linked from README badge)
+- **Work-hour data** (timestamps enable session duration calculation)
+- **Crash recovery data** (current work state preserved)
+
+### 5.7 Quality Controls
+
+- **Staleness limit:** <15 minutes during active work (target: <5 minutes)
+- **Mandatory updates:** Session start, issue completion, session end
+- **Verification:** Spot checks during quarterly management review
+- **Metrics:** Track scratchpad currency as quality indicator
+
+### 5.8 Records
+
+- Scratchpad file (ephemeral in /tmp/, recreated each session)
+- Published gist (persistent, 90-day visible history)
+- Git commit timestamps (correlate with scratchpad updates)
+- Management review records (quarterly scratchpad currency check)
+
+### 5.9 Quality Metrics
+
+**Tracked in Management Review:**
+
+| Metric | Target | Measurement Method |
+|--------|--------|-------------------|
+| Scratchpad currency | >95% <15 min stale | Timestamp checks during review |
+| Update compliance | 100% mandatory updates | Issue completion vs scratchpad update correlation |
+| Session documentation | 100% sessions have summary | Review scratchpad history |
+
+**Formula for Currency:**
+```
+Currency % = (Time with fresh scratchpad / Total active time) × 100
+
+Where "fresh" = Updated within 15 minutes
+```
+
+**Review Frequency:**
+- **Daily:** Visual check by user (gist badge should update)
+- **Quarterly:** Formal metric review in Management Review Section 6.1 (work-hours)
+- **Annual:** Assess procedure effectiveness, consider automation improvements
+
+### 5.10 Risks Addressed
+
+- **R7: Resource/Time Constraints** - Work-hour tracking enables resource planning
+- **Crash recovery** - Scratchpad enables resuming work after interruption
+- **Progress visibility** - User can monitor AI agent progress in real-time
+- **QMS audit trail** - Session documentation supports quarterly reviews
+
+### 5.11 Integration with Other Procedures
+
+- **P1 (Script Development):** Issue completion triggers scratchpad update
+- **P3 (Quality Assurance):** Commit creation triggers scratchpad update
+- **P4 (Corrective Action):** Bug fixes tracked in scratchpad
+- **Management Review:** Session summaries provide work-hour data for Section 6.1
+
+### 5.12 Automation Opportunities
+
+**Current State:** Manual updates by AI agent
+
+**Future Improvements:**
+1. **Git hooks:** Auto-update scratchpad on commit
+2. **Issue webhooks:** Auto-update on issue state change
+3. **Gist API:** Auto-publish on scratchpad modification
+4. **Dashboard:** Real-time work status visualization
+
+**Priority:** Medium (manual process adequate, automation reduces errors)
+
+### 5.13 Troubleshooting
+
+**Problem:** Scratchpad not updating
+
+**Root Causes:**
+- Agent forgot to update (process failure)
+- File permission issue (technical failure)
+- Session crashed before update (system failure)
+
+**Corrective Actions:**
+- Document as process non-conformance (P4)
+- Review in next management review
+- Consider automation if recurring
+
+**Problem:** Timestamps in wrong timezone
+
+**Solution:** Always use UTC (ISO 8601 format: `YYYY-MM-DD HH:MM UTC`)
+
+**Problem:** Gist not publishing
+
+**Solution:** Check `scripts/update-status-gist.sh` (if configured), verify git hook
+
+### 5.14 Related Documents
+
+- [Management Review Template](MANAGEMENT-REVIEW-TEMPLATE.md) - Section 6.1 (work-hours)
+- [Issue #60](../../issues/60) - Status gist badge in README
+- [Scratchpad Template](../../.claude/scratchpad-template.md) (if exists)
+- [Quality Objectives](QUALITY-OBJECTIVES.md) - Continuous improvement
+
+### 5.15 Distinction: Mandatory vs. Recommended Updates
+
+**Mandatory (MUST):**
+- Session start
+- Issue completion
+- Session end
+
+**Recommended (SHOULD):**
+- After each commit
+- Every 15 minutes during work
+
+**Optional:**
+- More frequent updates during complex work
+- Detailed progress notes within issues
+
+**Quality Standard:**
+> "Scratchpad staleness must not exceed 15 minutes during active work."
+
+If mandatory updates are performed correctly, this standard is automatically met.
+
+---
+
 ## Procedure Integration
 
 ### Cross-Procedure Dependencies
