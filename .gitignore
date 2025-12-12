@@ -36,6 +36,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.hypothesis/
 
 # Claude Code local settings
 .claude/settings.local.json
