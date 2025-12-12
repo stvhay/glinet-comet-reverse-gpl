@@ -1,6 +1,7 @@
 # GL.iNet Comet GPL Compliance Analysis
 
 [![CI](https://github.com/stvhay/glinet-comet-reverse-gpl/actions/workflows/ci.yml/badge.svg)](https://github.com/stvhay/glinet-comet-reverse-gpl/actions/workflows/ci.yml)
+[![Live Status](https://img.shields.io/badge/status-live%20updates-blue)](https://gist.github.com/stvhay/165f51b518db358f3515610af94e01fb)
 
 **GL.iNet ships GPL-licensed software in their Comet KVM device but has not released the required source code.**
 
