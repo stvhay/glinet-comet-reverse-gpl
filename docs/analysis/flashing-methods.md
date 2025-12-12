@@ -223,22 +223,30 @@ These can be found in:
 
 The GL.iNet firmware uses Rockchip's update image format:
 
-```
-┌─────────────────────────────────────┐
-│ RKAF Header (Rockchip Android FW)   │
-├─────────────────────────────────────┤
-│ Partition 1: uboot (FIT)            │
-├─────────────────────────────────────┤
-│ Partition 2: trust (OP-TEE)         │
-├─────────────────────────────────────┤
-│ Partition 3: boot (Kernel FIT)      │
-├─────────────────────────────────────┤
-│ Partition 4: rootfs (SquashFS)      │
-├─────────────────────────────────────┤
-│ Partition 5: oem (EXT4)             │
-├─────────────────────────────────────┤
-│ Partition 6: userdata (EXT4)        │
-└─────────────────────────────────────┘
+```mermaid
+graph TD
+    Header["RKAF Header<br/>(Rockchip Android FW)"]
+    P1["Partition 1: uboot<br/>(FIT)"]
+    P2["Partition 2: trust<br/>(OP-TEE)"]
+    P3["Partition 3: boot<br/>(Kernel FIT)"]
+    P4["Partition 4: rootfs<br/>(SquashFS)"]
+    P5["Partition 5: oem<br/>(EXT4)"]
+    P6["Partition 6: userdata<br/>(EXT4)"]
+
+    Header --> P1
+    P1 --> P2
+    P2 --> P3
+    P3 --> P4
+    P4 --> P5
+    P5 --> P6
+
+    style Header fill:#e1f5ff
+    style P1 fill:#fff4e1
+    style P2 fill:#fff4e1
+    style P3 fill:#e8f5e9
+    style P4 fill:#e8f5e9
+    style P5 fill:#f3e5f5
+    style P6 fill:#f3e5f5
 ```
 
 ### Parameter File

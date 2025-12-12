@@ -121,21 +121,38 @@ Each includes:
 
 ## Dependencies
 
-```
-Phase 1 (COMPLETE)
-  ↓
-Phase 2.1 (common.sh) ──┐
-                        ├─→ Phase 2.3 (pilot conversion)
-Phase 2.2 (render.sh) ──┘        ↓
-                          Phase 2.4 (orchestrator)
-                                 ↓
-                          Phase 3 (remaining conversions) ──┐
-                                 ↓                          │
-                          Phase 4 (doc conversion) ─────────┤
-                                                            ↓
-                                                     Phase 5 (CI)
-                                                            ↓
-                                                     Phase 6 (cleanup)
+```mermaid
+graph TD
+    P1["Phase 1<br/>(COMPLETE)"]
+    P2_1["Phase 2.1<br/>(common.sh)"]
+    P2_2["Phase 2.2<br/>(render.sh)"]
+    P2_3["Phase 2.3<br/>(pilot conversion)"]
+    P2_4["Phase 2.4<br/>(orchestrator)"]
+    P3["Phase 3<br/>(remaining conversions)"]
+    P4["Phase 4<br/>(doc conversion)"]
+    P5["Phase 5<br/>(CI)"]
+    P6["Phase 6<br/>(cleanup)"]
+
+    P1 --> P2_1
+    P1 --> P2_2
+    P2_1 --> P2_3
+    P2_2 --> P2_3
+    P2_3 --> P2_4
+    P2_4 --> P3
+    P3 --> P4
+    P3 --> P5
+    P4 --> P5
+    P5 --> P6
+
+    style P1 fill:#90EE90
+    style P2_1 fill:#FFE4B5
+    style P2_2 fill:#FFE4B5
+    style P2_3 fill:#FFE4B5
+    style P2_4 fill:#FFE4B5
+    style P3 fill:#E6E6FA
+    style P4 fill:#E6E6FA
+    style P5 fill:#FFB6C1
+    style P6 fill:#FFB6C1
 ```
 
 ## Parallelization Opportunities
