@@ -49,8 +49,8 @@ cat >> "$TEMP_FILE" <<EOF
 _Generated from: \`/tmp/claude-glinet-comet-reversing/scratchpad.md\`_
 EOF
 
-# Update the gist
-gh gist edit "$GIST_ID" "$TEMP_FILE" --filename "claude-status.md" > /dev/null
+# Update the gist (use scratchpad.md filename to match creation)
+gh gist edit "$GIST_ID" "$TEMP_FILE" --filename "scratchpad.md" > /dev/null
 
 rm "$TEMP_FILE"
 
