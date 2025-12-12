@@ -19,34 +19,18 @@ fi
 
 GIST_ID=$(cat "$GIST_ID_FILE")
 
-# Create enhanced status with timestamp
+# Update timestamp in scratchpad and add minimal footer
 TIMESTAMP=$(date '+%Y-%m-%d %I:%M:%S %p %Z')
 TEMP_FILE=$(mktemp)
 
-cat > "$TEMP_FILE" <<EOF
-# GL.iNet Comet Reversing - Live Work Log
+# Copy scratchpad with updated timestamp
+sed "s/^\*\*Last Updated:\*\* .*/**Last Updated:** $TIMESTAMP/" "$SCRATCHPAD" > "$TEMP_FILE"
 
-**Repository:** https://github.com/stvhay/glinet-comet-reverse-gpl
-**Last Updated:** $TIMESTAMP
-**Project:** GL.iNet Comet GPL Compliance Analysis
-**Auto-refresh:** Use browser extension for updates every 30s
-
----
-
-EOF
-
-# Append scratchpad content (skip first line - the header)
-tail -n +2 "$SCRATCHPAD" >> "$TEMP_FILE"
-
-# Add footer
+# Add minimal footer with gist URL
 cat >> "$TEMP_FILE" <<EOF
 
 ---
-
-**Live URL:** https://gist.github.com/$GIST_ID
-**Auto-updated:** This gist updates automatically every 30 seconds during active Claude sessions
-
-_Generated from: \`/tmp/claude-glinet-comet-reversing/scratchpad.md\`_
+_Live URL: https://gist.github.com/${GIST_ID}_
 EOF
 
 # Update the gist (use scratchpad.md filename to match creation)
