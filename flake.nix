@@ -39,11 +39,13 @@
               # Development
               shellcheck
 
-              # Documentation generation
+              # Python and documentation generation
               python311
               python311Packages.jinja2
               python311Packages.tomlkit
               python311Packages.pytest
+              ruff                          # Python linter and formatter
+              python311Packages.mypy        # Type checking
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               # Linux-only tools
               rkdeveloptool
