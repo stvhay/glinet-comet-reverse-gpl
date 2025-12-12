@@ -41,6 +41,15 @@ nix develop
 
 Results go to `output/`. See the **[Wiki](https://github.com/stvhay/glinet-comet-reverse-gpl/wiki)** for detailed usage and analysis reports.
 
+## Contributing
+
+Contributions are welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for:
+- Quick start guide (nix develop, running tests)
+- Black box methodology principles
+- Issue templates and contribution workflow
+- Code quality standards
+- Path to maintainership
+
 ## Quality Management
 
 This project follows an **ISO 9001:2015-aligned quality management system** adapted for AI-assisted open source development. Every finding in this analysis is traceable to automated scripts with documented methodology—ensuring reproducibility and credibility.
