@@ -13,9 +13,11 @@ Guidance for Claude Code when working with this repository.
 This project follows an ISO 9001:2015-aligned quality management system to ensure accuracy, reproducibility, and credibility of analysis results.
 
 **Quality Documentation:**
+- [Quality Policy](docs/quality/QUALITY-POLICY.md) - Commitment to evidence-based analysis and continuous improvement
+- [QMS Scope](docs/quality/QMS-SCOPE.md) - Boundaries and applicability of quality management system
 - [Quality Objectives](docs/quality/QUALITY-OBJECTIVES.md) - Measurable targets for analysis accuracy, test coverage, and continuous improvement
 - [Risk Register](docs/quality/RISK-REGISTER.md) - Identified risks and mitigations (legal, technical, operational)
-- ISO 9001 Gap Analysis: `docs/reports/iso-9001-gap-analysis-2025-12-12.md`
+- [Procedures](docs/quality/PROCEDURES.md) - Core operational procedures (P1-P4)
 
 **Key Quality Principles:**
 1. **100% Reproducibility** - All findings traceable to automated scripts
@@ -23,6 +25,12 @@ This project follows an ISO 9001:2015-aligned quality management system to ensur
 3. **Zero Linting Errors** - Code quality gates prevent broken code
 4. **Evidence-Based** - Every conclusion backed by documented methodology
 5. **Continuous Improvement** - Regular refactoring to reduce technical debt
+
+**Core Procedures:**
+- **P1: Analysis Script Development** - Creating analysis scripts with black box methodology
+- **P2: Documentation Generation** - Rendering Jinja templates from analysis results
+- **P3: Quality Assurance** - Running pytest, shellcheck, and CI/CD validation
+- **P4: Corrective Action** - Addressing non-conformances and root causes
 
 See [Issue Templates](.github/ISSUE_TEMPLATE/) for quality gates enforced during development.
 

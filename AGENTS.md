@@ -15,6 +15,17 @@ Instructions for AI coding agents working on this repository.
 - Anyone running our scripts must reach identical conclusions
 - If you discover something manually, encode it into a script first
 
+## Quality Management
+
+This project uses an ISO 9001:2015-aligned QMS. Follow the documented procedures:
+
+- **P1:** Analysis Script Development - Use issue template, write tests, run quality checks
+- **P2:** Documentation Generation - Render Jinja templates from TOML results
+- **P3:** Quality Assurance - pytest + shellcheck must pass before commit
+- **P4:** Corrective Action - Address failures, document root cause
+
+See [Procedures](docs/quality/PROCEDURES.md) for full workflow details and [Competency Matrix](docs/quality/COMPETENCY-MATRIX.md) for agent-specific requirements.
+
 ## Commands
 
 ```bash
