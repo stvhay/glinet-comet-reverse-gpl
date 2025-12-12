@@ -8,52 +8,24 @@ Standard boot chain for Rockchip RV1126 SoC devices.
 
 ## Boot Sequence
 
-```
-┌─────────────┐
-│  Power On   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  BootROM    │  Rockchip mask ROM (fixed in silicon)
-│  (BROM)     │  - Initializes basic hardware
-└──────┬──────┘  - Loads SPL from eMMC/SD
-       │
-       ▼
-┌─────────────┐
-│  SPL/TPL    │  Secondary Program Loader
-│             │  - DDR memory initialization
-└──────┬──────┘  - Loads U-Boot FIT image
-       │
-       ▼
-┌─────────────┐
-│  OP-TEE     │  Trusted Execution Environment
-│  (tee.bin)  │  - Secure world initialization
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  U-Boot     │  - Hardware initialization
-│             │  - Loads kernel FIT image
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Linux      │  - Main operating system
-│  Kernel     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Initramfs  │  - Early userspace init
-│             │  - Mounts SquashFS root
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  SquashFS   │  Main root filesystem
-│  Rootfs     │  - Read-only
-└─────────────┘
+```mermaid
+graph TD
+    A[Power On] --> B[BootROM<br/>BROM]
+    B -->|Loads SPL| C[SPL/TPL]
+    C -->|Initializes DDR<br/>Loads FIT| D[OP-TEE<br/>tee.bin]
+    D -->|Secure world init| E[U-Boot]
+    E -->|Loads kernel| F[Linux Kernel]
+    F -->|Starts init| G[Initramfs]
+    G -->|Mounts root| H[SquashFS<br/>Rootfs]
+
+    style A fill:#e1f5ff
+    style B fill:#fff3cd
+    style C fill:#fff3cd
+    style D fill:#d4edda
+    style E fill:#fff3cd
+    style F fill:#cce5ff
+    style G fill:#e2e3e5
+    style H fill:#d4edda
 ```
 
 ## Components

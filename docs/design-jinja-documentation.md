@@ -14,18 +14,25 @@ Current documentation workflow violates our black box reverse engineering method
 
 ### Flow
 
-```
-Template (entry point)
-  ↓
-{{ analyze('kernel') }}  ← Jinja calls Python
-  ↓
-Python checks results/kernel.toml
-  ├─ Exists → return cached data
-  └─ Missing → run scripts/analyze_kernel.sh → save to results/ → return data
-  ↓
-Template renders with data
-  ↓
-Generated .md → wiki/
+```mermaid
+graph TD
+    A[Template entry point] --> B["{{ analyze('kernel') }}"]
+    B -->|Jinja calls Python| C{Check results/kernel.toml}
+    C -->|Exists| D[Return cached data]
+    C -->|Missing| E[Run scripts/analyze_kernel.sh]
+    E --> F[Save to results/]
+    F --> D
+    D --> G[Template renders with data]
+    G --> H[Generated .md → wiki/]
+
+    style A fill:#e1f5ff
+    style B fill:#fff3cd
+    style C fill:#ffe5cc
+    style D fill:#d4edda
+    style E fill:#cce5ff
+    style F fill:#cce5ff
+    style G fill:#e2e3e5
+    style H fill:#d4edda
 ```
 
 ### Key Principles

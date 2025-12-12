@@ -8,23 +8,36 @@ Reference documentation for Rockchip secure boot implementation.
 
 ## Security Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Secure Boot Chain                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  BootROM ──► SPL ──► OP-TEE ──► U-Boot ──► Kernel           │
-│     │         │        │          │          │              │
-│     │         │        │          │          │              │
-│     ▼         ▼        ▼          ▼          ▼              │
-│   [HW]    [Signed?] [Signed]  [Signed]   [Signed]           │
-│            FIT       FIT       FIT        FIT               │
-│                                                              │
-│  OTP Memory (ff5c0000):                                     │
-│  ├── Secure boot enable flag (one-time write)               │
-│  └── OEM keys (RSA public key hash?)                        │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    subgraph "Secure Boot Chain"
+        A[BootROM] -->|Hardware Root of Trust| B[SPL]
+        B -->|Signed? FIT| C[OP-TEE]
+        C -->|Signed FIT| D[U-Boot]
+        D -->|Signed FIT| E[Kernel]
+        E -.->|Signed FIT| E
+
+        A -.->|"[HW]"| A
+        B -.->|"[Signed? FIT]"| B
+        C -.->|"[Signed FIT]"| C
+        D -.->|"[Signed FIT]"| D
+    end
+
+    subgraph "OTP Memory (ff5c0000)"
+        F["Secure boot enable flag<br/>(one-time write)"]
+        G["OEM keys<br/>(RSA public key hash?)"]
+    end
+
+    A -.->|Reads| F
+    D -.->|Verifies with| G
+
+    style A fill:#fff3cd
+    style B fill:#ffe5cc
+    style C fill:#d4edda
+    style D fill:#cce5ff
+    style E fill:#cce5ff
+    style F fill:#f8d7da
+    style G fill:#f8d7da
 ```
 
 ## Key Components
