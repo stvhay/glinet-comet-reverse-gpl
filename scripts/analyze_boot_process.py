@@ -17,8 +17,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-from __future__ import annotations
-
 import re
 import subprocess
 import sys
@@ -30,6 +28,7 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.finders import find_files
 from lib.firmware import extract_firmware
 from lib.logging import error, info, section, success
 
@@ -143,10 +142,8 @@ class BootProcessAnalysis(AnalysisBase):
 def find_rootfs(extract_dir: Path) -> Path | None:
     """Find SquashFS rootfs in extractions."""
     # Look for squashfs-root directory
-    for path in extract_dir.rglob("squashfs-root"):
-        if path.is_dir():
-            return path
-    return None
+    found_dirs = find_files(extract_dir, ["squashfs-root"], file_type="dir", first_match_only=True)
+    return found_dirs[0] if found_dirs else None
 
 
 def get_fit_info(dts_file: Path) -> str | None:
@@ -271,7 +268,7 @@ def analyze_boot_process(
 
 def find_largest_dts(extract_dir: Path) -> Path | None:
     """Find the largest DTS file which contains full device tree."""
-    dts_files = list(extract_dir.rglob("system.dtb"))
+    dts_files = find_files(extract_dir, ["system.dtb"], file_type="file")
     if not dts_files:
         return None
 
@@ -306,8 +303,9 @@ def analyze_hardware_properties(
         # Derive architecture from ELF binaries in rootfs
         rootfs = find_rootfs(extract_dir)
         if rootfs:
-            for elf_sample in rootfs.rglob("*"):
-                if elf_sample.is_file() and elf_sample.stat().st_mode & 0o111:
+            all_files = find_files(rootfs, ["*"], file_type="file")
+            for elf_sample in all_files:
+                if elf_sample.stat().st_mode & 0o111:  # Check if executable
                     try:
                         result = subprocess.run(
                             ["file", str(elf_sample)],
@@ -337,7 +335,8 @@ def analyze_boot_components(
 ) -> None:
     """Analyze boot chain components."""
     # Check for OP-TEE
-    tee_found = any(extract_dir.rglob("tee.bin"))
+    tee_files = find_files(extract_dir, ["tee.bin"], file_type="file", first_match_only=True)
+    tee_found = len(tee_files) > 0
     analysis.boot_components.append(
         BootComponent(
             stage="OP-TEE",
@@ -347,7 +346,7 @@ def analyze_boot_components(
     )
 
     # Check for U-Boot
-    uboot_files = list(extract_dir.rglob("u-boot*"))
+    uboot_files = find_files(extract_dir, ["u-boot*"], file_type="file")
     if uboot_files:
         analysis.boot_components.append(
             BootComponent(
@@ -455,7 +454,8 @@ def analyze_component_versions(
     rootfs = find_rootfs(extract_dir)
     kernel_version = "unknown"
     if rootfs:
-        for ko_file in rootfs.rglob("*.ko"):
+        ko_files = find_files(rootfs, ["*.ko"], file_type="file")
+        for ko_file in ko_files:
             try:
                 result = subprocess.run(
                     ["strings", str(ko_file)],
@@ -572,7 +572,7 @@ def analyze_partitions(offsets: dict[str, str | int], analysis: BootProcessAnaly
 
 def analyze_ab_redundancy(extract_dir: Path, analysis: BootProcessAnalysis) -> None:
     """Analyze A/B partition scheme."""
-    bootloader_fits = len(list(extract_dir.rglob("system.dtb")))
+    bootloader_fits = len(find_files(extract_dir, ["system.dtb"], file_type="file"))
 
     if bootloader_fits > MIN_FIT_IMAGES_FOR_AB:
         analysis.ab_redundancy = True
