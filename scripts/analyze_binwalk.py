@@ -107,10 +107,15 @@ class BinwalkAnalysis:
 
     def to_dict(self) -> dict:
         """Convert to dictionary with source metadata."""
+        from dataclasses import fields
+
         result = {}
-        for key, value in self.__dict__.items():
+        for field in fields(self):
+            key = field.name
             if key.startswith("_"):
                 continue
+
+            value = getattr(self, key)
             if value is None:
                 continue
 
@@ -394,7 +399,17 @@ def output_toml(analysis: BinwalkAnalysis) -> str:
         doc.add(key, value)
         doc.add(tomlkit.nl())
 
-    return tomlkit.dumps(doc)
+    # Generate TOML string
+    toml_str = tomlkit.dumps(doc)
+
+    # Validate by parsing it back
+    try:
+        tomlkit.loads(toml_str)
+    except Exception as e:
+        error(f"Generated invalid TOML: {e}")
+        sys.exit(1)
+
+    return toml_str
 
 
 def main() -> None:
@@ -445,7 +460,14 @@ def main() -> None:
 
     # Output in requested format
     if args.format == "json":
-        print(json.dumps(analysis.to_dict(), indent=2))
+        json_str = json.dumps(analysis.to_dict(), indent=2)
+        # Validate by parsing it back
+        try:
+            json.loads(json_str)
+        except Exception as e:
+            error(f"Generated invalid JSON: {e}")
+            sys.exit(1)
+        print(json_str)
     else:  # toml
         print(output_toml(analysis))
 

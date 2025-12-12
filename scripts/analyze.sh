@@ -7,7 +7,7 @@
 # GPL compliance report for the GL.iNet Comet (GL-RM1) firmware.
 #
 # Modules (can also be run individually):
-#   analyze-binwalk.sh         - Firmware structure analysis
+#   analyze_binwalk.py         - Firmware structure analysis
 #   analyze-device-trees.sh    - Device tree extraction
 #   analyze-uboot.sh           - U-Boot bootloader analysis
 #   analyze-boot-process.sh    - Boot chain documentation
@@ -160,7 +160,7 @@ should_run() {
 # Run a Python analysis script that outputs TOML/JSON
 run_python_module() {
     local name="$1"
-    local script="$SCRIPT_DIR/analyze-$name.py"
+    local script="$SCRIPT_DIR/analyze_${name//-/_}.py"
     local result_file="$RESULTS_DIR/$name.toml"
 
     if [[ ! -x "$script" ]]; then

@@ -1,0 +1,5 @@
+warning: unhandled Platform key FamilyDisplayName
+Traceback (most recent call last):
+  File "/Users/hays/Projects/glinet-comet-reversing/scripts/analyze-binwalk.py", line 26, in <module>
+    import tomlkit
+ModuleNotFoundError: No module named 'tomlkit'
