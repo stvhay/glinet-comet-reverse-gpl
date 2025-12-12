@@ -10,11 +10,12 @@ This test suite covers:
 - Integration tests with actual template files
 """
 
-import sys
-from pathlib import Path
-import tempfile
-import shutil
 import json
+import os
+import shutil
+import sys
+import tempfile
+from pathlib import Path
 
 import pytest
 import tomlkit
@@ -25,13 +26,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 from analysis import (
     TrackedValue,
     analyze,
+    atomic_write,
     convert_to_tracked_values,
-    is_cache_valid,
-    update_manifest,
+    hash_analysis_script,
     hash_file,
     hash_firmware,
-    hash_analysis_script,
-    atomic_write,
+    is_cache_valid,
+    update_manifest,
 )
 from render_template import FootnoteRegistry, render_template
 
@@ -291,10 +292,9 @@ class TestAtomicWrite:
         """Test that temp file is cleaned up on error."""
         test_file = tmp_path / "test.txt"
 
-        with pytest.raises(ValueError):
-            with atomic_write(test_file) as f:
-                f.write("Test")
-                raise ValueError("Test error")
+        with pytest.raises(ValueError), atomic_write(test_file) as f:
+            f.write("Test")
+            raise ValueError("Test error")
 
         # Original file should not exist
         assert not test_file.exists()
@@ -507,8 +507,6 @@ class TestTemplateRendering:
         self.test_dir = Path(tempfile.mkdtemp())
         self.orig_cwd = Path.cwd()
 
-        import os
-
         os.chdir(self.test_dir)
 
         # Create test structure
@@ -533,8 +531,6 @@ EOF
 
     def teardown_method(self):
         """Clean up test environment."""
-        import os
-
         os.chdir(self.orig_cwd)
         shutil.rmtree(self.test_dir)
 
@@ -553,8 +549,6 @@ EOF
         template_path.write_text("# Test\nSimple template")
 
         output_path = self.test_dir / "output" / "test.md"
-
-        from analysis import analyze
 
         analyze.cache_clear()
 
@@ -576,8 +570,6 @@ Offset: {{ data.offset | src }}
         )
 
         # Render template
-        from analysis import analyze
-
         analyze.cache_clear()  # Clear cache for clean test
 
         rendered = render_template(template_path)
@@ -619,8 +611,6 @@ Offset: {{ data.offset | src }}
             "{{ render_footnotes() }}"
         )
 
-        from analysis import analyze
-
         analyze.cache_clear()
         result = render_template(template_file)
 
@@ -646,7 +636,7 @@ class TestAnalyzeFunction:
 
         # Create a bash script that outputs JSON
         script_file = scripts_dir / "analyze_test.sh"
-        script_file.write_text('#!/bin/bash\necho \'{"value": 42}\'')
+        script_file.write_text("#!/bin/bash\necho '{\"value\": 42}'")
         script_file.chmod(0o755)
 
         # Clear the cache (analyze uses @lru_cache)
@@ -673,7 +663,7 @@ class TestAnalyzeFunction:
         script_file.chmod(0o755)
 
         analyze.cache_clear()
-        result = analyze("cache_test")
+        analyze("cache_test")
 
         # Check that results were saved
         results_file = results_dir / "cache_test.toml"
@@ -715,7 +705,7 @@ class TestAnalyzeFunction:
         firmware_file.write_bytes(b"firmware")
 
         script_file = scripts_dir / "analyze_cached.sh"
-        script_file.write_text('#!/bin/bash\necho \'{"value": 1}\'')
+        script_file.write_text("#!/bin/bash\necho '{\"value\": 1}'")
         script_file.chmod(0o755)
 
         # Create results file with different value
@@ -787,7 +777,7 @@ Compression: {{ k.compression }}
         # Render template
         analyze.cache_clear()
         output_file = tmp_path / "kernel.md"
-        result = render_template(template_file, output_file)
+        render_template(template_file, output_file)
 
         # Verify output
         assert output_file.exists()

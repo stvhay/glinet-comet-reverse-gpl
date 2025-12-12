@@ -8,17 +8,19 @@ invalidation when firmware or analysis scripts change.
 It also provides TrackedValue for automatic source attribution and footnoting.
 """
 
-from functools import lru_cache
-from pathlib import Path
-from contextlib import contextmanager
-import subprocess
-import json
 import hashlib
-import tomlkit
-from datetime import datetime
-import tempfile
+import importlib.util
+import json
 import os
-from typing import Any, Optional
+import subprocess
+import tempfile
+from contextlib import contextmanager, suppress
+from datetime import datetime
+from functools import cache
+from pathlib import Path
+from typing import Any
+
+import tomlkit
 
 
 class TrackedValue:
@@ -31,7 +33,7 @@ class TrackedValue:
         method: Discovery method (e.g., "binwalk -e firmware.img | grep kernel")
     """
 
-    def __init__(self, value: Any, source: str, method: Optional[str] = None):
+    def __init__(self, value: Any, source: str, method: str | None = None):
         self.value = value
         self.source = source
         self.method = method
@@ -43,6 +45,10 @@ class TrackedValue:
     def __repr__(self):
         """Return detailed representation."""
         return f"TrackedValue({self.value!r}, source={self.source!r}, method={self.method!r})"
+
+    def __hash__(self):
+        """Return hash of the value for use in sets/dicts."""
+        return hash(self.value)
 
     # Support common operations on the wrapped value
     def __eq__(self, other):
@@ -57,7 +63,7 @@ class TrackedValue:
         return float(self.value)
 
 
-@lru_cache(maxsize=None)
+@cache
 def analyze(analysis_type: str) -> dict:
     """
     Main function called from Jinja templates.
@@ -73,8 +79,8 @@ def analyze(analysis_type: str) -> dict:
         Dictionary of analysis results, with values wrapped as TrackedValue
         when they include _source metadata
     """
-    results_file = Path(f'results/{analysis_type}.toml')
-    manifest_file = Path('results/.manifest.toml')
+    results_file = Path(f"results/{analysis_type}.toml")
+    manifest_file = Path("results/.manifest.toml")
 
     # Check if cache is valid
     if is_cache_valid(analysis_type, manifest_file):
@@ -114,15 +120,15 @@ def convert_to_tracked_values(result: dict, analysis_type: str) -> dict:
 
     for key, value in result.items():
         # Skip metadata keys
-        if key.endswith('_source') or key.endswith('_method'):
+        if key.endswith("_source") or key.endswith("_method"):
             continue
 
         # Check for source/method metadata
-        source = result.get(f'{key}_source', analysis_type)
-        method = result.get(f'{key}_method')
+        source = result.get(f"{key}_source", analysis_type)
+        method = result.get(f"{key}_method")
 
         # If we have source/method metadata, create TrackedValue
-        if f'{key}_source' in result or f'{key}_method' in result:
+        if f"{key}_source" in result or f"{key}_method" in result:
             tracked_result[key] = TrackedValue(value, source, method)
         else:
             # Plain value (backward compatible)
@@ -141,7 +147,7 @@ def is_cache_valid(analysis_type: str, manifest_file: Path) -> bool:
     - Firmware hash matches
     - Script hash matches
     """
-    results_file = Path(f'results/{analysis_type}.toml')
+    results_file = Path(f"results/{analysis_type}.toml")
 
     if not results_file.exists() or not manifest_file.exists():
         return False
@@ -156,8 +162,10 @@ def is_cache_valid(analysis_type: str, manifest_file: Path) -> bool:
 
     # Compare with manifest
     cached = manifest[analysis_type]
-    return (cached.get('firmware_hash') == current_fw_hash and
-            cached.get('script_hash') == current_script_hash)
+    return (
+        cached.get("firmware_hash") == current_fw_hash
+        and cached.get("script_hash") == current_script_hash
+    )
 
 
 def update_manifest(analysis_type: str, manifest_file: Path) -> None:
@@ -171,9 +179,9 @@ def update_manifest(analysis_type: str, manifest_file: Path) -> None:
         manifest.add(tomlkit.nl())
 
     manifest[analysis_type] = {
-        'firmware_hash': hash_firmware(),
-        'script_hash': hash_analysis_script(analysis_type),
-        'last_updated': datetime.now().isoformat()
+        "firmware_hash": hash_firmware(),
+        "script_hash": hash_analysis_script(analysis_type),
+        "last_updated": datetime.now().isoformat(),
     }
 
     with atomic_write(manifest_file) as f:
@@ -188,20 +196,15 @@ def run_analysis(analysis_type: str) -> dict:
     then falls back to Python script.
     """
     # Try bash script first (during transition period)
-    bash_script = Path(f'scripts/analyze_{analysis_type}.sh')
+    bash_script = Path(f"scripts/analyze_{analysis_type}.sh")
     if bash_script.exists():
-        output = subprocess.check_output(
-            [bash_script],
-            text=True,
-            cwd=Path.cwd()
-        )
+        output = subprocess.check_output([bash_script], text=True, cwd=Path.cwd())
         return json.loads(output)
 
     # Try Python version
-    py_script = Path(f'scripts/analyze_{analysis_type}.py')
+    py_script = Path(f"scripts/analyze_{analysis_type}.py")
     if py_script.exists():
         # Import and call Python function
-        import importlib.util
         spec = importlib.util.spec_from_file_location(analysis_type, py_script)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -219,7 +222,7 @@ def hash_firmware() -> str:
 
     For POC, uses a dummy file if firmware doesn't exist yet.
     """
-    firmware_path = Path('downloads/firmware.img')
+    firmware_path = Path("downloads/firmware.img")
 
     # For POC: if firmware doesn't exist, return a placeholder
     if not firmware_path.exists():
@@ -230,8 +233,8 @@ def hash_firmware() -> str:
 
 def hash_analysis_script(analysis_type: str) -> str:
     """Calculate hash of analysis script (bash or python)."""
-    for ext in ['.sh', '.py']:
-        script = Path(f'scripts/analyze_{analysis_type}{ext}')
+    for ext in [".sh", ".py"]:
+        script = Path(f"scripts/analyze_{analysis_type}{ext}")
         if script.exists():
             return hash_file(script)
     return "unknown"
@@ -244,8 +247,8 @@ def hash_file(filepath: Path) -> str:
     Returns first 16 characters for brevity.
     """
     sha256 = hashlib.sha256()
-    with open(filepath, 'rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
+    with filepath.open("rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
             sha256.update(chunk)
     return sha256.hexdigest()[:16]
 
@@ -262,26 +265,22 @@ def atomic_write(filepath: Path):  # type: ignore[misc]
 
     # Create temp file in same directory (required for atomic rename)
     tmp_fd, tmp_path = tempfile.mkstemp(
-        dir=filepath.parent,
-        prefix=f'.{filepath.name}.',
-        suffix='.tmp'
+        dir=filepath.parent, prefix=f".{filepath.name}.", suffix=".tmp"
     )
 
     try:
-        with os.fdopen(tmp_fd, 'w') as f:
+        with os.fdopen(tmp_fd, "w") as f:
             yield f
         # Atomic rename (on POSIX systems)
-        os.rename(tmp_path, filepath)
+        Path(tmp_path).rename(filepath)
     except Exception:
         # Clean up temp file on error
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
+        with suppress(OSError):
+            Path(tmp_path).unlink()
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Simple test
     print("Analysis framework loaded successfully")
     print(f"Firmware hash: {hash_firmware()}")

@@ -8,14 +8,20 @@ Usage:
 """
 
 import sys
+import traceback
 from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from markupsafe import Markup
 
 # Add scripts directory to path so we can import analysis
 sys.path.insert(0, str(Path(__file__).parent))
 
-from analysis import analyze, TrackedValue
+from analysis import TrackedValue, analyze
+
+# CLI argument counts
+MIN_ARGS_REQUIRED = 2
+OUTPUT_ARG_INDEX = 2
 
 
 class FootnoteRegistry:
@@ -63,7 +69,7 @@ class FootnoteRegistry:
         return "\n".join(lines)
 
 
-def render_template(template_path: Path, output_path: Path = None) -> str:
+def render_template(template_path: Path, output_path: Path | None = None) -> str:
     """
     Render a Jinja template with analysis functions available.
 
@@ -78,9 +84,9 @@ def render_template(template_path: Path, output_path: Path = None) -> str:
     templates_dir = template_path.parent
     env = Environment(
         loader=FileSystemLoader(templates_dir),
-        autoescape=select_autoescape(['html', 'xml']),
+        autoescape=select_autoescape(["html", "xml"]),
         trim_blocks=True,
-        lstrip_blocks=True
+        lstrip_blocks=True,
     )
 
     # Create footnote registry for this render
@@ -106,9 +112,9 @@ def render_template(template_path: Path, output_path: Path = None) -> str:
         return Markup(footnote_registry.render())
 
     # Make functions available to templates
-    env.globals['analyze'] = analyze
-    env.globals['render_footnotes'] = render_footnotes
-    env.filters['src'] = src_filter
+    env.globals["analyze"] = analyze
+    env.globals["render_footnotes"] = render_footnotes
+    env.filters["src"] = src_filter
 
     # Load and render template
     template = env.get_template(template_path.name)
@@ -127,7 +133,7 @@ def render_template(template_path: Path, output_path: Path = None) -> str:
 
 def main():
     """CLI entry point."""
-    if len(sys.argv) < 2:
+    if len(sys.argv) < MIN_ARGS_REQUIRED:
         print("Usage: render_template.py TEMPLATE [OUTPUT]", file=sys.stderr)
         print("\nExamples:", file=sys.stderr)
         print("  render_template.py templates/test.md.j2", file=sys.stderr)
@@ -139,7 +145,7 @@ def main():
         print(f"Error: Template not found: {template_path}", file=sys.stderr)
         sys.exit(1)
 
-    output_path = Path(sys.argv[2]) if len(sys.argv) > 2 else None
+    output_path = Path(sys.argv[OUTPUT_ARG_INDEX]) if len(sys.argv) > OUTPUT_ARG_INDEX else None
 
     try:
         rendered = render_template(template_path, output_path)
@@ -148,10 +154,9 @@ def main():
             print(rendered)
     except Exception as e:
         print(f"Error rendering template: {e}", file=sys.stderr)
-        import traceback
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

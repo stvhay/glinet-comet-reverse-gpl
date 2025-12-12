@@ -3,14 +3,16 @@
 Tests for scripts/analysis.py
 """
 
-import sys
-from pathlib import Path
-import tempfile
+import os
 import shutil
-import json
+import sys
+import tempfile
+from pathlib import Path
+
+import tomlkit
 
 # Add scripts to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analysis import (
     TrackedValue,
@@ -59,7 +61,7 @@ class TestConvertToTrackedValues:
             "offset_source": "kernel",
             "offset_method": "binwalk -e",
             "size": 1024,
-            "plain_value": "no metadata"
+            "plain_value": "no metadata",
         }
 
         tracked = convert_to_tracked_values(result, "default")
@@ -79,10 +81,7 @@ class TestConvertToTrackedValues:
 
     def test_converts_with_default_source(self):
         """Test that values without _source use analysis_type as default."""
-        result = {
-            "value": 42,
-            "value_method": "echo 42"
-        }
+        result = {"value": 42, "value_method": "echo 42"}
 
         tracked = convert_to_tracked_values(result, "test_analysis")
 
@@ -95,7 +94,7 @@ class TestHashFile:
 
     def test_hash_file(self):
         """Test hashing a file."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
             f.write("test content")
             temp_path = Path(f.name)
 
@@ -125,7 +124,6 @@ class TestCaching:
         self.orig_cwd = Path.cwd()
 
         # Change to test directory
-        import os
         os.chdir(self.test_dir)
 
         # Create test structure
@@ -147,7 +145,6 @@ EOF
 
     def teardown_method(self):
         """Clean up test environment."""
-        import os
         os.chdir(self.orig_cwd)
         shutil.rmtree(self.test_dir)
 
@@ -157,11 +154,10 @@ EOF
         analyze.cache_clear()
 
         # First run - creates cache
-        result1 = analyze("testcache")
+        analyze("testcache")
         manifest_file = Path("results/.manifest.toml")
         assert manifest_file.exists()
 
-        import tomlkit
         manifest1 = tomlkit.load(manifest_file.open())
         hash1 = manifest1["testcache"]["script_hash"]
 
@@ -176,7 +172,7 @@ EOF
         assert not is_cache_valid("testcache", manifest_file)
 
         # Run analysis again - should update cache
-        result2 = analyze("testcache")
+        analyze("testcache")
 
         manifest2 = tomlkit.load(manifest_file.open())
         hash2 = manifest2["testcache"]["script_hash"]
