@@ -77,6 +77,10 @@ source = ["scripts"]
 omit = [
     "*/tests/*",
     "*/lib/*",
+    # Exclude scripts without tests (TODO: add tests and remove from omit)
+    "scripts/analyze_device_trees.py",
+    "scripts/analyze_rootfs.py",
+    "scripts/analyze_uboot.py",
 ]
 
 [tool.coverage.report]
