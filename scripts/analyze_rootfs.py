@@ -105,11 +105,11 @@ class RootfsAnalysis(AnalysisBase):
         """Convert complex fields to serializable format."""
         if key == "kernel_modules":
             return True, [{"name": m.name, "path": m.path, "size": m.size} for m in value]
-        elif key == "shared_libraries":
+        if key == "shared_libraries":
             return True, [
                 {"name": lib.name, "path": lib.path, "size": lib.size} for lib in value
             ]
-        elif key == "gpl_binaries":
+        if key == "gpl_binaries":
             return True, [
                 {
                     "name": b.name,
@@ -119,11 +119,11 @@ class RootfsAnalysis(AnalysisBase):
                 }
                 for b in value
             ]
-        elif key == "license_files":
+        if key == "license_files":
             return True, [
                 {"path": lf.path, "content_preview": lf.content_preview} for lf in value
             ]
-        elif key == "detected_licenses":
+        if key == "detected_licenses":
             return True, [
                 {
                     "component": dl.component,

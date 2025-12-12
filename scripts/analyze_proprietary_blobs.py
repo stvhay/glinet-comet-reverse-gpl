@@ -24,9 +24,8 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.output import output_json, output_toml
-
 from lib.logging import error, info, section, success
+from lib.output import output_json, output_toml
 
 # Constants
 DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"

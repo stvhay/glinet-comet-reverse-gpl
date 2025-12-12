@@ -10,9 +10,9 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_binwalk import (
-    BinwalkAnalysis,
     COMPLEX_FIELDS,
     SIMPLE_FIELDS,
+    BinwalkAnalysis,
     Component,
     _extract_offset_from_lines,
     parse_binwalk_output,

@@ -299,11 +299,6 @@ class TestSecureBootAnalysis:
 
     def test_dataclass_has_slots(self):
         """Test that SecureBootAnalysis uses slots for memory efficiency."""
-        analysis = SecureBootAnalysis(
-            firmware_file="test.img",
-            firmware_size=1024000,
-        )
-
         # Verify it has slots defined
         assert hasattr(SecureBootAnalysis, "__slots__")
 

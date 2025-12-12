@@ -32,6 +32,7 @@ from analyze_proprietary_blobs import (
     has_gpl_string,
     main,
 )
+from lib.output import output_toml
 
 
 class TestLibraryInfo:
@@ -934,8 +935,6 @@ class TestOutputToml:
 
     def test_toml_output_valid(self):
         """Test that TOML output is valid."""
-        from lib.output import output_toml
-
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/squashfs-root",
@@ -954,7 +953,6 @@ class TestOutputToml:
 
     def test_toml_includes_header(self):
         """Test that TOML includes header comments."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -968,7 +966,6 @@ class TestOutputToml:
 
     def test_toml_includes_source_comments(self):
         """Test that TOML includes source metadata as comments."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -983,7 +980,6 @@ class TestOutputToml:
 
     def test_toml_truncates_long_methods(self):
         """Test that long method descriptions are truncated."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1000,7 +996,6 @@ class TestOutputToml:
 
     def test_toml_excludes_metadata_fields(self):
         """Test that _source and _method suffix fields are not in final TOML."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1017,7 +1012,6 @@ class TestOutputToml:
 
     def test_toml_includes_library_arrays(self):
         """Test that library arrays are included in TOML."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1041,7 +1035,6 @@ class TestOutputToml:
 
     def test_toml_includes_string_arrays(self):
         """Test that string arrays (all_rockchip_libs) are included."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1060,7 +1053,6 @@ class TestOutputToml:
 
     def test_toml_validates_output(self):
         """Test that output_toml validates generated TOML by parsing it."""
-        from lib.output import output_toml
 
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1182,9 +1174,8 @@ class TestIntegration:
         assert analysis.binary_analysis is not None
 
         # Verify TOML output
-        from lib.output import output_toml as lib_output_toml
 
-        toml_str = lib_output_toml(
+        toml_str = output_toml(
             analysis,
             title="Test",
             simple_fields=["firmware_file", "rockchip_count"],

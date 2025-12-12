@@ -19,14 +19,12 @@ Arguments:
 """
 
 import argparse
-import json
 import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.logging import error, info, section, success, warn
@@ -473,7 +471,11 @@ def main() -> None:
             sys.exit(1)
     else:  # toml
         try:
-            print(output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS))
+            print(
+                output_toml(
+                    analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+                )
+            )
         except ValueError as e:
             error(str(e))
             sys.exit(1)

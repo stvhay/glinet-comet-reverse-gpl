@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.logging import error, info, section, success, warn
+from lib.logging import error, info, section, success
 from lib.output import output_json, output_toml
 
 # Binwalk output format constants

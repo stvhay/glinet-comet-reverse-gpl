@@ -30,7 +30,6 @@ from analyze_network_services import (
     find_web_frameworks,
     find_web_servers,
 )
-
 from lib.output import output_toml
 
 
@@ -866,7 +865,13 @@ class TestOutputToml:
         toml_str = output_toml(
             analysis,
             title="Test network services",
-            simple_fields=["firmware_file", "firmware_size", "rootfs_path", "web_server_count", "ssh_server_count"],
+            simple_fields=[
+                "firmware_file",
+                "firmware_size",
+                "rootfs_path",
+                "web_server_count",
+                "ssh_server_count",
+            ],
             complex_fields=[],
         )
 

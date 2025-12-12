@@ -18,7 +18,7 @@ TOML_MAX_COMMENT_LENGTH = 80
 TOML_COMMENT_TRUNCATE_LENGTH = 77
 
 
-def output_toml(
+def output_toml(  # noqa: PLR0912
     analysis: Any,
     title: str,
     simple_fields: list[str] | None = None,

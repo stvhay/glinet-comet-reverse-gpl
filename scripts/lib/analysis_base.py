@@ -46,7 +46,7 @@ class AnalysisBase:
         self._source[field_name] = source
         self._method[field_name] = method
 
-    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:  # noqa: ARG002
         """Convert a complex field to a serializable format.
 
         Subclasses should override this to handle their custom field types.

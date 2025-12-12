@@ -108,11 +108,11 @@ class NetworkServicesAnalysis(AnalysisBase):
         """Convert complex fields to serializable format."""
         if key == "init_scripts":
             return True, [{"name": s.name, "size": s.size} for s in value]
-        elif key in ("web_servers", "web_frameworks", "network_services"):
+        if key in ("web_servers", "web_frameworks", "network_services"):
             return True, [
                 {"name": s.name, "path": s.path, "description": s.description} for s in value
             ]
-        elif key == "ssh_server":
+        if key == "ssh_server":
             if value:
                 return True, {
                     "name": value.name,
@@ -120,7 +120,7 @@ class NetworkServicesAnalysis(AnalysisBase):
                     "description": value.description,
                 }
             return True, None
-        elif key == "password_entries":
+        if key == "password_entries":
             return True, [
                 {
                     "username": p.username,

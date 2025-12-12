@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.logging import error, info, section, success, warn
+from lib.logging import error, info, section, success
 from lib.output import output_json, output_toml
 
 # Default firmware URL
@@ -117,16 +117,16 @@ class BootProcessAnalysis(AnalysisBase):
             return True, [
                 {"property": p.property, "value": p.value, "source": p.source} for p in value
             ]
-        elif key == "boot_components":
+        if key == "boot_components":
             return True, [
                 {"stage": c.stage, "found": c.found, "evidence": c.evidence} for c in value
             ]
-        elif key == "component_versions":
+        if key == "component_versions":
             return True, [
                 {"component": v.component, "version": v.version, "source": v.source}
                 for v in value
             ]
-        elif key == "partitions":
+        if key == "partitions":
             return True, [
                 {
                     "region": p.region,
@@ -137,7 +137,7 @@ class BootProcessAnalysis(AnalysisBase):
                 }
                 for p in value
             ]
-        elif key == "console_configs":
+        if key == "console_configs":
             return True, [
                 {"parameter": c.parameter, "value": c.value, "source": c.source} for c in value
             ]
