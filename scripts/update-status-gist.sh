@@ -24,7 +24,7 @@ TIMESTAMP=$(date '+%Y-%m-%d %I:%M:%S %p %Z')
 TEMP_FILE=$(mktemp)
 
 cat > "$TEMP_FILE" <<EOF
-# Claude Code Live Status
+# GL.iNet Comet Reversing - Live Work Log
 
 **Repository:** https://github.com/stvhay/glinet-comet-reverse-gpl
 **Last Updated:** $TIMESTAMP
