@@ -248,7 +248,7 @@ def find_firmware_blobs(rootfs: Path) -> list[FirmwareBlob]:
     Returns:
         List of FirmwareBlob objects
     """
-    blobs = []
+    blobs: list[FirmwareBlob] = []
     firmware_dir = rootfs / "lib" / "firmware"
 
     if not firmware_dir.exists():
