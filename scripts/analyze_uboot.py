@@ -115,32 +115,17 @@ def load_binwalk_offsets(output_dir: Path) -> dict[str, int]:
     return offsets
 
 
-def analyze_uboot(firmware_path: str) -> UBootAnalysis:  # noqa: PLR0912, PLR0915
+def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noqa: PLR0912, PLR0915
     """Analyze U-Boot bootloader in firmware and return structured results."""
     firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing U-Boot in: {firmware}")
-
-    # Get firmware size
-    firmware_size = firmware.stat().st_size
 
     # Create analysis object
     analysis = UBootAnalysis(
         firmware_file=firmware.name,
-        firmware_size=firmware_size,
+        firmware_size=firmware.stat().st_size,
     )
-
     analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
     analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
-
-    # Determine paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_dir = project_root / "output"
 
     # Load offsets from binwalk analysis
     offsets = load_binwalk_offsets(output_dir)
@@ -364,7 +349,7 @@ class UBootScript(AnalysisScript):
         Returns:
             UBootAnalysis results
         """
-        return analyze_uboot(firmware_path)
+        return analyze_uboot(firmware_path, self.output_dir)
 
     def post_process(self, analysis: AnalysisBase) -> None:
         """Generate legacy markdown file.
@@ -372,12 +357,8 @@ class UBootScript(AnalysisScript):
         Args:
             analysis: Completed U-Boot analysis
         """
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        output_dir = project_root / "output"
-
         if isinstance(analysis, UBootAnalysis):
-            write_legacy_markdown(analysis, output_dir)
+            write_legacy_markdown(analysis, self.output_dir)
 
 
 if __name__ == "__main__":

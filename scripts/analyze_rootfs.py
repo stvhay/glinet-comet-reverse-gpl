@@ -15,7 +15,6 @@ This script performs GPL compliance analysis by:
 """
 
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -27,11 +26,8 @@ from lib.finders import (
     get_file_size,
     get_relative_path,
 )
-from lib.firmware import (
-    extract_firmware,
-    find_squashfs_rootfs,
-)
-from lib.logging import error, info, section, warn
+from lib.firmware import find_squashfs_rootfs  # Re-exported for tests
+from lib.logging import section, warn
 
 # Constants
 MAX_LICENSE_FILE_SIZE = 100000
@@ -420,23 +416,9 @@ def detect_library_licenses(rootfs: Path, analysis: RootfsAnalysis) -> None:
     analysis.detected_licenses = detected  # Already sorted by dict iteration order
 
 
-def analyze_rootfs(firmware_path: str, work_dir: Path) -> RootfsAnalysis:
+def analyze_rootfs(firmware_path: str, rootfs: Path) -> RootfsAnalysis:
     """Analyze root filesystem and return structured results."""
     firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing rootfs in: {firmware}")
-
-    # Extract firmware
-    section("Extracting Firmware")
-    extract_dir = extract_firmware(firmware, work_dir)
-
-    # Find rootfs
-    section("Finding SquashFS Rootfs")
-    rootfs = find_squashfs_rootfs(extract_dir)
 
     # Create analysis object
     analysis = RootfsAnalysis(
@@ -517,7 +499,9 @@ class RootfsScript(AnalysisScript):
         Returns:
             RootfsAnalysis results
         """
-        return analyze_rootfs(firmware_path, self.work_dir)
+        # Extract firmware and find rootfs
+        _, rootfs = self.initialize_extraction(firmware_path)
+        return analyze_rootfs(firmware_path, rootfs)
 
 
 if __name__ == "__main__":
