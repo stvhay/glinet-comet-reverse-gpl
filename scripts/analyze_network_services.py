@@ -17,8 +17,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -27,6 +25,12 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.finders import (
+    find_by_names,
+    find_files,
+    get_file_size,
+    get_relative_path,
+)
 from lib.firmware import (
     extract_firmware,
     find_squashfs_rootfs,
@@ -138,34 +142,28 @@ def find_init_scripts(rootfs: Path) -> list[InitScript]:
     if not init_d.exists():
         return []
 
-    scripts = []
-    for script in init_d.iterdir():
-        if script.is_file():
-            scripts.append(InitScript(name=script.name, size=script.stat().st_size))
+    # Find all files in init.d
+    found_paths = find_files(init_d, ["*"], file_type="file")
 
-    return sorted(scripts, key=lambda s: s.name)
+    # Convert to InitScript objects (already sorted by find_files)
+    return [InitScript(name=path.name, size=get_file_size(path)) for path in found_paths]
 
 
 def find_systemd_services(rootfs: Path) -> list[str]:
     """Find systemd service files."""
-    services = []
-
     # Check for systemd directories
     systemd_dirs = [rootfs / "etc" / "systemd", rootfs / "lib" / "systemd"]
     if not any(d.exists() for d in systemd_dirs):
         return []
 
     # Find all .service files
-    for service_file in rootfs.rglob("*.service"):
-        if service_file.is_file():
-            services.append(str(service_file.relative_to(rootfs)))
+    found_paths = find_files(rootfs, ["*.service"], file_type="file")
 
-    return sorted(services)
+    return [get_relative_path(rootfs, path).lstrip("/") for path in found_paths]
 
 
 def find_web_servers(rootfs: Path) -> list[ServiceBinary]:
     """Find web server binaries."""
-    web_servers = []
     server_names = {
         "nginx": "Nginx web server",
         "lighttpd": "Lighttpd web server",
@@ -175,70 +173,57 @@ def find_web_servers(rootfs: Path) -> list[ServiceBinary]:
         "gunicorn": "Gunicorn WSGI server",
     }
 
-    for server_name, description in server_names.items():
-        for binary in rootfs.rglob(f"{server_name}*"):
-            if binary.is_file():
-                web_servers.append(
-                    ServiceBinary(
-                        name=server_name,
-                        path=str(binary.relative_to(rootfs)),
-                        description=description,
-                    )
-                )
-                break  # Only take first match
+    found_binaries = find_by_names(rootfs, server_names, file_type="file")
 
-    return web_servers
+    return [
+        ServiceBinary(
+            name=name,
+            path=get_relative_path(rootfs, path).lstrip("/"),
+            description=server_names[name],
+        )
+        for name, path in found_binaries.items()
+        if path is not None
+    ]
 
 
 def find_web_frameworks(rootfs: Path) -> list[ServiceBinary]:
     """Find Python web frameworks."""
+    framework_patterns = {
+        "site-packages/aiohttp*": ("aiohttp", "Async HTTP framework"),
+        "site-packages/uvicorn*": ("uvicorn", "ASGI server"),
+    }
+
     frameworks = []
-
-    # Check for aiohttp
-    for aiohttp_dir in rootfs.rglob("site-packages/aiohttp*"):
-        if aiohttp_dir.is_dir():
+    for pattern, (name, description) in framework_patterns.items():
+        found = find_files(rootfs, [pattern], file_type="dir", first_match_only=True)
+        if found:
             frameworks.append(
                 ServiceBinary(
-                    name="aiohttp",
+                    name=name,
                     path="Python package",
-                    description="Async HTTP framework",
+                    description=description,
                 )
             )
-            break
-
-    # Check for uvicorn
-    for uvicorn_dir in rootfs.rglob("site-packages/uvicorn*"):
-        if uvicorn_dir.is_dir():
-            frameworks.append(
-                ServiceBinary(
-                    name="uvicorn",
-                    path="Python package",
-                    description="ASGI server",
-                )
-            )
-            break
 
     return frameworks
 
 
 def find_ssh_server(rootfs: Path) -> ServiceBinary | None:
     """Find SSH server (OpenSSH or Dropbear)."""
-    # Check for OpenSSH sshd
-    for sshd in rootfs.rglob("sshd"):
-        if sshd.is_file():
-            return ServiceBinary(
-                name="sshd",
-                path=str(sshd.relative_to(rootfs)),
-                description="OpenSSH server",
-            )
+    ssh_servers = {
+        "sshd": "OpenSSH server",
+        "dropbear": "Dropbear SSH server",
+    }
 
-    # Check for Dropbear
-    for dropbear in rootfs.rglob("dropbear"):
-        if dropbear.is_file():
+    found_servers = find_by_names(rootfs, ssh_servers, file_type="file")
+
+    # Return first found server (sshd takes priority)
+    for name, path in found_servers.items():
+        if path is not None:
             return ServiceBinary(
-                name="dropbear",
-                path=str(dropbear.relative_to(rootfs)),
-                description="Dropbear SSH server",
+                name=name,
+                path=get_relative_path(rootfs, path).lstrip("/"),
+                description=ssh_servers[name],
             )
 
     return None
@@ -246,7 +231,6 @@ def find_ssh_server(rootfs: Path) -> ServiceBinary | None:
 
 def find_network_services(rootfs: Path) -> list[ServiceBinary]:
     """Find other network service binaries."""
-    services = []
     service_names = {
         "avahi-daemon": "mDNS/Bonjour",
         "dnsmasq": "DNS/DHCP",
@@ -263,19 +247,17 @@ def find_network_services(rootfs: Path) -> list[ServiceBinary]:
         "janus": "WebRTC gateway",
     }
 
-    for service_name, description in service_names.items():
-        for binary in rootfs.rglob(service_name):
-            if binary.is_file():
-                services.append(
-                    ServiceBinary(
-                        name=service_name,
-                        path=str(binary.relative_to(rootfs)),
-                        description=description,
-                    )
-                )
-                break  # Only take first match
+    found_services = find_by_names(rootfs, service_names, file_type="file")
 
-    return services
+    return [
+        ServiceBinary(
+            name=name,
+            path=get_relative_path(rootfs, path).lstrip("/"),
+            description=service_names[name],
+        )
+        for name, path in found_services.items()
+        if path is not None
+    ]
 
 
 def _classify_password_hash(password_hash: str) -> tuple[str, str]:
