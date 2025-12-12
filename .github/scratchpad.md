@@ -1,7 +1,7 @@
 # Work Status: [GL.iNet Comet Reversing](https://github.com/stvhay/glinet-comet-reverse-gpl)
 
-**Last Updated:** 2025-12-13 00:40 UTC
-**Current Work:** Issue #31 - BaseScript enhancement (Commit 1: base class enhancements - adding unit tests)
+**Last Updated:** 2025-12-13 01:00 UTC
+**Current Work:** Issue #31 - BaseScript enhancement (refactoring scripts 4/8 complete, ~60 lines saved)
 
 ## Recent Completions (This Session)
 
@@ -23,15 +23,17 @@
 ## Open Work
 
 ### Issue #31 - BaseScript Enhancement (IN PROGRESS)
-**Status:** Commit 1 implementation - adding unit tests
+**Status:** Script refactoring - 4/8 complete (~60 lines saved)
 **Progress:**
-- ✅ Added 6 helper methods to base_script.py (output_dir, initialize_analysis, initialize_extraction, load_offsets, format_count_message, write_legacy_file)
-- ✅ Added set_count_with_metadata() to analysis_base.py
-- ✅ Added 4 helpers to lib/firmware.py (offset_to_dir_name, find_extracted_file, find_largest_dtb, extract_device_tree_node)
-- ✅ Added extract_strings_from_file() to lib/extraction.py
-- 🔄 Writing unit tests for new helpers
-- ⏳ Next: Run pytest, commit base class enhancements
-- ⏳ Next: Refactor 8 analysis scripts to use new helpers
+- ✅ Commit 1: Added 11 helper methods to base classes (348 lines added)
+- ✅ Commit 2a: Refactored analyze_binwalk.py (-8 lines)
+- ✅ Commit 2a: Refactored analyze_device_trees.py (-15 lines)
+- ✅ Commit 2b: Refactored analyze_uboot.py (-17 lines)
+- ✅ Commit 2b: Refactored analyze_rootfs.py (-20 lines)
+- 🔄 In progress: Refactoring remaining 4 scripts
+- ⏳ Next: analyze_proprietary_blobs.py, analyze_network_services.py
+- ⏳ Next: analyze_secure_boot.py, analyze_boot_process.py
+- ⏳ Next: Final commit, update scratchpad, close issue
 
 ### Epic #30 - Codebase Refactoring 2025 ⭐
 **Status:** IN PROGRESS (Issue #31 started)
