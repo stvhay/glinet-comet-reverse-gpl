@@ -1,7 +1,5 @@
 """Tests for scripts/analyze_secure_boot.py."""
 
-from __future__ import annotations
-
 import gzip
 import io
 import json
@@ -25,12 +23,11 @@ from analyze_secure_boot import (
     extract_device_tree_node,
     extract_firmware,
     extract_fit_signature,
-    extract_gzip_strings,
-    filter_strings,
     find_dtb_file,
     find_largest_dtb,
     load_offsets,
 )
+from lib.extraction import extract_gzip_at_offset, extract_strings, filter_strings
 from lib.output import output_toml
 
 
@@ -617,7 +614,9 @@ class TestExtractGzipStrings:
         # Write some padding then compressed data
         firmware.write_bytes(b"\x00" * 1024 + compressed_data)
 
-        result = extract_gzip_strings(firmware, 1024, len(compressed_data))
+        # Extract and decompress
+        data = extract_gzip_at_offset(firmware, 1024, len(compressed_data), use_dd=False)
+        result = extract_strings(data) if data else []
 
         assert "U-Boot 2023.07" in result
         assert "verified signature" in result
@@ -632,7 +631,9 @@ class TestExtractGzipStrings:
         compressed_data = gzip.compress(original_data)
         firmware.write_bytes(compressed_data)
 
-        result = extract_gzip_strings(firmware, 0, len(compressed_data))
+        # Extract and decompress
+        data = extract_gzip_at_offset(firmware, 0, len(compressed_data), use_dd=False)
+        result = extract_strings(data) if data else []
 
         # Only strings >= MIN_STRING_LENGTH (4) should be included
         assert "abcd" in result
@@ -649,7 +650,9 @@ class TestExtractGzipStrings:
         compressed_data = gzip.compress(original_data)
         firmware.write_bytes(compressed_data)
 
-        result = extract_gzip_strings(firmware, 0, len(compressed_data))
+        # Extract and decompress
+        data = extract_gzip_at_offset(firmware, 0, len(compressed_data), use_dd=False)
+        result = extract_strings(data) if data else []
 
         assert "U-Boot" in result
         assert "test" in result
@@ -659,7 +662,9 @@ class TestExtractGzipStrings:
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"not gzip data" * 100)
 
-        result = extract_gzip_strings(firmware, 0, 100)
+        # Extract should fail
+        data = extract_gzip_at_offset(firmware, 0, 100, use_dd=False)
+        result = extract_strings(data) if data else []
 
         assert result == []
 
@@ -669,7 +674,9 @@ class TestExtractGzipStrings:
         compressed_data = gzip.compress(b"")
         firmware.write_bytes(compressed_data)
 
-        result = extract_gzip_strings(firmware, 0, len(compressed_data))
+        # Extract and decompress
+        data = extract_gzip_at_offset(firmware, 0, len(compressed_data), use_dd=False)
+        result = extract_strings(data) if data else []
 
         assert result == []
 
@@ -683,7 +690,8 @@ class TestExtractGzipStrings:
         firmware.write_bytes(compressed_data)
 
         # Read full compressed data - should extract all strings
-        result = extract_gzip_strings(firmware, 0, len(compressed_data))
+        data = extract_gzip_at_offset(firmware, 0, len(compressed_data), use_dd=False)
+        result = extract_strings(data) if data else []
 
         # Should extract all 1000 occurrences of "test string"
         assert len(result) == 1000
@@ -703,7 +711,7 @@ class TestFilterStrings:
         ]
         patterns = [r"verified"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert result == ["verified boot"]
 
@@ -717,7 +725,7 @@ class TestFilterStrings:
         ]
         patterns = [r"verified", r"signature", r"secure.*boot"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert "verified boot" in result
         assert "signature check" in result
@@ -733,7 +741,7 @@ class TestFilterStrings:
         ]
         patterns = [r"verified", r"signature"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert "VERIFIED BOOT" in result
         assert "Signature Check" in result
@@ -748,7 +756,7 @@ class TestFilterStrings:
         ]
         patterns = [r"^boot"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert len(result) == 3
         assert "test=value" not in result
@@ -758,7 +766,7 @@ class TestFilterStrings:
         strings = ["test1", "test2", "test3"]
         patterns = []
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert result == []
 
@@ -767,7 +775,7 @@ class TestFilterStrings:
         strings = ["test1", "test2", "test3"]
         patterns = [r"notfound"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert result == []
 
@@ -776,7 +784,7 @@ class TestFilterStrings:
         strings = ["verified", "signature", "verified", "signature"]
         patterns = [r"verified", r"signature"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert len(result) == 2
         assert "verified" in result
@@ -787,7 +795,7 @@ class TestFilterStrings:
         strings = ["zzz", "aaa", "mmm"]
         patterns = [r".*"]
 
-        result = filter_strings(strings, patterns)
+        result = filter_strings(strings, regex_patterns=patterns)
 
         assert result == ["aaa", "mmm", "zzz"]
 

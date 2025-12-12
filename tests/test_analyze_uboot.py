@@ -1,7 +1,5 @@
 """Tests for scripts/analyze_uboot.py."""
 
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 
@@ -15,9 +13,9 @@ from analyze_uboot import (
     COMPLEX_FIELDS,
     SIMPLE_FIELDS,
     UBootAnalysis,
-    extract_strings_from_data,
     load_binwalk_offsets,
 )
+from lib.extraction import extract_strings
 from lib.output import TOML_COMMENT_TRUNCATE_LENGTH, TOML_MAX_COMMENT_LENGTH, output_toml
 
 
@@ -151,19 +149,19 @@ class TestUBootAnalysis:
         assert hasattr(UBootAnalysis, "__slots__")
 
 
-class TestExtractStringsFromData:
-    """Test extract_strings_from_data function."""
+class TestExtractStrings:
+    """Test extract_strings function."""
 
     def test_extract_empty_data(self):
         """Test extracting strings from empty data."""
         data = b""
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
         assert result == []
 
     def test_extract_single_string(self):
         """Test extracting a single string."""
         data = b"U-Boot 2023.07\x00"
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert len(result) == 1
         assert result[0] == "U-Boot 2023.07"
@@ -171,7 +169,7 @@ class TestExtractStringsFromData:
     def test_extract_multiple_strings(self):
         """Test extracting multiple strings."""
         data = b"U-Boot\x00version\x00test\x00"
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert len(result) == 3
         assert "U-Boot" in result
@@ -182,7 +180,7 @@ class TestExtractStringsFromData:
         """Test that strings below minimum length are excluded."""
         # Default MIN_STRING_LENGTH is 4
         data = b"abc\x00abcd\x00ab\x00"
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         # Only "abcd" should be included (length >= 4)
         assert result == ["abcd"]
@@ -191,14 +189,14 @@ class TestExtractStringsFromData:
         """Test that only printable ASCII characters are extracted."""
         # Include non-printable characters (0x01, 0x1F)
         data = b"\x01\x1fU-Boot\x00"
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert result == ["U-Boot"]
 
     def test_extract_with_mixed_content(self):
         """Test extracting strings from mixed binary/text data."""
         data = b"\xff\xfe\x00\x01U-Boot 2023.07\x00\x80\x81build date\x00\xff"
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert "U-Boot 2023.07" in result
         assert "build date" in result
@@ -206,7 +204,7 @@ class TestExtractStringsFromData:
     def test_extract_last_string_without_terminator(self):
         """Test that the last string is captured even without null terminator."""
         data = b"U-Boot 2023.07"  # No null terminator
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert result == ["U-Boot 2023.07"]
 
@@ -214,7 +212,7 @@ class TestExtractStringsFromData:
         """Test extracting a long string."""
         long_text = "A" * 1000
         data = long_text.encode("ascii")
-        result = extract_strings_from_data(data)
+        result = extract_strings(data)
 
         assert len(result) == 1
         assert result[0] == long_text

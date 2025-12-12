@@ -27,15 +27,11 @@ from pathlib import Path
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.extraction import extract_gzip_at_offset, extract_strings
 from lib.logging import error, info, section, success, warn
 
 # U-Boot extraction constants
 UBOOT_EXTRACT_SIZE = 500000  # Read 500KB to capture full gzip stream
-
-# String extraction constants
-MIN_STRING_LENGTH = 4  # Minimum length for extracted strings (matching GNU strings default)
-ASCII_PRINTABLE_START = 32  # Space character
-ASCII_PRINTABLE_END = 126  # Tilde character
 
 # Field lists for TOML output
 SIMPLE_FIELDS = [
@@ -90,73 +86,7 @@ def run_strings(firmware: Path) -> str:
         sys.exit(1)
 
 
-def extract_gzip_at_offset(firmware: Path, offset: int, size: int) -> bytes | None:
-    """Extract and decompress gzip data at a specific offset.
-
-    Uses dd and gunzip like the bash script to handle embedded gzip properly.
-    """
-    try:
-        # Use dd to extract data at offset, pipe to gunzip
-        # This matches the bash script's approach which handles embedded gzip correctly
-        dd_cmd = [
-            "dd",
-            f"if={firmware}",
-            "bs=1",
-            f"skip={offset}",
-            f"count={size}",
-        ]
-
-        gunzip_cmd = ["gunzip"]
-
-        # Run dd | gunzip pipeline
-        dd_proc = subprocess.Popen(
-            dd_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        gunzip_proc = subprocess.Popen(
-            gunzip_cmd,
-            stdin=dd_proc.stdout,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-
-        # Close dd's stdout to allow it to receive SIGPIPE if gunzip exits
-        if dd_proc.stdout:
-            dd_proc.stdout.close()
-
-        # Get decompressed output
-        decompressed_data, _ = gunzip_proc.communicate()
-
-        # Wait for both processes
-        dd_proc.wait()
-
-        return decompressed_data if decompressed_data else None
-
-    except Exception as e:
-        warn(f"Failed to decompress gzip at offset {hex(offset)}: {e}")
-        return None
-
-
-def extract_strings_from_data(data: bytes) -> list[str]:
-    """Extract printable strings from binary data."""
-    # Use strings command behavior: minimum length, printable ASCII
-    result = []
-    current = []
-
-    for byte in data:
-        if ASCII_PRINTABLE_START <= byte <= ASCII_PRINTABLE_END:
-            current.append(chr(byte))
-        else:
-            if len(current) >= MIN_STRING_LENGTH:
-                result.append("".join(current))
-            current = []
-
-    # Don't forget the last string
-    if len(current) >= MIN_STRING_LENGTH:
-        result.append("".join(current))
-
-    return result
+# extract_gzip_at_offset and extract_strings_from_data are now imported from lib.extraction
 
 
 def load_binwalk_offsets(output_dir: Path) -> dict[str, int]:
@@ -245,7 +175,7 @@ def analyze_uboot(firmware_path: str) -> UBootAnalysis:  # noqa: PLR0912, PLR091
         decompressed_data = extract_gzip_at_offset(firmware, offset_dec, UBOOT_EXTRACT_SIZE)
 
         if decompressed_data:
-            uboot_strings = extract_strings_from_data(decompressed_data)
+            uboot_strings = extract_strings(decompressed_data)
 
             # Find version string
             for string in uboot_strings:

@@ -14,9 +14,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-from __future__ import annotations
-
-import gzip
 import re
 import subprocess
 import sys
@@ -26,12 +23,8 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.extraction import extract_gzip_at_offset, extract_strings, filter_strings
 from lib.logging import error, info, section
-
-# String extraction constants
-MIN_STRING_LENGTH = 4
-ASCII_PRINTABLE_MIN = 32
-ASCII_PRINTABLE_MAX = 126
 
 
 @dataclass(frozen=True, slots=True)
@@ -239,65 +232,7 @@ def extract_fit_signature(dtb_file: Path, image_type: str) -> FITSignature | Non
     return None
 
 
-def extract_gzip_strings(firmware: Path, offset_dec: int, max_bytes: int) -> list[str]:
-    """Extract strings from gzip-compressed data in firmware.
-
-    Args:
-        firmware: Path to firmware file
-        offset_dec: Decimal offset to start reading
-        max_bytes: Maximum bytes to read
-
-    Returns:
-        List of strings found in decompressed data
-    """
-    try:
-        # Read compressed data
-        with firmware.open("rb") as f:
-            f.seek(offset_dec)
-            compressed_data = f.read(max_bytes)
-
-        # Decompress
-        decompressed = gzip.decompress(compressed_data)
-
-        # Extract strings (printable ASCII, min length MIN_STRING_LENGTH)
-        strings = []
-        current = []
-        for byte in decompressed:
-            if ASCII_PRINTABLE_MIN <= byte <= ASCII_PRINTABLE_MAX:  # Printable ASCII
-                current.append(chr(byte))
-            elif current:
-                if len(current) >= MIN_STRING_LENGTH:
-                    strings.append("".join(current))
-                current = []
-
-        # Don't forget last string
-        if current and len(current) >= MIN_STRING_LENGTH:
-            strings.append("".join(current))
-
-        return strings
-    except (OSError, gzip.BadGzipFile):
-        return []
-
-
-def filter_strings(strings: list[str], patterns: list[str]) -> list[str]:
-    """Filter strings by multiple regex patterns.
-
-    Args:
-        strings: List of strings to filter
-        patterns: List of regex patterns (ORed together)
-
-    Returns:
-        Sorted unique list of matching strings
-    """
-    if not patterns:
-        return []
-
-    # Combine patterns with OR
-    combined_pattern = "|".join(f"({p})" for p in patterns)
-    regex = re.compile(combined_pattern, re.IGNORECASE)
-
-    matches = [s for s in strings if regex.search(s)]
-    return sorted(set(matches))
+# extract_gzip_at_offset, extract_strings, and filter_strings are now imported from lib.extraction
 
 
 def extract_device_tree_node(
@@ -423,7 +358,9 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     section("Analyzing U-Boot verification strings")
 
     if uboot_offset_dec := offsets.get("UBOOT_GZ_OFFSET_DEC"):
-        uboot_strings = extract_gzip_strings(firmware, uboot_offset_dec, 500000)
+        # Extract and decompress U-Boot gzip data
+        uboot_data = extract_gzip_at_offset(firmware, uboot_offset_dec, 500000, use_dd=False)
+        uboot_strings = extract_strings(uboot_data) if uboot_data else []
 
         # Filter for verification-related strings
         verification_patterns = [
@@ -434,9 +371,9 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
             r"required",
             r"rsa.*verify",
         ]
-        analysis.uboot_verification_strings = filter_strings(uboot_strings, verification_patterns)[
-            :30
-        ]
+        analysis.uboot_verification_strings = filter_strings(
+            uboot_strings, regex_patterns=verification_patterns
+        )[:30]
 
         if analysis.uboot_verification_strings:
             analysis.add_metadata(
@@ -455,7 +392,7 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
             r"Can't read verified-boot",
             r"CONFIG_FIT_SIGNATURE",
         ]
-        analysis.uboot_key_findings = filter_strings(uboot_strings, key_patterns)
+        analysis.uboot_key_findings = filter_strings(uboot_strings, regex_patterns=key_patterns)
 
         if analysis.uboot_key_findings:
             analysis.add_metadata(
@@ -471,7 +408,9 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     section("Analyzing OP-TEE secure boot strings")
 
     if optee_offset_dec := offsets.get("OPTEE_GZ_OFFSET_DEC"):
-        optee_strings = extract_gzip_strings(firmware, optee_offset_dec, 300000)
+        # Extract and decompress OP-TEE gzip data
+        optee_data = extract_gzip_at_offset(firmware, optee_offset_dec, 300000, use_dd=False)
+        optee_strings = extract_strings(optee_data) if optee_data else []
 
         # Filter for secure boot related strings
         secure_boot_patterns = [
@@ -481,9 +420,9 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
             r"key.*index",
             r"enable.*flag",
         ]
-        analysis.optee_secure_boot_strings = filter_strings(optee_strings, secure_boot_patterns)[
-            :30
-        ]
+        analysis.optee_secure_boot_strings = filter_strings(
+            optee_strings, regex_patterns=secure_boot_patterns
+        )[:30]
 
         if analysis.optee_secure_boot_strings:
             analysis.add_metadata(
