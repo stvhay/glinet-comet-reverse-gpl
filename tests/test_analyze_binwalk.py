@@ -11,11 +11,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_binwalk import (
     BinwalkAnalysis,
+    COMPLEX_FIELDS,
+    SIMPLE_FIELDS,
     Component,
     _extract_offset_from_lines,
-    output_toml,
     parse_binwalk_output,
 )
+from lib.output import output_toml
 
 
 class TestComponent:
@@ -247,7 +249,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "test", "test method")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -259,7 +266,12 @@ class TestOutputToml:
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "stat", "stat -f%z test.img")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Source: stat" in toml_str
         assert "# Method: stat -f%z test.img" in toml_str
@@ -270,7 +282,12 @@ class TestOutputToml:
         long_method = "x" * 100  # 100 characters
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -281,7 +298,12 @@ class TestOutputToml:
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         # bootloader_fit_offset is None by default
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "bootloader_fit_offset" not in toml_str
 
@@ -293,7 +315,12 @@ class TestOutputToml:
             Component(offset="0x200", type="Device", description="DTB"),
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["identified_components"]) == 2

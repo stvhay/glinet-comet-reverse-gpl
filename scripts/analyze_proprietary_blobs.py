@@ -16,59 +16,21 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-from __future__ import annotations
-
 import argparse
-import json
 import subprocess
 import sys
-from dataclasses import dataclass, field, fields
-from datetime import UTC, datetime
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
-import tomlkit
+from lib.analysis_base import AnalysisBase
+from lib.output import output_json, output_toml
 
-# Color codes for stderr logging
-GREEN = "\033[0;32m"
-YELLOW = "\033[1;33m"
-RED = "\033[0;31m"
-BLUE = "\033[0;34m"
-NC = "\033[0m"  # No Color
+from lib.logging import error, info, section, success
 
-# Default firmware URL
+# Constants
 DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-
-# TOML formatting constants
-TOML_MAX_COMMENT_LENGTH = 80
-TOML_COMMENT_TRUNCATE_LENGTH = 77
-
-# Binary analysis constants
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
-
-
-def info(msg: str) -> None:
-    """Log info message to stderr."""
-    print(f"{GREEN}[INFO]{NC} {msg}", file=sys.stderr)
-
-
-def warn(msg: str) -> None:
-    """Log warning message to stderr."""
-    print(f"{YELLOW}[WARN]{NC} {msg}", file=sys.stderr)
-
-
-def error(msg: str) -> None:
-    """Log error message to stderr."""
-    print(f"{RED}[ERROR]{NC} {msg}", file=sys.stderr)
-
-
-def success(msg: str) -> None:
-    """Log success message to stderr."""
-    print(f"{GREEN}[OK]{NC} {msg}", file=sys.stderr)
-
-
-def section(msg: str) -> None:
-    """Log section header to stderr."""
-    print(f"\n{BLUE}=== {msg} ==={NC}", file=sys.stderr)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,7 +72,7 @@ class BinaryAnalysis:
 
 
 @dataclass(slots=True)
-class ProprietaryBlobsAnalysis:
+class ProprietaryBlobsAnalysis(AnalysisBase):
     """Results of proprietary blobs analysis."""
 
     firmware_file: str
@@ -140,70 +102,39 @@ class ProprietaryBlobsAnalysis:
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
 
-    def add_metadata(self, field_name: str, source: str, method: str) -> None:
-        """Add source metadata for a field."""
-        self._source[field_name] = source
-        self._method[field_name] = method
-
-    def to_dict(self) -> dict:
-        """Convert to dictionary with source metadata."""
-        result = {}
-
-        for fld in fields(self):
-            key = fld.name
-            if key.startswith("_"):
-                continue
-
-            value = getattr(self, key)
-            if value is None:
-                continue
-
-            # Convert lists of dataclass objects to dicts
-            if key in {
-                "mpp_libraries",
-                "rga_libraries",
-                "isp_libraries",
-                "npu_libraries",
-            }:
-                result[key] = [
-                    {
-                        "name": lib.name,
-                        "path": lib.path,
-                        "size": lib.size,
-                        "purpose": lib.purpose,
-                    }
-                    for lib in value
-                ]
-            elif key in {"wifi_bt_blobs", "firmware_blobs"}:
-                result[key] = [
-                    {"name": blob.name, "path": blob.path, "size": blob.size} for blob in value
-                ]
-            elif key == "kernel_modules":
-                result[key] = [
-                    {
-                        "name": mod.name,
-                        "path": mod.path,
-                        "size": mod.size,
-                        "has_gpl": mod.has_gpl,
-                    }
-                    for mod in value
-                ]
-            elif key == "binary_analysis" and value is not None:
-                result[key] = {
-                    "library_name": value.library_name,
-                    "file_type": value.file_type,
-                    "interesting_strings": value.interesting_strings,
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+        """Convert complex fields to serializable format."""
+        if key in {"mpp_libraries", "rga_libraries", "isp_libraries", "npu_libraries"}:
+            return True, [
+                {
+                    "name": lib.name,
+                    "path": lib.path,
+                    "size": lib.size,
+                    "purpose": lib.purpose,
                 }
-            else:
-                result[key] = value
-
-            # Add source metadata if available
-            if key in self._source:
-                result[f"{key}_source"] = self._source[key]
-            if key in self._method:
-                result[f"{key}_method"] = self._method[key]
-
-        return result
+                for lib in value
+            ]
+        if key in {"wifi_bt_blobs", "firmware_blobs"}:
+            return True, [
+                {"name": blob.name, "path": blob.path, "size": blob.size} for blob in value
+            ]
+        if key == "kernel_modules":
+            return True, [
+                {
+                    "name": mod.name,
+                    "path": mod.path,
+                    "size": mod.size,
+                    "has_gpl": mod.has_gpl,
+                }
+                for mod in value
+            ]
+        if key == "binary_analysis" and value is not None:
+            return True, {
+                "library_name": value.library_name,
+                "file_type": value.file_type,
+                "interesting_strings": value.interesting_strings,
+            }
+        return False, None
 
 
 def get_file_size(file_path: Path) -> int:
@@ -599,56 +530,26 @@ def analyze_proprietary_blobs(firmware_path: str, work_dir: Path) -> Proprietary
     return analysis
 
 
-def output_toml(analysis: ProprietaryBlobsAnalysis) -> str:
-    """Convert analysis to TOML format.
+# Field order for TOML output
+SIMPLE_FIELDS = [
+    "firmware_file",
+    "rootfs_path",
+    "rockchip_count",
+    "firmware_blob_count",
+    "kernel_module_count",
+]
 
-    Args:
-        analysis: ProprietaryBlobsAnalysis object
-
-    Returns:
-        TOML string with source metadata as comments
-    """
-    doc = tomlkit.document()
-
-    # Add header
-    doc.add(tomlkit.comment("Proprietary blobs analysis"))
-    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
-    doc.add(tomlkit.nl())
-
-    # Convert analysis to dict
-    data = analysis.to_dict()
-
-    # Add fields to TOML, with source metadata as comments
-    for key, value in data.items():
-        # Skip source/method metadata fields (we'll add them as comments)
-        if key.endswith("_source") or key.endswith("_method"):
-            continue
-
-        # Add source metadata as comment above field
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            # Wrap long method descriptions
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-
-        doc.add(key, value)
-        doc.add(tomlkit.nl())
-
-    # Generate TOML string
-    toml_str = tomlkit.dumps(doc)
-
-    # Validate by parsing it back
-    try:
-        tomlkit.loads(toml_str)
-    except Exception as e:
-        error(f"Generated invalid TOML: {e}")
-        sys.exit(1)
-
-    return toml_str
+COMPLEX_FIELDS = [
+    "mpp_libraries",
+    "rga_libraries",
+    "isp_libraries",
+    "npu_libraries",
+    "all_rockchip_libs",
+    "wifi_bt_blobs",
+    "firmware_blobs",
+    "kernel_modules",
+    "binary_analysis",
+]
 
 
 def main() -> None:
@@ -699,16 +600,18 @@ def main() -> None:
 
     # Output in requested format
     if args.format == "json":
-        json_str = json.dumps(analysis.to_dict(), indent=2)
-        # Validate by parsing it back
-        try:
-            json.loads(json_str)
-        except Exception as e:
-            error(f"Generated invalid JSON: {e}")
-            sys.exit(1)
-        print(json_str)
+        print(output_json(analysis))
     else:  # toml
-        print(output_toml(analysis))
+        print(
+            output_toml(
+                analysis,
+                title="Proprietary blobs analysis",
+                simple_fields=SIMPLE_FIELDS,
+                complex_fields=COMPLEX_FIELDS,
+            )
+        )
+
+    success("Proprietary blobs analysis complete")
 
 
 if __name__ == "__main__":

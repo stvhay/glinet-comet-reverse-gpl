@@ -31,7 +31,6 @@ from analyze_proprietary_blobs import (
     get_file_size,
     has_gpl_string,
     main,
-    output_toml,
 )
 
 
@@ -931,10 +930,12 @@ class TestAnalyzeBinary:
 
 
 class TestOutputToml:
-    """Test output_toml function."""
+    """Test output_toml function via lib.output."""
 
     def test_toml_output_valid(self):
         """Test that TOML output is valid."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/squashfs-root",
@@ -942,7 +943,9 @@ class TestOutputToml:
         analysis.rockchip_count = 5
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis, title="Test", simple_fields=["firmware_file", "rockchip_count"]
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -951,31 +954,37 @@ class TestOutputToml:
 
     def test_toml_includes_header(self):
         """Test that TOML includes header comments."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test Title")
 
-        assert "# Proprietary blobs analysis" in toml_str
+        assert "# Test Title" in toml_str
         assert "# Generated:" in toml_str
 
     def test_toml_includes_source_comments(self):
         """Test that TOML includes source metadata as comments."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
         )
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test", simple_fields=["firmware_file"])
 
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).name" in toml_str
 
     def test_toml_truncates_long_methods(self):
         """Test that long method descriptions are truncated."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
@@ -983,7 +992,7 @@ class TestOutputToml:
         long_method = "x" * 100  # 100 characters
         analysis.add_metadata("firmware_file", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test", simple_fields=["firmware_file"])
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -991,13 +1000,15 @@ class TestOutputToml:
 
     def test_toml_excludes_metadata_fields(self):
         """Test that _source and _method suffix fields are not in final TOML."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
         )
         analysis.add_metadata("firmware_file", "test", "test method")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test", simple_fields=["firmware_file"])
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -1006,6 +1017,8 @@ class TestOutputToml:
 
     def test_toml_includes_library_arrays(self):
         """Test that library arrays are included in TOML."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
@@ -1019,7 +1032,7 @@ class TestOutputToml:
             )
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test", complex_fields=["mpp_libraries"])
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["mpp_libraries"]) == 1
@@ -1028,6 +1041,8 @@ class TestOutputToml:
 
     def test_toml_includes_string_arrays(self):
         """Test that string arrays (all_rockchip_libs) are included."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
@@ -1037,7 +1052,7 @@ class TestOutputToml:
             "/usr/lib/librga.so",
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test", complex_fields=["all_rockchip_libs"])
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["all_rockchip_libs"]) == 2
@@ -1045,13 +1060,15 @@ class TestOutputToml:
 
     def test_toml_validates_output(self):
         """Test that output_toml validates generated TOML by parsing it."""
+        from lib.output import output_toml
+
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
             rootfs_path="/tmp/root",
         )
 
         # Should not raise any exceptions
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, title="Test")
 
         # Should be parseable
         parsed = tomlkit.loads(toml_str)
@@ -1165,7 +1182,14 @@ class TestIntegration:
         assert analysis.binary_analysis is not None
 
         # Verify TOML output
-        toml_str = output_toml(analysis)
+        from lib.output import output_toml as lib_output_toml
+
+        toml_str = lib_output_toml(
+            analysis,
+            title="Test",
+            simple_fields=["firmware_file", "rockchip_count"],
+            complex_fields=["mpp_libraries", "kernel_modules"],
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert parsed["firmware_file"] == "test.img"

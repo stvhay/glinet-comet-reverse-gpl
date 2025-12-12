@@ -12,6 +12,8 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_device_trees import (
+    COMPLEX_FIELDS,
+    SIMPLE_FIELDS,
     DeviceTree,
     DeviceTreeAnalysis,
     HardwareComponent,
@@ -20,9 +22,9 @@ from analyze_device_trees import (
     _extract_serial_config,
     analyze_dtb_file,
     find_dtb_files,
-    output_toml,
     parse_dts_content,
 )
+from lib.output import output_toml
 
 
 class TestHardwareComponent:
@@ -885,7 +887,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "firmware", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -900,9 +907,14 @@ class TestOutputToml:
             firmware_size=1024,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
-        assert "# Device Tree Analysis" in toml_str
+        assert "# Device tree analysis" in toml_str
         assert "# Generated:" in toml_str
 
     def test_toml_includes_source_comments(self):
@@ -917,7 +929,12 @@ class TestOutputToml:
             "Path(firmware).stat().st_size",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Source: firmware" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
@@ -931,7 +948,12 @@ class TestOutputToml:
         long_method = "x" * 100  # 100 characters
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -945,7 +967,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_size", "test", "test method")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -970,7 +997,12 @@ class TestOutputToml:
             )
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["device_trees"]) == 1
@@ -985,7 +1017,12 @@ class TestOutputToml:
         )
 
         # Should not raise - TOML is validated internally
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Verify it can be parsed back
         parsed = tomlkit.loads(toml_str)
@@ -1095,7 +1132,12 @@ class TestIntegration:
         analysis.device_trees.append(device_tree)
 
         # Generate TOML
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Parse and verify
         parsed = tomlkit.loads(toml_str)

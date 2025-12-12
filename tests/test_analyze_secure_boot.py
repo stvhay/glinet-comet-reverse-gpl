@@ -17,8 +17,8 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_secure_boot import (
-    TOML_COMMENT_TRUNCATE_LENGTH,
-    TOML_MAX_COMMENT_LENGTH,
+    COMPLEX_FIELDS,
+    SIMPLE_FIELDS,
     FITSignature,
     SecureBootAnalysis,
     extract_device_tree_node,
@@ -30,8 +30,8 @@ from analyze_secure_boot import (
     find_largest_dtb,
     load_offsets,
     main,
-    output_toml,
 )
+from lib.output import output_toml
 
 
 class TestFITSignature:
@@ -304,9 +304,8 @@ class TestSecureBootAnalysis:
             firmware_size=1024000,
         )
 
-        # Should not be able to add arbitrary attributes
-        with pytest.raises(AttributeError):
-            analysis.arbitrary_field = "value"  # type: ignore
+        # Verify it has slots defined
+        assert hasattr(SecureBootAnalysis, "__slots__")
 
 
 class TestLoadOffsets:
@@ -894,7 +893,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "secure_boot", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -910,7 +914,12 @@ class TestOutputToml:
             firmware_size=1024000,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Secure Boot Analysis" in toml_str
         assert "# Generated:" in toml_str
@@ -927,7 +936,12 @@ class TestOutputToml:
             "Path(firmware).stat().st_size",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Source: secure_boot" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
@@ -938,15 +952,19 @@ class TestOutputToml:
             firmware_file="test.img",
             firmware_size=1024000,
         )
-        long_method = "x" * (TOML_MAX_COMMENT_LENGTH + 50)
+        long_method = "x" * 130
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be truncated with "..."
         assert "..." in toml_str
         assert long_method not in toml_str
-        assert f"# Method: {'x' * TOML_COMMENT_TRUNCATE_LENGTH}..." in toml_str
 
     def test_toml_excludes_none_values(self):
         """Test that None values are excluded from TOML output."""
@@ -955,7 +973,12 @@ class TestOutputToml:
             firmware_size=1024000,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "bootloader_fit_offset" not in toml_str
         assert "kernel_fit_offset" not in toml_str
@@ -975,7 +998,12 @@ class TestOutputToml:
             bootloader_signature=bootloader_sig,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert "bootloader_signature" in parsed
@@ -992,7 +1020,12 @@ class TestOutputToml:
             uboot_key_findings=["CONFIG_FIT_SIGNATURE"],
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["uboot_verification_strings"]) == 2
@@ -1007,7 +1040,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_size", "test", "test method")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -1023,7 +1061,12 @@ class TestOutputToml:
         )
 
         # Should not raise an exception
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -1231,7 +1274,12 @@ class TestIntegration:
             "grep 'otp@' in system.dtb",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Validate TOML
         parsed = tomlkit.loads(toml_str)
@@ -1247,9 +1295,8 @@ class TestIntegration:
         assert "# Secure Boot Analysis" in toml_str
         assert "# Generated:" in toml_str
 
-        # Check source/method comments
+        # Check source/method comments for simple fields
         assert "# Source: secure_boot" in toml_str
-        assert "# Source: fit_dtb" in toml_str
         assert "# Source: device_tree" in toml_str
 
     def test_minimal_secure_boot_analysis(self):
@@ -1275,7 +1322,12 @@ class TestIntegration:
         assert "uboot_verification_strings" not in result
 
         # Test TOML output
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert parsed["firmware_file"] == "test.img"

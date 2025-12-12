@@ -18,26 +18,16 @@ from __future__ import annotations
 
 import argparse
 import gzip
-import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field, fields
-from datetime import UTC, datetime
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
-import tomlkit
-
-# Color codes for stderr logging
-GREEN = "\033[0;32m"
-YELLOW = "\033[1;33m"
-RED = "\033[0;31m"
-BLUE = "\033[0;34m"
-NC = "\033[0m"  # No Color
-
-# TOML formatting constants
-TOML_MAX_COMMENT_LENGTH = 80
-TOML_COMMENT_TRUNCATE_LENGTH = 77
+from lib.analysis_base import AnalysisBase
+from lib.logging import error, info, section, success, warn
+from lib.output import output_json, output_toml
 
 # String extraction constants
 MIN_STRING_LENGTH = 4
@@ -46,31 +36,6 @@ ASCII_PRINTABLE_MAX = 126
 
 # Default firmware URL
 DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-
-
-def info(msg: str) -> None:
-    """Log info message to stderr."""
-    print(f"{GREEN}[INFO]{NC} {msg}", file=sys.stderr)
-
-
-def warn(msg: str) -> None:
-    """Log warning message to stderr."""
-    print(f"{YELLOW}[WARN]{NC} {msg}", file=sys.stderr)
-
-
-def error(msg: str) -> None:
-    """Log error message to stderr."""
-    print(f"{RED}[ERROR]{NC} {msg}", file=sys.stderr)
-
-
-def success(msg: str) -> None:
-    """Log success message to stderr."""
-    print(f"{GREEN}[OK]{NC} {msg}", file=sys.stderr)
-
-
-def section(msg: str) -> None:
-    """Log section header to stderr."""
-    print(f"\n{BLUE}=== {msg} ==={NC}", file=sys.stderr)
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,7 +49,7 @@ class FITSignature:
 
 
 @dataclass(slots=True)
-class SecureBootAnalysis:
+class SecureBootAnalysis(AnalysisBase):
     """Results of secure boot analysis."""
 
     firmware_file: str
@@ -115,46 +80,16 @@ class SecureBootAnalysis:
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
 
-    def add_metadata(self, field_name: str, source: str, method: str) -> None:
-        """Add source metadata for a field."""
-        self._source[field_name] = source
-        self._method[field_name] = method
-
-    def to_dict(self) -> dict:
-        """Convert to dictionary with source metadata."""
-        result = {}
-        for fld in fields(self):
-            key = fld.name
-            if key.startswith("_"):
-                continue
-
-            value = getattr(self, key)
-            if value is None:
-                continue
-
-            # Convert dataclass fields to dicts
-            if key in ("bootloader_signature", "kernel_signature") and value is not None:
-                result[key] = {
-                    "image_type": value.image_type,
-                    "algorithm": value.algorithm,
-                    "key_name": value.key_name,
-                    "signed_components": value.signed_components,
-                }
-            elif isinstance(value, bool):
-                result[key] = value
-            elif isinstance(value, list):
-                if value:  # Only include non-empty lists
-                    result[key] = value
-            else:
-                result[key] = value
-
-            # Add source metadata if available
-            if key in self._source:
-                result[f"{key}_source"] = self._source[key]
-            if key in self._method:
-                result[f"{key}_method"] = self._method[key]
-
-        return result
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+        """Convert complex fields to serializable format."""
+        if key in ("bootloader_signature", "kernel_signature") and value is not None:
+            return True, {
+                "image_type": value.image_type,
+                "algorithm": value.algorithm,
+                "key_name": value.key_name,
+                "signed_components": value.signed_components,
+            }
+        return False, None
 
 
 def load_offsets(output_dir: Path) -> dict[str, str | int]:
@@ -604,56 +539,27 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     return analysis
 
 
-def output_toml(analysis: SecureBootAnalysis) -> str:
-    """Convert analysis to TOML format.
+# Field order for TOML output
+SIMPLE_FIELDS = [
+    "firmware_file",
+    "firmware_size",
+    "bootloader_fit_offset",
+    "kernel_fit_offset",
+    "uboot_offset",
+    "optee_offset",
+    "has_otp_node",
+    "has_crypto_node",
+    "otp_node_content",
+    "crypto_node_content",
+]
 
-    Args:
-        analysis: SecureBootAnalysis object
-
-    Returns:
-        TOML string with source metadata as comments
-    """
-    doc = tomlkit.document()
-
-    # Add header
-    doc.add(tomlkit.comment("Secure Boot Analysis"))
-    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
-    doc.add(tomlkit.nl())
-
-    # Convert analysis to dict
-    data = analysis.to_dict()
-
-    # Add fields to TOML, with source metadata as comments
-    for key, value in data.items():
-        # Skip source/method metadata fields (we'll add them as comments)
-        if key.endswith("_source") or key.endswith("_method"):
-            continue
-
-        # Add source metadata as comment above field
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            # Wrap long method descriptions
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-
-        doc.add(key, value)
-        doc.add(tomlkit.nl())
-
-    # Generate TOML string
-    toml_str = tomlkit.dumps(doc)
-
-    # Validate by parsing it back
-    try:
-        tomlkit.loads(toml_str)
-    except Exception as e:
-        error(f"Generated invalid TOML: {e}")
-        sys.exit(1)
-
-    return toml_str
+COMPLEX_FIELDS = [
+    "bootloader_signature",
+    "kernel_signature",
+    "uboot_verification_strings",
+    "uboot_key_findings",
+    "optee_secure_boot_strings",
+]
 
 
 def main() -> None:
@@ -703,16 +609,18 @@ def main() -> None:
 
     # Output in requested format
     if args.format == "json":
-        json_str = json.dumps(analysis.to_dict(), indent=2)
-        # Validate by parsing it back
-        try:
-            json.loads(json_str)
-        except Exception as e:
-            error(f"Generated invalid JSON: {e}")
-            sys.exit(1)
-        print(json_str)
+        print(output_json(analysis))
     else:  # toml
-        print(output_toml(analysis))
+        print(
+            output_toml(
+                analysis,
+                title="Secure Boot Analysis",
+                simple_fields=SIMPLE_FIELDS,
+                complex_fields=COMPLEX_FIELDS,
+            )
+        )
+
+    success("Secure boot analysis complete")
 
 
 if __name__ == "__main__":

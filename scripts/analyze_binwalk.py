@@ -15,22 +15,17 @@ Arguments:
 """
 
 import argparse
-import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
-import tomlkit
-
-# Color codes for stderr logging
-GREEN = "\033[0;32m"
-YELLOW = "\033[1;33m"
-RED = "\033[0;31m"
-BLUE = "\033[0;34m"
-NC = "\033[0m"  # No Color
+from lib.analysis_base import AnalysisBase
+from lib.logging import error, info, section, success, warn
+from lib.output import output_json, output_toml
 
 # Binwalk output format constants
 # Example line: "586164    0x8F1B4    Device tree blob (DTB)"
@@ -38,34 +33,8 @@ BINWALK_HEX_OFFSET_INDEX = 1
 BINWALK_DESCRIPTION_START_INDEX = 2
 BINWALK_MIN_FIELDS = 3
 
-# TOML formatting constants
-TOML_MAX_COMMENT_LENGTH = 80
-TOML_COMMENT_TRUNCATE_LENGTH = 77
-
-
-def info(msg: str) -> None:
-    """Log info message to stderr."""
-    print(f"{GREEN}[INFO]{NC} {msg}", file=sys.stderr)
-
-
-def warn(msg: str) -> None:
-    """Log warning message to stderr."""
-    print(f"{YELLOW}[WARN]{NC} {msg}", file=sys.stderr)
-
-
-def error(msg: str) -> None:
-    """Log error message to stderr."""
-    print(f"{RED}[ERROR]{NC} {msg}", file=sys.stderr)
-
-
-def success(msg: str) -> None:
-    """Log success message to stderr."""
-    print(f"{GREEN}[OK]{NC} {msg}", file=sys.stderr)
-
-
-def section(msg: str) -> None:
-    """Log section header to stderr."""
-    print(f"\n{BLUE}=== {msg} ==={NC}", file=sys.stderr)
+# Default firmware URL
+DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,7 +47,7 @@ class Component:
 
 
 @dataclass(slots=True)
-class BinwalkAnalysis:
+class BinwalkAnalysis(AnalysisBase):
     """Results of binwalk firmware analysis."""
 
     firmware_file: str
@@ -100,39 +69,14 @@ class BinwalkAnalysis:
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
 
-    def add_metadata(self, field_name: str, source: str, method: str) -> None:
-        """Add source metadata for a field."""
-        self._source[field_name] = source
-        self._method[field_name] = method
-
-    def to_dict(self) -> dict:
-        """Convert to dictionary with source metadata."""
-        result = {}
-        for fld in fields(self):
-            key = fld.name
-            if key.startswith("_"):
-                continue
-
-            value = getattr(self, key)
-            if value is None:
-                continue
-
-            if key == "identified_components":
-                # Convert components to dicts
-                result[key] = [
-                    {"offset": c.offset, "type": c.type, "description": c.description}
-                    for c in value
-                ]
-            else:
-                result[key] = value
-
-                # Add source metadata if available
-                if key in self._source:
-                    result[f"{key}_source"] = self._source[key]
-                if key in self._method:
-                    result[f"{key}_method"] = self._method[key]
-
-        return result
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+        """Convert complex fields to serializable format."""
+        if key == "identified_components":
+            return True, [
+                {"offset": c.offset, "type": c.type, "description": c.description}
+                for c in value
+            ]
+        return False, None
 
 
 def run_binwalk(firmware: Path) -> str:
@@ -358,56 +302,28 @@ def write_legacy_offsets_file(analysis: BinwalkAnalysis, output_dir: Path) -> No
     success("Wrote binwalk-offsets.sh (firmware offset artifacts)")
 
 
-def output_toml(analysis: BinwalkAnalysis) -> str:
-    """Convert analysis to TOML format.
+# Field order for TOML output
+SIMPLE_FIELDS = [
+    "firmware_file",
+    "firmware_size",
+    "squashfs_count",
+    "gzip_count",
+    "dtb_count",
+    "ext4_count",
+    "bootloader_fit_offset",
+    "uboot_offset",
+    "optee_offset",
+    "kernel_fit_offset",
+    "rootfs_cpio_offset",
+    "squashfs_offset",
+    "squashfs_size",
+]
 
-    Args:
-        analysis: BinwalkAnalysis object
+COMPLEX_FIELDS = [
+    "identified_components",
+]
 
-    Returns:
-        TOML string with source metadata as comments
-    """
-    doc = tomlkit.document()
 
-    # Add firmware metadata
-    doc.add(tomlkit.comment("Binwalk firmware analysis"))
-    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
-    doc.add(tomlkit.nl())
-
-    # Convert analysis to dict
-    data = analysis.to_dict()
-
-    # Add fields to TOML, with source metadata as comments
-    for key, value in data.items():
-        # Skip source/method metadata fields (we'll add them as comments)
-        if key.endswith("_source") or key.endswith("_method"):
-            continue
-
-        # Add source metadata as comment above field
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            # Wrap long method descriptions
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-
-        doc.add(key, value)
-        doc.add(tomlkit.nl())
-
-    # Generate TOML string
-    toml_str = tomlkit.dumps(doc)
-
-    # Validate by parsing it back
-    try:
-        tomlkit.loads(toml_str)
-    except Exception as e:
-        error(f"Generated invalid TOML: {e}")
-        sys.exit(1)
-
-    return toml_str
 
 
 def main() -> None:
@@ -441,15 +357,14 @@ def main() -> None:
         firmware_path = args.firmware
     else:
         # Default firmware URL - download if needed
-        firmware_url = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-        firmware_file = firmware_url.split("/")[-1]
+        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
         firmware_path = str(work_dir / firmware_file)
 
         if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {firmware_url}")
+            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
             work_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(
-                ["curl", "-L", "-o", firmware_path, firmware_url],
+                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
                 check=True,
             )
 
@@ -458,20 +373,21 @@ def main() -> None:
 
     # Output in requested format
     if args.format == "json":
-        json_str = json.dumps(analysis.to_dict(), indent=2)
-        # Validate by parsing it back
-        try:
-            json.loads(json_str)
-        except Exception as e:
-            error(f"Generated invalid JSON: {e}")
-            sys.exit(1)
-        print(json_str)
+        print(output_json(analysis))
     else:  # toml
-        print(output_toml(analysis))
+        print(
+            output_toml(
+                analysis,
+                title="Binwalk firmware analysis",
+                simple_fields=SIMPLE_FIELDS,
+                complex_fields=COMPLEX_FIELDS,
+            )
+        )
 
     # Generate legacy offsets file
     section("Extracting firmware offsets")
     write_legacy_offsets_file(analysis, output_dir)
+    success("Binwalk analysis complete")
 
 
 if __name__ == "__main__":

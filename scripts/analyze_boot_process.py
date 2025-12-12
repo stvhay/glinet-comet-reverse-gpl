@@ -20,61 +20,27 @@ Arguments:
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
+from typing import Any
 
-import tomlkit
-
-# Color codes for stderr logging
-GREEN = "\033[0;32m"
-YELLOW = "\033[1;33m"
-RED = "\033[0;31m"
-BLUE = "\033[0;34m"
-NC = "\033[0m"  # No Color
+from lib.analysis_base import AnalysisBase
+from lib.logging import error, info, section, success, warn
+from lib.output import output_json, output_toml
 
 # Default firmware URL
 DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-
-# TOML formatting constants
-TOML_MAX_COMMENT_LENGTH = 80
-TOML_COMMENT_TRUNCATE_LENGTH = 77
 
 # A/B redundancy detection threshold
 MIN_FIT_IMAGES_FOR_AB = 2
 
 # FIT info extraction limit
 FIT_INFO_LINE_LIMIT = 30
-
-
-def info(msg: str) -> None:
-    """Log info message to stderr."""
-    print(f"{GREEN}[INFO]{NC} {msg}", file=sys.stderr)
-
-
-def warn(msg: str) -> None:
-    """Log warning message to stderr."""
-    print(f"{YELLOW}[WARN]{NC} {msg}", file=sys.stderr)
-
-
-def error(msg: str) -> None:
-    """Log error message to stderr."""
-    print(f"{RED}[ERROR]{NC} {msg}", file=sys.stderr)
-
-
-def success(msg: str) -> None:
-    """Log success message to stderr."""
-    print(f"{GREEN}[OK]{NC} {msg}", file=sys.stderr)
-
-
-def section(msg: str) -> None:
-    """Log section header to stderr."""
-    print(f"\n{BLUE}=== {msg} ==={NC}", file=sys.stderr)
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,7 +91,7 @@ class ConsoleConfig:
 
 
 @dataclass(slots=True)
-class BootProcessAnalysis:
+class BootProcessAnalysis(AnalysisBase):
     """Results of boot process analysis."""
 
     firmware_file: str
@@ -145,62 +111,37 @@ class BootProcessAnalysis:
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
 
-    def add_metadata(self, field_name: str, source: str, method: str) -> None:
-        """Add source metadata for a field."""
-        self._source[field_name] = source
-        self._method[field_name] = method
-
-    def to_dict(self) -> dict:
-        """Convert to dictionary with source metadata."""
-        result = {}
-        for fld in fields(self):
-            key = fld.name
-            if key.startswith("_"):
-                continue
-
-            value = getattr(self, key)
-            if value is None:
-                continue
-
-            # Convert complex types to dicts
-            if key == "hardware_properties":
-                result[key] = [
-                    {"property": p.property, "value": p.value, "source": p.source} for p in value
-                ]
-            elif key == "boot_components":
-                result[key] = [
-                    {"stage": c.stage, "found": c.found, "evidence": c.evidence} for c in value
-                ]
-            elif key == "component_versions":
-                result[key] = [
-                    {"component": v.component, "version": v.version, "source": v.source}
-                    for v in value
-                ]
-            elif key == "partitions":
-                result[key] = [
-                    {
-                        "region": p.region,
-                        "offset": p.offset,
-                        "size_mb": p.size_mb,
-                        "type": p.type,
-                        "content": p.content,
-                    }
-                    for p in value
-                ]
-            elif key == "console_configs":
-                result[key] = [
-                    {"parameter": c.parameter, "value": c.value, "source": c.source} for c in value
-                ]
-            else:
-                result[key] = value
-
-                # Add source metadata if available
-                if key in self._source:
-                    result[f"{key}_source"] = self._source[key]
-                if key in self._method:
-                    result[f"{key}_method"] = self._method[key]
-
-        return result
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+        """Convert complex fields to serializable format."""
+        if key == "hardware_properties":
+            return True, [
+                {"property": p.property, "value": p.value, "source": p.source} for p in value
+            ]
+        elif key == "boot_components":
+            return True, [
+                {"stage": c.stage, "found": c.found, "evidence": c.evidence} for c in value
+            ]
+        elif key == "component_versions":
+            return True, [
+                {"component": v.component, "version": v.version, "source": v.source}
+                for v in value
+            ]
+        elif key == "partitions":
+            return True, [
+                {
+                    "region": p.region,
+                    "offset": p.offset,
+                    "size_mb": p.size_mb,
+                    "type": p.type,
+                    "content": p.content,
+                }
+                for p in value
+            ]
+        elif key == "console_configs":
+            return True, [
+                {"parameter": c.parameter, "value": c.value, "source": c.source} for c in value
+            ]
+        return False, None
 
 
 def get_firmware_path(firmware_arg: str | None, work_dir: Path) -> Path:
@@ -892,56 +833,24 @@ def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
     success("Wrote boot-process.md")
 
 
-def output_toml(analysis: BootProcessAnalysis) -> str:
-    """Convert analysis to TOML format.
+# Field order for TOML output
+SIMPLE_FIELDS = [
+    "firmware_file",
+    "firmware_size",
+    "bootloader_fit_info",
+    "kernel_fit_info",
+    "ab_redundancy",
+    "ab_evidence",
+    "kernel_cmdline",
+]
 
-    Args:
-        analysis: BootProcessAnalysis object
-
-    Returns:
-        TOML string with source metadata as comments
-    """
-    doc = tomlkit.document()
-
-    # Add header comments
-    doc.add(tomlkit.comment("Boot process and partition layout analysis"))
-    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
-    doc.add(tomlkit.nl())
-
-    # Convert analysis to dict
-    data = analysis.to_dict()
-
-    # Add fields to TOML, with source metadata as comments
-    for key, value in data.items():
-        # Skip source/method metadata fields (we'll add them as comments)
-        if key.endswith("_source") or key.endswith("_method"):
-            continue
-
-        # Add source metadata as comment above field
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            # Wrap long method descriptions
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-
-        doc.add(key, value)
-        doc.add(tomlkit.nl())
-
-    # Generate TOML string
-    toml_str = tomlkit.dumps(doc)
-
-    # Validate by parsing it back
-    try:
-        tomlkit.loads(toml_str)
-    except Exception as e:
-        error(f"Generated invalid TOML: {e}")
-        sys.exit(1)
-
-    return toml_str
+COMPLEX_FIELDS = [
+    "hardware_properties",
+    "boot_components",
+    "component_versions",
+    "partitions",
+    "console_configs",
+]
 
 
 def main() -> None:
@@ -986,21 +895,23 @@ def main() -> None:
 
     # Output in requested format
     if args.format == "json":
-        json_str = json.dumps(analysis.to_dict(), indent=2)
-        # Validate by parsing it back
-        try:
-            json.loads(json_str)
-        except Exception as e:
-            error(f"Generated invalid JSON: {e}")
-            sys.exit(1)
-        print(json_str)
+        print(output_json(analysis))
     else:  # toml
-        print(output_toml(analysis))
+        print(
+            output_toml(
+                analysis,
+                title="Boot process and partition layout analysis",
+                simple_fields=SIMPLE_FIELDS,
+                complex_fields=COMPLEX_FIELDS,
+            )
+        )
 
     # Generate legacy markdown output
     section("Generating markdown report")
     md_output = output_dir / "boot-process.md"
     generate_markdown(analysis, md_output)
+
+    success("Boot process analysis complete")
 
 
 if __name__ == "__main__":

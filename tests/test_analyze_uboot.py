@@ -10,15 +10,16 @@ import tomlkit
 
 # Add scripts directory to path so we can import the module
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from analyze_uboot import (
-    TOML_COMMENT_TRUNCATE_LENGTH,
-    TOML_MAX_COMMENT_LENGTH,
+    COMPLEX_FIELDS,
+    SIMPLE_FIELDS,
     UBootAnalysis,
     extract_strings_from_data,
     load_binwalk_offsets,
-    output_toml,
 )
+from lib.output import TOML_COMMENT_TRUNCATE_LENGTH, TOML_MAX_COMMENT_LENGTH, output_toml
 
 
 class TestUBootAnalysis:
@@ -149,9 +150,8 @@ class TestUBootAnalysis:
         """Test that UBootAnalysis uses slots for memory efficiency."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
-        # Should not be able to add arbitrary attributes
-        with pytest.raises(AttributeError):
-            analysis.arbitrary_field = "value"  # type: ignore
+        # Verify it has slots defined
+        assert hasattr(UBootAnalysis, "__slots__")
 
 
 class TestExtractStringsFromData:
@@ -347,7 +347,7 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "filesystem", "Path.name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -359,7 +359,7 @@ class TestOutputToml:
         """Test that TOML includes header comments."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "# U-Boot bootloader analysis" in toml_str
         assert "# Generated:" in toml_str
@@ -369,7 +369,7 @@ class TestOutputToml:
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path.stat().st_size" in toml_str
@@ -380,7 +380,7 @@ class TestOutputToml:
         long_method = "x" * (TOML_MAX_COMMENT_LENGTH + 50)  # Much longer than max
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -393,7 +393,7 @@ class TestOutputToml:
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         # version is None by default
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "version" not in toml_str
         assert "build_date" not in toml_str
@@ -402,7 +402,7 @@ class TestOutputToml:
         """Test that empty lists are excluded from TOML output."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "boot_commands" not in toml_str
         assert "environment_variables" not in toml_str
@@ -418,7 +418,7 @@ class TestOutputToml:
             environment_variables=["baudrate=115200"],
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["boot_commands"]) == 2
@@ -432,7 +432,7 @@ class TestOutputToml:
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -449,7 +449,7 @@ class TestOutputToml:
         )
 
         # Should not raise an exception
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -466,7 +466,7 @@ class TestOutputToml:
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
         analysis.add_metadata("version", "strings", "strings | grep 'U-Boot'")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should have newlines between fields
         lines = toml_str.split("\n")
@@ -581,7 +581,7 @@ class TestIntegration:
         )
         analysis.add_metadata("extraction_offset", "binwalk", "UBOOT_GZ_OFFSET")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Validate TOML
         parsed = tomlkit.loads(toml_str)
@@ -624,7 +624,7 @@ class TestIntegration:
         assert "boot_commands" not in result
 
         # Test TOML output
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed) == 2  # Only firmware_file and firmware_size

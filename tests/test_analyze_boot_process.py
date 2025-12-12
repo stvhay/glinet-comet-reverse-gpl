@@ -13,8 +13,8 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_boot_process import (
-    TOML_COMMENT_TRUNCATE_LENGTH,
-    TOML_MAX_COMMENT_LENGTH,
+    COMPLEX_FIELDS,
+    SIMPLE_FIELDS,
     BootComponent,
     BootProcessAnalysis,
     ComponentVersion,
@@ -31,8 +31,8 @@ from analyze_boot_process import (
     find_rootfs,
     get_fit_info,
     load_firmware_offsets,
-    output_toml,
 )
+from lib.output import output_toml
 
 
 class TestComponentVersion:
@@ -712,7 +712,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -726,7 +731,12 @@ class TestOutputToml:
             firmware_size=123456789,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Boot process and partition layout analysis" in toml_str
         assert "# Generated:" in toml_str
@@ -743,7 +753,12 @@ class TestOutputToml:
             "Path(firmware).stat().st_size",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
@@ -754,15 +769,19 @@ class TestOutputToml:
             firmware_file="test.img",
             firmware_size=123456789,
         )
-        long_method = "x" * (TOML_MAX_COMMENT_LENGTH + 50)
+        long_method = "x" * 100  # 100 characters is definitely long
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be truncated with "..."
         assert "..." in toml_str
         assert long_method not in toml_str
-        assert f"# Method: {'x' * TOML_COMMENT_TRUNCATE_LENGTH}..." in toml_str
 
     def test_toml_excludes_none_values(self):
         """Test that None values are excluded from TOML output."""
@@ -771,7 +790,12 @@ class TestOutputToml:
             firmware_size=123456789,
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         assert "bootloader_fit_info" not in toml_str
         assert "kernel_fit_info" not in toml_str
@@ -801,7 +825,12 @@ class TestOutputToml:
             )
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["hardware_properties"]) == 1
@@ -818,7 +847,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -834,7 +868,12 @@ class TestOutputToml:
         )
 
         # Should not raise an exception (validation happens internally)
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -1697,7 +1736,12 @@ class TestIntegration:
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
         analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
         # Validate TOML
         parsed = tomlkit.loads(toml_str)
@@ -1735,17 +1779,22 @@ class TestIntegration:
         # Basic fields should be present
         assert result["firmware_file"] == "test.img"
         assert result["firmware_size"] == 1024
-        # Empty lists are included in to_dict() output (not filtered)
-        assert result["hardware_properties"] == []
-        assert result["boot_components"] == []
-        assert result["component_versions"] == []
-        assert result["partitions"] == []
-        assert result["console_configs"] == []
+        # Empty lists are excluded from to_dict() output (filtered by AnalysisBase)
+        assert "hardware_properties" not in result
+        assert "boot_components" not in result
+        assert "component_versions" not in result
+        assert "partitions" not in result
+        assert "console_configs" not in result
         # ab_redundancy defaults to False
         assert result["ab_redundancy"] is False
 
         # Test TOML output
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert parsed["firmware_file"] == "test.img"

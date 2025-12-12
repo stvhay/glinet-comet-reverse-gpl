@@ -29,8 +29,9 @@ from analyze_network_services import (
     find_systemd_services,
     find_web_frameworks,
     find_web_servers,
-    output_toml,
 )
+
+from lib.output import output_toml
 
 
 class TestInitScript:
@@ -862,7 +863,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path", "web_server_count", "ssh_server_count"],
+            complex_fields=[],
+        )
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -879,9 +885,14 @@ class TestOutputToml:
             rootfs_path="/tmp/squashfs-root",
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=[],
+        )
 
-        assert "# Network services and attack surface analysis" in toml_str
+        assert "# Test network services" in toml_str
         assert "# Generated:" in toml_str
 
     def test_toml_includes_source_comments(self):
@@ -895,7 +906,12 @@ class TestOutputToml:
             "firmware_size", "filesystem", "Path(firmware).stat().st_size"
         )
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=[],
+        )
 
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
@@ -910,7 +926,12 @@ class TestOutputToml:
         long_method = "x" * 100  # 100 characters
         analysis.add_metadata("firmware_size", "test", long_method)
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=[],
+        )
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -925,7 +946,12 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_size", "test", "test method")
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=[],
+        )
         parsed = tomlkit.loads(toml_str)
 
         # Metadata should be in comments, not as fields
@@ -948,7 +974,12 @@ class TestOutputToml:
             )
         ]
 
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=["init_scripts", "web_servers"],
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["init_scripts"]) == 1
@@ -965,7 +996,12 @@ class TestOutputToml:
         )
 
         # Should not raise - TOML is validated internally
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path"],
+            complex_fields=[],
+        )
 
         # Verify it can be parsed back
         parsed = tomlkit.loads(toml_str)
@@ -1054,7 +1090,28 @@ user:!:19001:0:99999:7:::
         assert analysis.ssh_server_count == 1
 
         # Verify TOML output works
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=[
+                "firmware_file",
+                "firmware_size",
+                "rootfs_path",
+                "passwd_file_exists",
+                "shadow_file_exists",
+                "web_server_count",
+                "ssh_server_count",
+            ],
+            complex_fields=[
+                "init_scripts",
+                "web_servers",
+                "ssh_server",
+                "network_services",
+                "password_entries",
+                "sensitive_files",
+                "firewall_rules",
+            ],
+        )
         parsed = tomlkit.loads(toml_str)
         assert parsed["web_server_count"] == 1
         assert parsed["ssh_server_count"] == 1
@@ -1120,7 +1177,12 @@ class TestMainFunction:
 
         # We can't easily test main() without actually running it
         # But we can test that the output functions work
-        toml_str = output_toml(analysis)
+        toml_str = output_toml(
+            analysis,
+            title="Test network services",
+            simple_fields=["firmware_file", "firmware_size", "rootfs_path", "web_server_count"],
+            complex_fields=[],
+        )
         parsed = tomlkit.loads(toml_str)
 
         assert parsed["firmware_file"] == "test.img"
