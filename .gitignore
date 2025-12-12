@@ -5,6 +5,9 @@ config.env
 downloads/
 partitions/
 
+# ISO standards and reference materials
+standards/
+
 # Extracted filesystems
 rootfs/
 oem/
