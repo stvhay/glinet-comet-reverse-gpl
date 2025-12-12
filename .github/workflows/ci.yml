@@ -1,11 +1,15 @@
 name: CI
 
-# This workflow allows forks to generate fresh analysis reports without
-# needing a local Nix installation. Analysis results are available as
-# artifacts on every push/PR.
+# Continuous Integration workflow for GL.iNet Comet firmware analysis
 #
-# The docs/analysis/ directory contains curated reports committed to the repo
-# for easy browsing. CI-generated reports may differ as firmware versions change.
+# Jobs:
+#   - check: Validate Nix flake and build devShell
+#   - test: Run shellcheck, ruff linting, pytest with coverage
+#   - analyze: Generate firmware analysis reports (artifacts)
+#
+# This allows forks to generate fresh analysis reports without needing
+# a local Nix installation. Analysis results are available as artifacts
+# on every push/PR.
 
 on:
   push:
@@ -35,11 +39,29 @@ jobs:
 
       - uses: cachix/install-nix-action@v27
 
-      - name: Run shellcheck
+      - name: Run shellcheck on bash scripts
         run: nix develop --command bash -c 'shellcheck scripts/*.sh'
 
-      - name: Run pytest
-        run: nix develop --command pytest tests/ -v
+      - name: Run ruff linting on Python code
+        run: nix develop --command bash -c 'ruff check scripts/ tests/'
+
+      - name: Run ruff formatting check
+        run: nix develop --command bash -c 'ruff format --check scripts/ tests/'
+
+      - name: Run pytest with coverage
+        run: nix develop --command pytest tests/ -v --cov=scripts --cov-report=term --cov-report=html --cov-report=xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            htmlcov/
+            coverage.xml
+
+      - name: Check coverage threshold
+        run: nix develop --command bash -c 'pytest --cov=scripts --cov-report=term --cov-fail-under=60 tests/'
 
   analyze:
     runs-on: ubuntu-latest
