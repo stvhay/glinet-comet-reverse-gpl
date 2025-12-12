@@ -351,18 +351,25 @@ def find_firewall_rules(rootfs: Path) -> list[str]:
     rules = []
     try:
         # Look for iptables rules
-        for rule_file in rootfs.rglob("*.rules"):
-            if "iptables" in str(rule_file):
-                rules.append(str(rule_file.relative_to(rootfs)))
+        iptables_rules = find_files(rootfs, ["*.rules"], file_type="file")
+        rules.extend(
+            [
+                get_relative_path(rootfs, rule_file).lstrip("/")
+                for rule_file in iptables_rules
+                if "iptables" in str(rule_file)
+            ]
+        )
 
         # Look for firewall configs
-        for fw_file in rootfs.rglob("firewall*"):
-            if fw_file.is_file():
-                rules.append(str(fw_file.relative_to(rootfs)))
+        firewall_configs = find_files(rootfs, ["firewall*"], file_type="file")
+        rules.extend(
+            [get_relative_path(rootfs, fw_file).lstrip("/") for fw_file in firewall_configs]
+        )
     except (OSError, PermissionError):
         pass
 
-    return sorted(set(rules))[:5]  # Limit to 5 unique files
+    # Remove duplicates and limit to 5 (already sorted by find_files)
+    return list(dict.fromkeys(rules))[:5]
 
 
 def analyze_firmware(firmware_path: str) -> NetworkServicesAnalysis:  # noqa: PLR0912, PLR0915
