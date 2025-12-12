@@ -251,3 +251,81 @@ def extract_firmware_component(
         return filter_strings(all_strings, keywords=keywords, regex_patterns=regex_patterns)
 
     return all_strings
+
+
+def extract_strings_from_file(
+    file_path: Path, pattern: str | None = None, min_length: int = MIN_STRING_LENGTH
+) -> list[str]:
+    """Extract printable strings from a binary file using `strings` command.
+
+    Uses the external `strings` command (more efficient for large files than
+    Python-based extract_strings). Optionally filters results with grep.
+
+    Args:
+        file_path: Path to binary file
+        pattern: Optional grep pattern to filter strings
+        min_length: Minimum string length (default: 4, matches `strings` default)
+
+    Returns:
+        List of extracted strings (one per line)
+
+    Raises:
+        FileNotFoundError: If strings or grep command not found
+        RuntimeError: If strings command fails
+
+    Example:
+        >>> # Extract all strings
+        >>> strings = extract_strings_from_file(Path("firmware.bin"))
+
+        >>> # Extract strings matching pattern
+        >>> version_strings = extract_strings_from_file(
+        ...     Path("uboot.bin"),
+        ...     pattern="U-Boot"
+        ... )
+    """
+    try:
+        # Build command
+        if pattern:
+            # strings <file> | grep <pattern>
+            strings_proc = subprocess.Popen(
+                ["strings", f"-n{min_length}", str(file_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            grep_proc = subprocess.Popen(
+                ["grep", pattern],
+                stdin=strings_proc.stdout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            strings_proc.stdout.close()  # type: ignore
+            output, _ = grep_proc.communicate()
+        else:
+            # strings <file>
+            result = subprocess.run(
+                ["strings", f"-n{min_length}", str(file_path)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            output = result.stdout
+
+        # Split by newlines and filter empty lines
+        return [line.strip() for line in output.split("\n") if line.strip()]
+
+    except FileNotFoundError as e:
+        # Handle missing commands
+        if "strings" in str(e):
+            raise FileNotFoundError(
+                "strings command not found. Please run within 'nix develop' shell"
+            ) from e
+        if "grep" in str(e):
+            raise FileNotFoundError(
+                "grep command not found. Please run within 'nix develop' shell"
+            ) from e
+        raise
+
+    except subprocess.CalledProcessError as e:
+        # strings command failed
+        raise RuntimeError(f"Failed to extract strings from {file_path}: {e}") from e

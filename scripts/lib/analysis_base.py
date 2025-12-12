@@ -46,6 +46,22 @@ class AnalysisBase:
         self._source[field_name] = source
         self._method[field_name] = method
 
+    def set_count_with_metadata(
+        self, field_name: str, items: list, source: str, method: str
+    ) -> None:
+        """Set a count field to len(items) and add metadata.
+
+        Common pattern: count how many items and track the source.
+
+        Args:
+            field_name: Name of the count field (e.g., "device_tree_count")
+            items: List to count
+            source: Source of the data (e.g., "filesystem")
+            method: Method used to extract data (e.g., "find ... -name '*.dtb'")
+        """
+        setattr(self, field_name, len(items))
+        self.add_metadata(field_name, source, method)
+
     def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:  # noqa: ARG002
         """Convert a complex field to a serializable format.
 
