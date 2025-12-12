@@ -77,7 +77,7 @@ source = ["scripts"]
 omit = [
     "*/tests/*",
     "*/lib/*",
-    # Exclude scripts without tests (TODO: add tests and remove from omit)
+    # Scripts without any tests yet - must write tests before removing from omit
     "scripts/analyze_boot_process.py",
     "scripts/analyze_network_services.py",
     "scripts/analyze_proprietary_blobs.py",
