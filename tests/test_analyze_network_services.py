@@ -167,9 +167,7 @@ class TestNetworkServicesAnalysis:
             rootfs_path="/tmp/squashfs-root",
         )
 
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
         assert analysis._source["firmware_size"] == "filesystem"
         assert analysis._method["firmware_size"] == "Path(firmware).stat().st_size"
@@ -195,9 +193,7 @@ class TestNetworkServicesAnalysis:
             firmware_size=1024,
             rootfs_path="/tmp/squashfs-root",
         )
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
         result = analysis.to_dict()
 
@@ -228,9 +224,7 @@ class TestNetworkServicesAnalysis:
             rootfs_path="/tmp/squashfs-root",
         )
         analysis.web_servers = [
-            ServiceBinary(
-                name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
-            )
+            ServiceBinary(name="nginx", path="/usr/sbin/nginx", description="Nginx web server")
         ]
 
         result = analysis.to_dict()
@@ -265,9 +259,7 @@ class TestNetworkServicesAnalysis:
             rootfs_path="/tmp/squashfs-root",
         )
         analysis.password_entries = [
-            PasswordEntry(
-                username="root", hash_type="sha512", description="SHA-512 hash (strong)"
-            )
+            PasswordEntry(username="root", hash_type="sha512", description="SHA-512 hash (strong)")
         ]
 
         result = analysis.to_dict()
@@ -333,45 +325,35 @@ class TestClassifyPasswordHash:
 
     def test_classify_md5_hash(self):
         """Test classifying MD5 password hash."""
-        hash_type, description = _classify_password_hash(
-            "$1$salt$hashhashhashhashhashhash"
-        )
+        hash_type, description = _classify_password_hash("$1$salt$hashhashhashhashhashhash")
 
         assert hash_type == "md5"
         assert description == "MD5 hash (weak)"
 
     def test_classify_sha256_hash(self):
         """Test classifying SHA-256 password hash."""
-        hash_type, description = _classify_password_hash(
-            "$5$salt$hashhashhashhashhashhash"
-        )
+        hash_type, description = _classify_password_hash("$5$salt$hashhashhashhashhashhash")
 
         assert hash_type == "sha256"
         assert description == "SHA-256 hash"
 
     def test_classify_sha512_hash(self):
         """Test classifying SHA-512 password hash."""
-        hash_type, description = _classify_password_hash(
-            "$6$salt$hashhashhashhashhashhash"
-        )
+        hash_type, description = _classify_password_hash("$6$salt$hashhashhashhashhashhash")
 
         assert hash_type == "sha512"
         assert description == "SHA-512 hash (strong)"
 
     def test_classify_yescrypt_hash(self):
         """Test classifying yescrypt password hash."""
-        hash_type, description = _classify_password_hash(
-            "$y$salt$hashhashhashhashhashhash"
-        )
+        hash_type, description = _classify_password_hash("$y$salt$hashhashhashhashhashhash")
 
         assert hash_type == "yescrypt"
         assert description == "yescrypt hash (strong)"
 
     def test_classify_unknown_hash(self):
         """Test classifying unknown password hash."""
-        hash_type, description = _classify_password_hash(
-            "$9$salt$hashhashhashhashhashhash"
-        )
+        hash_type, description = _classify_password_hash("$9$salt$hashhashhashhashhashhash")
 
         assert hash_type == "$9$"
         assert "Hash present (type: $9$)" in description
@@ -907,9 +889,7 @@ class TestOutputToml:
             firmware_size=1024,
             rootfs_path="/tmp/squashfs-root",
         )
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
         toml_str = output_toml(
             analysis,
@@ -974,9 +954,7 @@ class TestOutputToml:
         )
         analysis.init_scripts = [InitScript(name="network", size=4096)]
         analysis.web_servers = [
-            ServiceBinary(
-                name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
-            )
+            ServiceBinary(name="nginx", path="/usr/sbin/nginx", description="Nginx web server")
         ]
 
         toml_str = output_toml(
@@ -1133,9 +1111,7 @@ user:!:19001:0:99999:7:::
         )
         analysis.init_scripts = [InitScript(name="network", size=4096)]
         analysis.web_servers = [
-            ServiceBinary(
-                name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
-            )
+            ServiceBinary(name="nginx", path="/usr/sbin/nginx", description="Nginx web server")
         ]
         analysis.ssh_server = ServiceBinary(
             name="dropbear",
@@ -1143,9 +1119,7 @@ user:!:19001:0:99999:7:::
             description="Dropbear SSH server",
         )
         analysis.password_entries = [
-            PasswordEntry(
-                username="root", hash_type="sha512", description="SHA-512 hash (strong)"
-            )
+            PasswordEntry(username="root", hash_type="sha512", description="SHA-512 hash (strong)")
         ]
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
 

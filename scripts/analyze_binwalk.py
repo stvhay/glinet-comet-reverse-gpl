@@ -73,8 +73,7 @@ class BinwalkAnalysis(AnalysisBase):
         """Convert complex fields to serializable format."""
         if key == "identified_components":
             return True, [
-                {"offset": c.offset, "type": c.type, "description": c.description}
-                for c in value
+                {"offset": c.offset, "type": c.type, "description": c.description} for c in value
             ]
         return False, None
 
@@ -322,8 +321,6 @@ SIMPLE_FIELDS = [
 COMPLEX_FIELDS = [
     "identified_components",
 ]
-
-
 
 
 def main() -> None:

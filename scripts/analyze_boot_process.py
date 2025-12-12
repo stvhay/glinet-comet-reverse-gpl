@@ -123,8 +123,7 @@ class BootProcessAnalysis(AnalysisBase):
             ]
         if key == "component_versions":
             return True, [
-                {"component": v.component, "version": v.version, "source": v.source}
-                for v in value
+                {"component": v.component, "version": v.version, "source": v.source} for v in value
             ]
         if key == "partitions":
             return True, [

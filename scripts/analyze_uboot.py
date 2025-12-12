@@ -414,8 +414,6 @@ def write_legacy_markdown(analysis: UBootAnalysis, output_dir: Path) -> None:  #
     success("Wrote uboot-version.md")
 
 
-
-
 def main() -> None:
     """Main entry point."""
     # Parse arguments
@@ -472,9 +470,7 @@ def main() -> None:
     else:  # toml
         try:
             print(
-                output_toml(
-                    analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-                )
+                output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
             )
         except ValueError as e:
             error(str(e))

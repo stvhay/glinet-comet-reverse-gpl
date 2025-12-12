@@ -1331,9 +1331,7 @@ class TestAnalyzeProprietaryBlobs:
 
     @patch("analyze_proprietary_blobs.has_gpl_string")
     @patch("subprocess.run")
-    def test_analyze_proprietary_blobs_integration(
-        self, mock_run, mock_has_gpl, tmp_path
-    ):
+    def test_analyze_proprietary_blobs_integration(self, mock_run, mock_has_gpl, tmp_path):
         """Test analyze_proprietary_blobs with mocked filesystem."""
         # Create firmware file
         firmware = tmp_path / "test.img"
@@ -1372,9 +1370,7 @@ class TestAnalyzeProprietaryBlobs:
             if isinstance(cmd, list) and cmd[0] == "file":
                 return MagicMock(stdout="ELF 64-bit LSB shared object", returncode=0)
             if isinstance(cmd, list) and cmd[0] == "strings":
-                return MagicMock(
-                    stdout="Copyright 2023 Rockchip\nVersion 1.0\n", returncode=0
-                )
+                return MagicMock(stdout="Copyright 2023 Rockchip\nVersion 1.0\n", returncode=0)
             return MagicMock(returncode=0)
 
         mock_run.side_effect = mock_subprocess

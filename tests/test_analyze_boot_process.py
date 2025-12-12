@@ -961,9 +961,7 @@ class TestAnalyzeHardwareProperties:
         assert "RV1126" in soc_props[0].value
 
     @patch("subprocess.run")
-    def test_analyze_hardware_properties_derives_architecture(
-        self, mock_run, tmp_path: Path
-    ):
+    def test_analyze_hardware_properties_derives_architecture(self, mock_run, tmp_path: Path):
         """Test deriving architecture from ELF binaries."""
         dts_file = tmp_path / "system.dtb"
         dts_file.write_text("/ { };")
@@ -979,9 +977,7 @@ class TestAnalyzeHardwareProperties:
         executable.chmod(0o755)
 
         # Mock file command output
-        mock_run.return_value = MagicMock(
-            stdout="ELF 32-bit LSB executable, ARM, version 1"
-        )
+        mock_run.return_value = MagicMock(stdout="ELF 32-bit LSB executable, ARM, version 1")
 
         analysis = BootProcessAnalysis("test.img", 1024)
         analyze_hardware_properties(dts_file, analysis, extract_dir)
@@ -1169,9 +1165,7 @@ class TestAnalyzeComponentVersions:
         analysis = BootProcessAnalysis("firmware.img", 1024)
         analyze_component_versions(firmware, extract_dir, analysis)
 
-        kernel_ver = next(
-            v for v in analysis.component_versions if v.component == "Linux Kernel"
-        )
+        kernel_ver = next(v for v in analysis.component_versions if v.component == "Linux Kernel")
         assert "5.10.110" in kernel_ver.version
         assert kernel_ver.source == "Module vermagic"
 
@@ -1195,9 +1189,7 @@ class TestAnalyzeComponentVersions:
             mock_run.return_value = MagicMock(stdout="")
             analyze_component_versions(firmware, extract_dir, analysis)
 
-        br_versions = [
-            v for v in analysis.component_versions if v.component == "Buildroot"
-        ]
+        br_versions = [v for v in analysis.component_versions if v.component == "Buildroot"]
         assert len(br_versions) == 1
         assert br_versions[0].version == "2023.02"
         assert br_versions[0].source == "/etc/os-release"
@@ -1372,9 +1364,7 @@ class TestAnalyzeBootConfig:
         analysis = BootProcessAnalysis("test.img", 1024)
         analyze_boot_config(dts_file, analysis)
 
-        baudrate_config = next(
-            c for c in analysis.console_configs if c.parameter == "Baud Rate"
-        )
+        baudrate_config = next(c for c in analysis.console_configs if c.parameter == "Baud Rate")
         assert baudrate_config.value == "1500000"
         assert "rockchip,baudrate" in baudrate_config.source
 
@@ -1651,15 +1641,11 @@ class TestIntegration:
 
         # Add metadata
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
         analysis.add_metadata(
             "ab_redundancy", "binwalk-extraction", "count system.dtb files: 3 > 2"
         )
-        analysis.add_metadata(
-            "kernel_cmdline", "device-tree", "extract bootargs property from DTS"
-        )
+        analysis.add_metadata("kernel_cmdline", "device-tree", "extract bootargs property from DTS")
 
         # Test to_dict
         result = analysis.to_dict()
@@ -1671,9 +1657,7 @@ class TestIntegration:
         assert len(result["component_versions"]) == 2
         assert len(result["partitions"]) == 3
         assert result["ab_redundancy"] is True
-        expected_cmdline = (
-            "console=ttyS0,115200n8 root=/dev/mtdblock3 rootfstype=squashfs"
-        )
+        expected_cmdline = "console=ttyS0,115200n8 root=/dev/mtdblock3 rootfstype=squashfs"
         assert result["kernel_cmdline"] == expected_cmdline
         assert len(result["console_configs"]) == 2
 

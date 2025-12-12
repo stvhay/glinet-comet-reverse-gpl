@@ -1193,10 +1193,8 @@ class TestIntegration:
             ],
             has_otp_node=True,
             has_crypto_node=True,
-            otp_node_content="otp@fe388000 {"
-            "\n    compatible = \"rockchip,rk3568-otp\";\n};",
-            crypto_node_content="crypto@fe380000 {"
-            "\n    compatible = \"rockchip,rk3568-crypto\";\n};",
+            otp_node_content='otp@fe388000 {\n    compatible = "rockchip,rk3568-otp";\n};',
+            crypto_node_content='crypto@fe380000 {\n    compatible = "rockchip,rk3568-crypto";\n};',
         )
 
         # Add metadata

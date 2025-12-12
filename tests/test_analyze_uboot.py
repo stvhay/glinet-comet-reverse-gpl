@@ -190,7 +190,7 @@ class TestExtractStringsFromData:
     def test_extract_printable_ascii_only(self):
         """Test that only printable ASCII characters are extracted."""
         # Include non-printable characters (0x01, 0x1F)
-        data = b"\x01\x1FU-Boot\x00"
+        data = b"\x01\x1fU-Boot\x00"
         result = extract_strings_from_data(data)
 
         assert result == ["U-Boot"]
@@ -533,9 +533,7 @@ class TestIntegration:
 
         # Add metadata
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
         analysis.add_metadata(
             "version",
             "gzip_extraction",
@@ -578,9 +576,7 @@ class TestIntegration:
         )
 
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
-        analysis.add_metadata(
-            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
-        )
+        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
         analysis.add_metadata(
             "version",
             "gzip_extraction",

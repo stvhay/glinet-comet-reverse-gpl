@@ -81,11 +81,7 @@ def output_toml(  # noqa: PLR0912
         if f"{key}_method" in data:
             method = data[f"{key}_method"]
             if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(
-                    tomlkit.comment(
-                        f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."
-                    )
-                )
+                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
             else:
                 doc.add(tomlkit.comment(f"Method: {method}"))
 

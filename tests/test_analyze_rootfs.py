@@ -170,9 +170,7 @@ class TestDetectedLicense:
 
     def test_detected_license_is_frozen(self):
         """Test that DetectedLicense is immutable (frozen)."""
-        detected = DetectedLicense(
-            component="libc.so", license="LGPL-2.1", detection_method="test"
-        )
+        detected = DetectedLicense(component="libc.so", license="LGPL-2.1", detection_method="test")
 
         with pytest.raises(AttributeError):
             detected.license = "MIT"  # type: ignore
@@ -366,10 +364,7 @@ class TestParseOsRelease:
 
         os_release = etc_dir / "os-release"
         os_release.write_text(
-            'NAME="OpenWrt"\n'
-            'VERSION="23.05.0"\n'
-            'PRETTY_NAME="OpenWrt 23.05.0"\n'
-            'ID="openwrt"\n'
+            'NAME="OpenWrt"\nVERSION="23.05.0"\nPRETTY_NAME="OpenWrt 23.05.0"\nID="openwrt"\n'
         )
 
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
@@ -791,9 +786,7 @@ class TestOutputToml:
         )
         analysis.add_metadata("firmware_file", "filesystem", "basename(firmware_path)")
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be valid TOML
         parsed = tomlkit.loads(toml_str)
@@ -806,9 +799,7 @@ class TestOutputToml:
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.add_metadata("firmware_file", "filesystem", "basename(firmware_path)")
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "# Source: filesystem" in toml_str
         assert "# Method: basename(firmware_path)" in toml_str
@@ -819,9 +810,7 @@ class TestOutputToml:
         long_method = "x" * 100  # 100 characters
         analysis.add_metadata("rootfs_path", "test", long_method)
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be truncated with "..."
         assert "..." in toml_str
@@ -832,9 +821,7 @@ class TestOutputToml:
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         # os_name, kernel_version, etc. are None by default
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "os_name" not in toml_str
         assert "kernel_version" not in toml_str
@@ -850,9 +837,7 @@ class TestOutputToml:
             GplBinary(name="busybox", path="/bin/busybox", license="GPL-2.0", version="1.36.1")
         ]
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
         parsed = tomlkit.loads(toml_str)
 
         assert len(parsed["kernel_modules"]) == 1
@@ -866,9 +851,7 @@ class TestOutputToml:
         """Test that TOML includes header comment."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         assert "# Root filesystem analysis" in toml_str
         assert "# Generated:" in toml_str
@@ -878,9 +861,7 @@ class TestOutputToml:
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
         # Should not raise any exceptions
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
 
         # Should be parseable
         parsed = tomlkit.loads(toml_str)
@@ -900,7 +881,7 @@ class TestIntegration:
         etc = rootfs / "etc"
         etc.mkdir(parents=True)
         (etc / "os-release").write_text(
-            'NAME="OpenWrt"\n' 'VERSION="23.05.0"\n' 'PRETTY_NAME="OpenWrt 23.05.0"\n'
+            'NAME="OpenWrt"\nVERSION="23.05.0"\nPRETTY_NAME="OpenWrt 23.05.0"\n'
         )
 
         # Create kernel modules
@@ -963,9 +944,7 @@ class TestIntegration:
         assert len(analysis.detected_licenses) >= 2
 
         # Verify TOML output works (tests that all required fields are present)
-        toml_str = output_toml(
-            analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
-        )
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
         parsed = tomlkit.loads(toml_str)
         assert parsed["os_name"] == "OpenWrt"
         assert parsed["kernel_modules_count"] == 2
