@@ -16,14 +16,17 @@ This document defines the risk management process for the GL.iNet Comet GPL Comp
 
 ### Process Overview
 
-```
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐    ┌──────────────┐
-│ Identify    │ → │ Assess       │ → │ Mitigate    │ → │ Monitor      │
-│ Risks       │    │ & Prioritize │    │ & Control   │    │ & Review     │
-└─────────────┘    └──────────────┘    └─────────────┘    └──────────────┘
-       ↑                                                            │
-       └────────────────────────────────────────────────────────────┘
-                          Continuous Loop
+```mermaid
+graph LR
+    A[Identify<br/>Risks] --> B[Assess<br/>& Prioritize]
+    B --> C[Mitigate<br/>& Control]
+    C --> D[Monitor<br/>& Review]
+    D --> A
+
+    style A fill:#e1f5ff
+    style B fill:#e1f5ff
+    style C fill:#e1f5ff
+    style D fill:#e1f5ff
 ```
 
 ### 1. Risk Identification
