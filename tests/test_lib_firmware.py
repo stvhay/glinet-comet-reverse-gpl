@@ -170,9 +170,11 @@ class TestExtractFirmware:
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"test")
 
-        with patch("subprocess.run", side_effect=FileNotFoundError):
-            with pytest.raises(SystemExit):
-                extract_firmware(firmware, tmp_path)
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError),
+            pytest.raises(SystemExit),
+        ):
+            extract_firmware(firmware, tmp_path)
 
 
 class TestFindSquashfsRootfs:
@@ -261,7 +263,7 @@ class TestIntegration:
         # Mock download
         with patch("subprocess.run") as mock_run:
 
-            def create_firmware(*args, **kwargs):
+            def create_firmware(*_args, **_kwargs):
                 firmware = tmp_path / firmware_file
                 firmware.write_bytes(b"test")
 
