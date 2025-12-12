@@ -163,38 +163,44 @@ EOF
 
 **Quality Checks (MUST pass before commit/push):**
 
-1. **Run quality checks locally:**
+All quality checks are integrated into pytest for simplicity and consistency:
+
+1. **Single command to run all checks:**
+   ```bash
+   pytest
+   ```
+   This runs:
+   - All unit tests (559+ tests)
+   - Code formatting checks (test_code_quality.py)
+   - Code linting checks (test_code_quality.py)
+   - Shellcheck on bash scripts (test_code_quality.py)
+   - Coverage checks
+
+2. **Pre-push hook installed:**
+   - Automatically runs `pytest` before `git push`
+   - Blocks push if any test or quality check fails
+   - Located at `.git/hooks/pre-push`
+
+3. **Quality check helper script:**
    ```bash
    ./scripts/quality-check.sh
    ```
-   This runs all CI checks locally:
-   - shellcheck on bash scripts
-   - ruff linting
-   - ruff formatting
-   - pytest with coverage
+   Wrapper around pytest with friendly output
 
-2. **Pre-push hook installed:**
-   - Automatically runs quality checks before `git push`
-   - Prevents pushing code that will fail CI
-   - Located at `.git/hooks/pre-push`
-
-3. **CI Requirements:**
-   - All tests must pass (556+ tests)
-   - Zero ruff linting errors
-   - Code must be ruff-formatted
-   - Coverage threshold must be met
-
-**IMPORTANT:** Never push code without running quality checks first. CI failures after push indicate a process failure.
+**IMPORTANT:** Never push code without passing pytest. CI failures after push indicate a process failure.
 
 **Quick fixes:**
 ```bash
+# See specific quality failures
+pytest tests/test_code_quality.py -v
+
 # Fix linting issues automatically
 ruff check --fix scripts/ tests/
 
 # Format code automatically
 ruff format scripts/ tests/
 
-# Run tests
+# Run all tests with coverage
 pytest
 ```
 
