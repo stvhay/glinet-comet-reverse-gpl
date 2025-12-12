@@ -1,10 +1,10 @@
 # Quality Objectives
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
-**Version:** 1.0
+**Version:** 1.1
 **Last Updated:** 2025-12-12
-**Review Frequency:** Quarterly
-**Next Review:** 2026-03-15
+**Review Frequency:** Quarterly (every 3 months) OR 455 AI work-hours, whichever comes first
+**Next Review:** 2026-03-15 OR 455 AI work-hours from 2025-12-12, whichever comes first
 
 ## Purpose
 
@@ -177,7 +177,14 @@ This document defines measurable quality objectives that guide the development a
 
 ## Objective Review Process
 
-Quality objectives are reviewed quarterly during Management Review meetings (when implemented in Phase 2, R6).
+Quality objectives are reviewed quarterly during Management Review meetings using a **dual-trigger system**:
+
+**Review Triggers:**
+- **Calendar:** Every 3 months (quarterly)
+- **Work-Hours:** When 455 cumulative AI work-hours are reached
+- **Whichever comes first** triggers the review
+
+See [QMS-SCOPE.md](QMS-SCOPE.md) Section 2.3 for AI work-hour methodology.
 
 **Review Checklist:**
 - [ ] Assess performance against each objective
@@ -188,7 +195,9 @@ Quality objectives are reviewed quarterly during Management Review meetings (whe
 - [ ] Document lessons learned
 - [ ] Update this document
 
-**Next Review Date:** 2025-03-15
+**Next Review Triggers:**
+- **Calendar:** 2026-03-15 (3 months from last review)
+- **Work-Hours:** 455 AI hours from 2025-12-12 (last review)
 
 ---
 

@@ -1,10 +1,10 @@
 # Quality Management System Scope
 
 **Organization:** GL.iNet Comet GPL Compliance Analysis Project
-**Version:** 1.0
+**Version:** 1.1
 **Effective Date:** 2025-12-12
 **Last Updated:** 2025-12-12
-**Review Frequency:** Annually
+**Review Frequency:** Annually OR 1,820 AI work-hours, whichever comes first
 
 ---
 
@@ -37,6 +37,152 @@ The GL.iNet Comet GPL Compliance Analysis Project is a **black box reverse engin
 | Open Source Community | Transparency, verifiability | Open source scripts, documented methodology |
 | GPL Enforcement Organizations | Evidence for potential enforcement | Rigorous analysis, clear evidence chain |
 | Academic/Research Community | Methodology reference | Documented best practices, reproducible approach |
+
+### 2.3 AI Work-Hour Equivalence Methodology
+
+#### Context: AI Work Compression
+
+Traditional QMS frameworks assume human work patterns (35-40 hour work weeks, calendar-based review schedules). This project uses AI agents that can compress months of human-equivalent work into days.
+
+**Problem:** Calendar-based triggers (quarterly, annually) may be too slow or too fast depending on actual work volume.
+
+**Solution:** **Dual-trigger system** - Reviews trigger on **calendar date OR accumulated work-hours**, whichever comes first.
+
+#### Measuring AI Work-Hours
+
+**Primary Method: Session-Based Tracking**
+
+AI work-hours are measured using **active session time** where AI agents are performing productive work:
+
+**What Counts as Work-Hours:**
+- ✅ Active Claude Code sessions (coding, analysis, documentation)
+- ✅ Agent task execution time (exploration, planning, code review)
+- ✅ Interactive problem-solving sessions
+- ✅ Quality management activities (reviews, audits, documentation)
+
+**What Doesn't Count:**
+- ❌ User reading/thinking time between sessions
+- ❌ CI/CD automated runs (not AI work, machine work)
+- ❌ Idle time in open sessions
+- ❌ Time waiting for user responses
+
+**Tracking Method:**
+
+Work-hours tracked in management reviews using session logs:
+
+```bash
+# Example: Calculate AI work-hours between reviews
+# Method 1: Manual session tracking
+# During each session, note start/end times in management review
+
+# Method 2: Git-based estimation (fallback)
+# Count commits with AI co-authorship, estimate 0.5-2 hours per commit
+git log --since="YYYY-MM-DD" --grep="Claude" --oneline | wc -l
+```
+
+**Recording:**
+- Each management review records accumulated AI work-hours since last review
+- Tracked in management review template Section 2: "AI Work-Hours Since Last Review"
+
+#### Conversion Factor: AI Hours to Human Hours
+
+**Conservative 1:1 Ratio**
+
+For QMS trigger purposes, **1 AI hour = 1 human hour** (35-hour work week basis).
+
+**Rationale:**
+- **Conservative approach:** Ensures adequate review frequency
+- **Task-independent:** Avoids complex per-task calibration
+- **Auditable:** Simple to track and verify
+- **Adjustable:** Can be refined based on actual experience
+
+**Example Calculations:**
+
+| Review Frequency | Calendar Period | Human Work-Hours | AI Work-Hour Trigger |
+|------------------|----------------|------------------|---------------------|
+| Quarterly | 13 weeks | 455 hours (13×35) | 455 AI session hours |
+| Semi-annually | 26 weeks | 910 hours (26×35) | 910 AI session hours |
+| Annually | 52 weeks | 1,820 hours (52×35) | 1,820 AI session hours |
+
+**Trigger Example:**
+- Quarterly review scheduled for April 1, 2026
+- If 455 AI work-hours accumulated by March 1, 2026 → trigger review early
+- Otherwise, review triggers on April 1 as scheduled
+
+#### Integration with QMS Processes
+
+**Dual-Trigger System:**
+
+All periodic QMS activities use dual triggers:
+
+**Format:**
+> "This [activity] shall occur **quarterly** (every 3 months) **OR when 455 cumulative AI work-hours are reached**, whichever comes first."
+
+**Applies to:**
+- Management Reviews (Quarterly: 455 hours)
+- Internal Audits (Semi-annually: 910 hours)
+- Quality Objectives Review (Quarterly: 455 hours)
+- Risk Register Review (Quarterly: 455 hours)
+- Annual document reviews (Annually: 1,820 hours)
+
+**Reset on Trigger:**
+- When review occurs, reset work-hour counter to zero
+- Next review: Calendar date OR work-hours from reset point
+
+#### Work-Hour Tracking Procedure
+
+**During Each Management Review:**
+
+1. **Calculate AI Work-Hours:**
+   - Review session logs since last management review
+   - Sum productive AI session time (hours)
+   - Record in management review Section 2
+
+2. **Evaluate Trigger Status:**
+   - Compare accumulated hours to threshold
+   - Check calendar date to next scheduled review
+   - Determine if early review needed
+
+3. **Reset Counter:**
+   - After review completes, reset work-hour counter to zero
+   - Document reset date in management review
+
+4. **Plan Next Review:**
+   - Set calendar date (e.g., +3 months for quarterly)
+   - Set work-hour threshold (e.g., 455 hours for quarterly)
+   - Document both triggers in management review outputs
+
+**Example Management Review Entry:**
+
+```markdown
+## 2. AI Work-Hours Since Last Review
+
+**Period:** 2025-12-12 to 2026-03-15
+**Accumulated AI Work-Hours:** 287 hours
+**Method:** Session tracking via Claude Code logs
+
+**Trigger Evaluation:**
+- Calendar trigger: March 15, 2026 (reached)
+- Work-hour trigger: 455 hours (not reached)
+- **Triggered by:** Calendar date
+
+**Work-Hour Counter Reset:** 2026-03-15
+**Next Review Triggers:**
+- Calendar: June 15, 2026 (3 months)
+- Work-hours: 455 hours from reset
+```
+
+#### Benefits of Dual-Trigger System
+
+**Advantages:**
+1. **Responsive to actual work volume:** High-intensity periods trigger earlier reviews
+2. **Maintains minimum review frequency:** Calendar trigger ensures reviews don't skip too long
+3. **Prevents review overload:** Calendar trigger prevents excessive reviews during slow periods
+4. **Auditable:** Clear tracking methodology with objective evidence
+5. **Fair comparison:** Enables meaningful comparison to traditional organizations
+
+**Quality Objective:**
+> Demonstrate QMS responsiveness to actual work patterns, not just arbitrary calendar dates
 
 ---
 
@@ -294,7 +440,7 @@ Future integration opportunities:
 
 This QMS Scope shall be reviewed when:
 
-1. **Scheduled:** Annually (next review: 2025-12-12)
+1. **Scheduled:** Annually (next calendar review: 2026-12-12) OR when 1,820 cumulative AI work-hours are reached, whichever comes first
 2. **Project Changes:**
    - Significant expansion (e.g., adding commercial services)
    - New stakeholders or interested parties

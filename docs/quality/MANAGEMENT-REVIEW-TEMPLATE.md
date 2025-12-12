@@ -1,9 +1,9 @@
 # Management Review Template
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
-**Version:** 1.0
+**Version:** 1.1
 **Effective Date:** 2025-12-12
-**Review Frequency:** Quarterly
+**Review Frequency:** Quarterly (every 3 months) OR 455 AI work-hours, whichever comes first
 
 ---
 
@@ -103,11 +103,60 @@ This template guides quarterly management reviews of the Quality Management Syst
 
 ---
 
-## 2. Performance Against Quality Objectives
+## 2. AI Work-Hours and Review Trigger Status
+
+*Tracks AI work-hours for dual-trigger review system. See [QMS-SCOPE.md](QMS-SCOPE.md) Section 2.3.*
+
+### 2.1 Work-Hour Tracking
+
+**Period:** [Start Date] to [End Date]
+**AI Work-Hours Accumulated:** [X] hours
+
+**Tracking Method:**
+- [ ] Session-based tracking (Claude Code logs)
+- [ ] Git-based estimation (commits × average hours)
+- [ ] Manual time tracking
+
+**Evidence:**
+```
+# Session logs or commit analysis
+[Paste evidence of AI work-hours calculation]
+
+Example:
+- Session 1 (2025-12-12): 3 hours (ISO 9001 implementation)
+- Session 2 (2025-12-13): 2 hours (Quality docs)
+- Session 3 (2025-12-15): 4 hours (Code refactoring)
+Total: 9 hours
+```
+
+**Cumulative AI Work-Hours:** [X] hours (since last review reset: [Date])
+
+### 2.2 Review Trigger Evaluation
+
+**This Review Triggered By:**
+- [ ] Calendar date (scheduled quarterly review)
+- [ ] Work-hour threshold (455 hours reached)
+- [ ] Both triggers reached simultaneously
+
+**Next Review Triggers:**
+- **Calendar:** [Date] (3 months from this review)
+- **Work-Hours:** 455 AI hours from [Today's Date]
+- **Expected trigger:** [ ] Calendar [ ] Work-hours (based on current pace)
+
+**Work Intensity Assessment:**
+- Current pace: [X] AI hours/month
+- Projected to 455 hours: [Y] months
+- Conclusion: [ ] Calendar likely to trigger first [ ] Work-hours likely to trigger first
+
+**Work-Hour Counter Reset:** [Today's Date]
+
+---
+
+## 3. Performance Against Quality Objectives
 
 *ISO 9001:2015 Clause 9.3.2(b) - Evaluate achievement of quality objectives*
 
-### 2.1 Objective Performance Review
+### 3.1 Objective Performance Review
 
 | Objective | Target | Period Result | Trend | Status | Notes |
 |-----------|--------|---------------|-------|--------|-------|
@@ -121,7 +170,7 @@ This template guides quarterly management reviews of the Quality Management Syst
 - 🟢 Achieved/On Track | 🟡 At Risk | 🔴 Not Meeting Target
 - ↗️ Improving | → Stable | ↘️ Declining
 
-### 2.2 Supporting Metrics
+### 3.2 Supporting Metrics
 
 **Development Velocity:**
 - Commits this quarter: [Count]
@@ -138,7 +187,7 @@ This template guides quarterly management reviews of the Quality Management Syst
 - Test failures this quarter: [Count]
 - New tests added: [Count]
 
-### 2.3 Objective Performance Analysis
+### 3.3 Objective Performance Analysis
 
 **Objectives Meeting Targets:**
 [List objectives that are on track or achieved]
@@ -151,11 +200,11 @@ This template guides quarterly management reviews of the Quality Management Syst
 
 ---
 
-## 3. Process Performance and Conformity
+## 4. Process Performance and Conformity
 
 *ISO 9001:2015 Clause 9.3.2(c) - Evaluate process performance*
 
-### 3.1 Core Process Review
+### 4.1 Core Process Review
 
 **P1: Analysis Script Development**
 - Scripts developed this quarter: [Count]
@@ -194,7 +243,7 @@ This template guides quarterly management reviews of the Quality Management Syst
 
 ---
 
-## 4. Customer Satisfaction and Feedback
+## 5. Customer Satisfaction and Feedback
 
 *ISO 9001:2015 Clause 9.3.2(d) - Consider customer satisfaction*
 
@@ -231,7 +280,7 @@ This template guides quarterly management reviews of the Quality Management Syst
 
 ---
 
-## 5. Risk and Opportunity Review
+## 6. Risk and Opportunity Review
 
 *ISO 9001:2015 Clause 9.3.2(e) - Review risks and opportunities*
 
@@ -298,7 +347,7 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ---
 
-## 6. Resource Adequacy
+## 7. Resource Adequacy
 
 *ISO 9001:2015 Clause 9.3.2(f) - Evaluate resource needs*
 
@@ -361,7 +410,7 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ---
 
-## 7. Effectiveness of Actions from Previous Reviews
+## 8. Effectiveness of Actions from Previous Reviews
 
 *ISO 9001:2015 Clause 9.3.2(g) - Follow up on previous actions*
 
@@ -396,7 +445,7 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ---
 
-## 8. Need for Changes to QMS
+## 9. Need for Changes to QMS
 
 *ISO 9001:2015 Clause 9.3.2(h) - Determine necessary changes*
 
@@ -440,7 +489,7 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ---
 
-## 9. Improvement Opportunities
+## 10. Improvement Opportunities
 
 *ISO 9001:2015 Clause 9.3.2(i) - Identify improvement areas*
 
@@ -481,7 +530,7 @@ Review each active risk from [Risk Register](RISK-REGISTER.md):
 
 ---
 
-## 10. Management Review Conclusions
+## 11. Management Review Conclusions
 
 ### 10.1 QMS Suitability
 
@@ -535,7 +584,7 @@ Is the QMS effective in practice?
 
 ---
 
-## 11. Action Items for Next Quarter
+## 12. Action Items for Next Quarter
 
 ### 11.1 Actions Assigned
 
@@ -563,7 +612,7 @@ Is the QMS effective in practice?
 
 ---
 
-## 12. Approval and Distribution
+## 13. Approval and Distribution
 
 ### 12.1 Review Approval
 

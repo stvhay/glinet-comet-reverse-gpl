@@ -1,10 +1,10 @@
 # Internal Audit Schedule and Process
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
-**Version:** 1.0
+**Version:** 1.1
 **Effective Date:** 2025-12-12
 **Last Updated:** 2025-12-12
-**Review Frequency:** Annually
+**Review Frequency:** Semi-annually (2 audits/year) OR 910 AI work-hours per audit, whichever comes first
 
 ---
 
@@ -34,6 +34,7 @@ Traditional ISO 9001 audits involve independent auditors examining multiple depa
 - **Evidence-based** using Git history, CI/CD logs, issue tracker
 - **Improvement-oriented** rather than compliance-focused
 - **2 audits/year** (minimum ISO requirement)
+- **Dual-trigger system:** Calendar OR 910 AI work-hours, whichever comes first (see [QMS-SCOPE.md](QMS-SCOPE.md) Section 2.3)
 
 **What Makes This Valid:**
 - Structured, documented methodology
@@ -53,9 +54,14 @@ Traditional ISO 9001 audits involve independent auditors examining multiple depa
 | **Audit 1** | Q2 (Spring) | Processes, Procedures, Quality Objectives | Mid-April |
 | **Audit 2** | Q4 (Fall) | Risk Management, Competency, Records | Mid-October |
 
-**Next Scheduled Audits:**
-- **Audit 1 (2025):** April 15, 2026
-- **Audit 2 (2025):** October 15, 2026
+**Next Scheduled Audits (Dual Triggers):**
+- **Audit 1 (2026):** April 15, 2026 OR 910 AI work-hours from 2025-12-12, whichever comes first
+- **Audit 2 (2026):** October 15, 2026 OR 910 AI work-hours from Audit 1, whichever comes first
+
+**Work-Hour Tracking:**
+- Cumulative AI work-hours tracked in each management review
+- When 910 hours reached before scheduled date, audit triggered early
+- After each audit, work-hour counter resets to zero
 
 ### Audit Scope Rotation
 
