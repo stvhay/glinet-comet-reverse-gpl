@@ -16,7 +16,6 @@ Arguments:
 
 from __future__ import annotations
 
-import argparse
 import gzip
 import re
 import subprocess
@@ -26,9 +25,8 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.firmware import get_firmware_path
-from lib.logging import error, info, section, success
-from lib.output import output_json, output_toml
+from lib.base_script import AnalysisScript
+from lib.logging import error, info, section
 
 # String extraction constants
 MIN_STRING_LENGTH = 4
@@ -560,54 +558,35 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze secure boot configuration in firmware",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class SecureBootScript(AnalysisScript):
+    """Secure boot analysis script."""
 
-    # Determine paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_dir = project_root / "output"
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
-
-    # Analyze secure boot
-    analysis = analyze_secure_boot(firmware_path, output_dir, work_dir)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Secure Boot Analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize secure boot analysis script."""
+        super().__init__(
+            description="Analyze secure boot configuration in firmware",
+            title="Secure Boot Analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    success("Secure boot analysis complete")
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run secure boot analysis on firmware.
+
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            SecureBootAnalysis results
+        """
+        # Determine output directory
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        output_dir = project_root / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        return analyze_secure_boot(firmware_path, output_dir, self.work_dir)
 
 
 if __name__ == "__main__":
-    main()
+    SecureBootScript().run()

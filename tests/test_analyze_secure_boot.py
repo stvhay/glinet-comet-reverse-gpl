@@ -8,7 +8,7 @@ import json
 import sys
 from contextlib import redirect_stdout
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import tomlkit
@@ -21,6 +21,7 @@ from analyze_secure_boot import (
     SIMPLE_FIELDS,
     FITSignature,
     SecureBootAnalysis,
+    SecureBootScript,
     extract_device_tree_node,
     extract_firmware,
     extract_fit_signature,
@@ -29,7 +30,6 @@ from analyze_secure_boot import (
     find_dtb_file,
     find_largest_dtb,
     load_offsets,
-    main,
 )
 from lib.output import output_toml
 
@@ -1072,13 +1072,15 @@ class TestMainFunction:
     """Test main() function with mocked dependencies."""
 
     @patch("analyze_secure_boot.analyze_secure_boot")
-    @patch("analyze_secure_boot.get_firmware_path")
-    def test_main_with_firmware_arg_toml(self, mock_get_firmware, mock_analyze, tmp_path):  # noqa: ARG002
+    @patch("lib.base_script.get_firmware_path")
+    def test_main_with_firmware_arg_toml(self, mock_get_firmware, mock_analyze, tmp_path):
         """Test main() with firmware argument and TOML output."""
+        # Create temporary firmware file
+        test_firmware = tmp_path / "test.img"
+        test_firmware.touch()
+
         # Mock get_firmware_path to return test firmware path
-        mock_firmware = MagicMock()
-        mock_firmware.name = "test.img"
-        mock_get_firmware.return_value = mock_firmware
+        mock_get_firmware.return_value = test_firmware
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(
@@ -1093,7 +1095,7 @@ class TestMainFunction:
             # Capture stdout
             f = io.StringIO()
             with redirect_stdout(f):
-                main()
+                SecureBootScript().run()
 
             output = f.getvalue()
             assert "firmware_file" in output
@@ -1101,13 +1103,15 @@ class TestMainFunction:
             assert "Secure Boot Analysis" in output
 
     @patch("analyze_secure_boot.analyze_secure_boot")
-    @patch("analyze_secure_boot.get_firmware_path")
-    def test_main_with_firmware_arg_json(self, mock_get_firmware, mock_analyze):
+    @patch("lib.base_script.get_firmware_path")
+    def test_main_with_firmware_arg_json(self, mock_get_firmware, mock_analyze, tmp_path):
         """Test main() with firmware argument and JSON output."""
+        # Create temporary firmware file
+        test_firmware = tmp_path / "test.img"
+        test_firmware.touch()
+
         # Mock get_firmware_path to return test firmware path
-        mock_firmware = MagicMock()
-        mock_firmware.name = "test.img"
-        mock_get_firmware.return_value = mock_firmware
+        mock_get_firmware.return_value = test_firmware
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(
@@ -1122,7 +1126,7 @@ class TestMainFunction:
             # Capture stdout
             f = io.StringIO()
             with redirect_stdout(f):
-                main()
+                SecureBootScript().run()
 
             output = f.getvalue()
             # Should be valid JSON

@@ -19,6 +19,7 @@ from analyze_proprietary_blobs import (
     KernelModule,
     LibraryInfo,
     ProprietaryBlobsAnalysis,
+    ProprietaryBlobsScript,
     analyze_binary,
     analyze_proprietary_blobs,
     extract_firmware,
@@ -30,7 +31,6 @@ from analyze_proprietary_blobs import (
     find_wifi_bt_blobs,
     get_file_size,
     has_gpl_string,
-    main,
 )
 from lib.output import output_toml
 
@@ -1399,13 +1399,19 @@ class TestAnalyzeProprietaryBlobs:
 class TestMain:
     """Test main function."""
 
-    @patch("analyze_proprietary_blobs.get_firmware_path")
+    @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "toml"])
-    def test_main_with_firmware_toml_format(self, mock_analyze, mock_get_firmware, capsys):
+    def test_main_with_firmware_toml_format(
+        self, mock_analyze, mock_get_firmware, capsys, tmp_path
+    ):
         """Test main function with firmware file and TOML format."""
+        # Create temporary firmware file
+        test_firmware = tmp_path / "test.img"
+        test_firmware.touch()
+
         # Mock firmware path
-        mock_get_firmware.return_value = Path("test.img")
+        mock_get_firmware.return_value = test_firmware
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1417,8 +1423,8 @@ class TestMain:
 
         mock_analyze.return_value = analysis
 
-        # Run main
-        main()
+        # Run script
+        ProprietaryBlobsScript().run()
 
         # Verify analyze_proprietary_blobs was called
         mock_analyze.assert_called_once()
@@ -1436,13 +1442,19 @@ class TestMain:
         assert parsed["firmware_file"] == "test.img"
         assert parsed["rockchip_count"] == 5
 
-    @patch("analyze_proprietary_blobs.get_firmware_path")
+    @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "json"])
-    def test_main_with_firmware_json_format(self, mock_analyze, mock_get_firmware, capsys):
+    def test_main_with_firmware_json_format(
+        self, mock_analyze, mock_get_firmware, capsys, tmp_path
+    ):
         """Test main function with firmware file and JSON format."""
+        # Create temporary firmware file
+        test_firmware = tmp_path / "test.img"
+        test_firmware.touch()
+
         # Mock firmware path
-        mock_get_firmware.return_value = Path("test.img")
+        mock_get_firmware.return_value = test_firmware
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1454,8 +1466,8 @@ class TestMain:
 
         mock_analyze.return_value = analysis
 
-        # Run main
-        main()
+        # Run script
+        ProprietaryBlobsScript().run()
 
         # Capture output
         captured = capsys.readouterr()
@@ -1466,13 +1478,17 @@ class TestMain:
         assert parsed_json["rockchip_count"] == 5
         assert parsed_json["firmware_file_source"] == "filesystem"
 
-    @patch("analyze_proprietary_blobs.get_firmware_path")
+    @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img"])
-    def test_main_without_format_arg(self, mock_analyze, mock_get_firmware, capsys):
+    def test_main_without_format_arg(self, mock_analyze, mock_get_firmware, capsys, tmp_path):
         """Test main function without format argument (defaults to TOML)."""
+        # Create temporary firmware file
+        test_firmware = tmp_path / "test.img"
+        test_firmware.touch()
+
         # Mock firmware path
-        mock_get_firmware.return_value = Path("test.img")
+        mock_get_firmware.return_value = test_firmware
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1483,8 +1499,8 @@ class TestMain:
 
         mock_analyze.return_value = analysis
 
-        # Run main
-        main()
+        # Run script
+        ProprietaryBlobsScript().run()
 
         # Capture output
         captured = capsys.readouterr()
@@ -1500,7 +1516,7 @@ class TestMain:
     def test_main_invalid_format(self):
         """Test main function with invalid format argument."""
         with pytest.raises(SystemExit) as exc_info:
-            main()
+            ProprietaryBlobsScript().run()
 
         # argparse raises SystemExit with code 2 for invalid arguments
         assert exc_info.value.code == 2

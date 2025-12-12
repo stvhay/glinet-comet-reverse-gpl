@@ -18,7 +18,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-import argparse
 import re
 import subprocess
 import sys
@@ -27,9 +26,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from lib.analysis_base import AnalysisBase
-from lib.firmware import get_firmware_path
+from lib.base_script import AnalysisScript
 from lib.logging import error, info, section, success, warn
-from lib.output import output_json, output_toml
 
 # U-Boot extraction constants
 UBOOT_EXTRACT_SIZE = 500000  # Read 500KB to capture full gzip stream
@@ -415,58 +413,42 @@ def write_legacy_markdown(analysis: UBootAnalysis, output_dir: Path) -> None:  #
     success("Wrote uboot-version.md")
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze U-Boot bootloader information from firmware",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class UBootScript(AnalysisScript):
+    """U-Boot analysis script."""
 
-    # Determine paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_dir = project_root / "output"
-    work_dir = Path("/tmp/fw_analysis")
+    def __init__(self):
+        """Initialize U-Boot analysis script."""
+        super().__init__(
+            description="Analyze U-Boot bootloader information from firmware",
+            title="U-Boot bootloader analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
 
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run U-Boot analysis on firmware.
 
-    # Analyze U-Boot
-    analysis = analyze_uboot(firmware_path)
+        Args:
+            firmware_path: Path to firmware file
 
-    # Output in requested format
-    if args.format == "json":
-        try:
-            print(output_json(analysis))
-        except ValueError as e:
-            error(str(e))
-            sys.exit(1)
-    else:  # toml
-        try:
-            print(
-                output_toml(analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
-            )
-        except ValueError as e:
-            error(str(e))
-            sys.exit(1)
+        Returns:
+            UBootAnalysis results
+        """
+        return analyze_uboot(firmware_path)
 
-    # Generate legacy markdown file
-    write_legacy_markdown(analysis, output_dir)
+    def post_process(self, analysis: AnalysisBase) -> None:
+        """Generate legacy markdown file.
+
+        Args:
+            analysis: Completed U-Boot analysis
+        """
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        output_dir = project_root / "output"
+
+        if isinstance(analysis, UBootAnalysis):
+            write_legacy_markdown(analysis, output_dir)
 
 
 if __name__ == "__main__":
-    main()
+    UBootScript().run()

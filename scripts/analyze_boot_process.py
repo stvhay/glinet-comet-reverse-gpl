@@ -19,7 +19,6 @@ Arguments:
 
 from __future__ import annotations
 
-import argparse
 import re
 import subprocess
 import sys
@@ -30,9 +29,9 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.firmware import extract_firmware, get_firmware_path
+from lib.base_script import AnalysisScript
+from lib.firmware import extract_firmware
 from lib.logging import error, info, section, success
-from lib.output import output_json, output_toml
 
 # A/B redundancy detection threshold
 MIN_FIT_IMAGES_FOR_AB = 2
@@ -805,66 +804,57 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze boot process and partition layout",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class BootProcessScript(AnalysisScript):
+    """Boot process analysis script."""
 
-    # Determine paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_dir = project_root / "output"
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Initialize directories
-    output_dir.mkdir(parents=True, exist_ok=True)
-    work_dir.mkdir(parents=True, exist_ok=True)
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    info(f"Analyzing: {firmware}")
-
-    # Extract firmware
-    extract_dir = extract_firmware(firmware, work_dir)
-
-    # Analyze boot process
-    analysis = analyze_boot_process(firmware, extract_dir, output_dir)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Boot process and partition layout analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize boot process analysis script."""
+        super().__init__(
+            description="Analyze boot process and partition layout",
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    # Generate legacy markdown output
-    section("Generating markdown report")
-    md_output = output_dir / "boot-process.md"
-    generate_markdown(analysis, md_output)
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run boot process analysis on firmware.
 
-    success("Boot process analysis complete")
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            BootProcessAnalysis results
+        """
+        firmware = Path(firmware_path)
+        info(f"Analyzing: {firmware}")
+
+        # Extract firmware
+        extract_dir = extract_firmware(firmware, self.work_dir)
+
+        # Determine output directory
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        output_dir = project_root / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        return analyze_boot_process(firmware, extract_dir, output_dir)
+
+    def post_process(self, analysis: AnalysisBase) -> None:
+        """Generate legacy markdown file.
+
+        Args:
+            analysis: Completed boot process analysis
+        """
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        output_dir = project_root / "output"
+
+        section("Generating markdown report")
+        md_output = output_dir / "boot-process.md"
+
+        if isinstance(analysis, BootProcessAnalysis):
+            generate_markdown(analysis, md_output)
 
 
 if __name__ == "__main__":
-    main()
+    BootProcessScript().run()

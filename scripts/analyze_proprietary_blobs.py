@@ -16,7 +16,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-import argparse
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -24,15 +23,14 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.base_script import AnalysisScript
 from lib.firmware import (
     extract_firmware,
-    get_firmware_path,
 )
 from lib.firmware import (
     find_squashfs_rootfs as find_rootfs,
 )
-from lib.logging import error, info, section, success
-from lib.output import output_json, output_toml
+from lib.logging import error, info, section
 
 # Constants
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
@@ -503,51 +501,29 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze proprietary/closed-source binaries in firmware",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class ProprietaryBlobsScript(AnalysisScript):
+    """Proprietary blobs analysis script."""
 
-    # Determine paths
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
-
-    # Analyze firmware
-    analysis = analyze_proprietary_blobs(firmware_path, work_dir)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Proprietary blobs analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize proprietary blobs analysis script."""
+        super().__init__(
+            description="Analyze proprietary/closed-source binaries in firmware",
+            title="Proprietary blobs analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    success("Proprietary blobs analysis complete")
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run proprietary blobs analysis on firmware.
+
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            ProprietaryBlobsAnalysis results
+        """
+        return analyze_proprietary_blobs(firmware_path, self.work_dir)
 
 
 if __name__ == "__main__":
-    main()
+    ProprietaryBlobsScript().run()

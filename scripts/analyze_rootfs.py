@@ -14,7 +14,6 @@ This script performs GPL compliance analysis by:
 - Outputting structured data with source tracking
 """
 
-import argparse
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -22,13 +21,12 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.base_script import AnalysisScript
 from lib.firmware import (
     extract_firmware,
     find_squashfs_rootfs,
-    get_firmware_path,
 )
-from lib.logging import error, info, section, success, warn
-from lib.output import output_json, output_toml
+from lib.logging import error, info, section, warn
 
 # Constants
 MAX_LICENSE_FILE_SIZE = 100000
@@ -494,51 +492,29 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze root filesystem contents",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class RootfsScript(AnalysisScript):
+    """Root filesystem analysis script."""
 
-    # Determine paths
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
-
-    # Analyze rootfs
-    analysis = analyze_rootfs(firmware_path, work_dir)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Root filesystem analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize rootfs analysis script."""
+        super().__init__(
+            description="Analyze root filesystem contents",
+            title="Root filesystem analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    success("Rootfs analysis complete")
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run rootfs analysis on firmware.
+
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            RootfsAnalysis results
+        """
+        return analyze_rootfs(firmware_path, self.work_dir)
 
 
 if __name__ == "__main__":
-    main()
+    RootfsScript().run()

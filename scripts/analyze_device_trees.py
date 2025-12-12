@@ -15,7 +15,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-import argparse
 import re
 import sys
 from dataclasses import dataclass, field
@@ -23,9 +22,9 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.firmware import extract_firmware, get_firmware_path
-from lib.logging import error, info, section, success, warn
-from lib.output import output_json, output_toml
+from lib.base_script import AnalysisScript
+from lib.firmware import extract_firmware
+from lib.logging import error, info, section, warn
 
 # Device tree analysis constants
 FDT_MAGIC = "d00dfeed"  # FDT magic number (big-endian)
@@ -331,51 +330,42 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze device tree blobs from firmware",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class DeviceTreeScript(AnalysisScript):
+    """Device tree analysis script."""
 
-    # Determine paths
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
-
-    # Analyze device trees
-    analysis = analyze_device_trees(firmware_path)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Device tree analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize device tree analysis script."""
+        super().__init__(
+            description="Analyze device tree blobs from firmware",
+            title="Device tree analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    success(f"Analyzed {analysis.dtb_count} device tree(s)")
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run device tree analysis on firmware.
+
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            DeviceTreeAnalysis results
+        """
+        return analyze_device_trees(firmware_path)
+
+    def get_success_message(self, analysis: AnalysisBase) -> str:
+        """Generate success message after analysis.
+
+        Args:
+            analysis: The completed analysis results
+
+        Returns:
+            Success message string
+        """
+        if isinstance(analysis, DeviceTreeAnalysis):
+            return f"Analyzed {analysis.dtb_count} device tree(s)"
+        return super().get_success_message(analysis)
 
 
 if __name__ == "__main__":
-    main()
+    DeviceTreeScript().run()
