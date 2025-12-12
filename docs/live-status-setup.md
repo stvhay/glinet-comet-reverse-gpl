@@ -48,16 +48,16 @@ This updates the gist every 30 seconds while Claude is working.
             │ Reads every 30s
             ▼
 ┌─────────────────────────┐
-│ update-status-gist.sh   │
-│ - Adds timestamp        │
-│ - Adds header/footer    │
+│ update-status-gist.py   │
+│ - Jinja template render │
+│ - Updates timestamp     │
 │ - Calls: gh gist edit   │
 └───────────┬─────────────┘
             │ GitHub API
             ▼
 ┌─────────────────────────┐
 │ GitHub Gist             │
-│ (claude-status.md)      │◄──── Browser auto-refresh
+│ (scratchpad.md)         │◄──── Browser auto-refresh
 │ Public, instantly       │      (30 seconds)
 │ updated                 │
 └─────────────────────────┘
@@ -76,13 +76,13 @@ This updates the gist every 30 seconds while Claude is working.
 - Creates public gist with scratchpad content
 - Saves gist ID to `/tmp/claude-glinet-comet-reversing/gist-id.txt`
 
-**update-status-gist.sh** - Single update
-- Reads scratchpad
-- Enhances with timestamp, header, footer
+**update-status-gist.py** - Single update (Python + Jinja)
+- Renders Jinja template with scratchpad content
+- Updates timestamp dynamically
 - Updates gist via `gh gist edit`
 
 **update-status-gist-loop.sh** - Auto-update
-- Runs update script every 30 seconds
+- Runs Python update script every 30 seconds
 - Displays status in terminal
 - Press Ctrl+C to stop
 
@@ -96,7 +96,7 @@ This updates the gist every 30 seconds while Claude is working.
 Update anytime without the loop:
 
 ```bash
-./scripts/update-status-gist.sh
+./scripts/update-status-gist.py
 ```
 
 ## Viewing the Status
