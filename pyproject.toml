@@ -78,9 +78,10 @@ omit = [
     "*/tests/*",
     "*/lib/*",
     # Exclude scripts without tests (TODO: add tests and remove from omit)
-    "scripts/analyze_device_trees.py",
-    "scripts/analyze_rootfs.py",
-    "scripts/analyze_uboot.py",
+    "scripts/analyze_boot_process.py",
+    "scripts/analyze_network_services.py",
+    "scripts/analyze_proprietary_blobs.py",
+    "scripts/analyze_secure_boot.py",
 ]
 
 [tool.coverage.report]

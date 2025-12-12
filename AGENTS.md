@@ -56,14 +56,49 @@ shellcheck scripts/*.sh
 
 ## Documentation
 
-Analysis scripts output JSON → cached in `results/*.toml` → rendered via Jinja templates
+Analysis scripts output TOML/JSON → cached in `results/*.toml` → rendered via Jinja templates
 
-**Template example:**
+### Template Conventions
+
+**1. Analysis script output format (Python scripts):**
+All Python analysis scripts (`analyze_*.py`) output structured data with source metadata:
+```toml
+# Analysis scripts output TOML by default (use --format json for JSON)
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+kernel_offset = "0x2000"
+kernel_offset_source = "kernel"
+kernel_offset_method = "binwalk -e firmware.img | grep 'Kernel'"
+```
+
+**2. Template usage with `| src` filter:**
+Templates automatically generate citations from `_source` and `_method` fields:
 ```jinja
 {% set data = analyze('kernel') %}
-Offset: {{ data.offset | src }}  {# Auto-generates footnote #}
+Kernel at {{ data.kernel_offset | src }}  {# Auto-generates footnote #}
+
 {{ render_footnotes() }}
 ```
+
+**Renders as:**
+```markdown
+Kernel at 0x2000[^1]
+
+## Sources
+[^1]: [scripts/analyze_kernel.py](../scripts/analyze_kernel.py) - `binwalk -e firmware.img | grep 'Kernel'`
+```
+
+**3. Best practices:**
+- **Never hard-code findings** in templates - always pull from analysis results
+- **Every value must have source metadata** - use `_source` and `_method` suffix fields
+- **Use `| src` filter** on all data from analysis scripts for automatic citations
+- **Cache results** in `results/*.toml` for template consumption
+- **Python over Bash** - new analysis scripts should be written in Python with type hints
+
+**4. Template file naming:**
+- Place templates in `templates/wiki/` directory
+- Use `.md.j2` extension for Jinja markdown templates
+- Output to `wiki/` directory with `.md` extension
+- Example: `templates/wiki/Kernel.md.j2` → `wiki/Kernel.md`
 
 See `docs/design-jinja-documentation.md` for full architecture.
 

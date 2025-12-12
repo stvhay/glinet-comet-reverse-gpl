@@ -74,15 +74,34 @@ Kernel at 0x2000[^1]
 - `results/.manifest.toml` - Hash tracking for cache invalidation
 - These files prove findings derive from specific firmware + script versions
 
-### Template Rendering
+### Template Rendering Workflow
 
+**1. Run analysis scripts (outputs TOML with source metadata):**
+```bash
+# Analysis scripts now output TOML (default) or JSON
+./scripts/analyze_device_trees.py > results/device-trees.toml
+./scripts/analyze_rootfs.py > results/rootfs.toml
+./scripts/analyze_uboot.py > results/uboot.toml
+./scripts/analyze_boot_process.py > results/boot-process.toml
+./scripts/analyze_network_services.py > results/network-services.toml
+./scripts/analyze_proprietary_blobs.py > results/proprietary-blobs.toml
+./scripts/analyze_secure_boot.py > results/secure-boot.toml
+```
+
+**2. Render templates (consumes TOML/JSON):**
 ```bash
 # Render single template
 ./scripts/render_template.py templates/wiki/Kernel.md.j2 wiki/Kernel.md
 
-# Render all templates (future)
-./scripts/render_wiki.sh
+# Render all templates
+./scripts/render_wiki.sh  # (when available)
 ```
+
+**3. Template best practices:**
+- Always use `| src` filter to auto-generate footnotes
+- Templates read from `results/*.toml` via `analyze()` function
+- Source metadata (`_source`, `_method`) fields generate citations automatically
+- Never hard-code findings in templates - pull from analysis results
 
 See `docs/design-jinja-documentation.md` for complete architecture.
 
