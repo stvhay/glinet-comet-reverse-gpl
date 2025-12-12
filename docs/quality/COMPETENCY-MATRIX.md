@@ -104,7 +104,7 @@ This section tracks maintainer competency profiles for both human and AI collabo
 
 | Maintainer | Role | Agent Reference | QMS Profile | Status | Last Review |
 |------------|------|-----------------|-------------|--------|-------------|
-| *[No maintainers fully onboarded yet]* | - | - | - | - | - |
+| stvhay | Project Lead | [.claude/agents/stvhay.md](../../.claude/agents/stvhay.md) | [stvhay.md](maintainers/stvhay.md) | 🟢 | 2025-12-12 |
 
 **Status Legend:**
 - 🟢 Active - Profile current and accurate
