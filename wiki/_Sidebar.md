@@ -27,7 +27,7 @@
 ### Device Internals
 
 - [Boot Process](boot-process)
-- [Device Trees](device-trees)
+- [Device Tree Analysis](Device-Tree-Analysis)
 - [Network Services](network-services)
 - [Proprietary Blobs](proprietary-blobs)
 - [Flashing Methods](flashing-methods)
