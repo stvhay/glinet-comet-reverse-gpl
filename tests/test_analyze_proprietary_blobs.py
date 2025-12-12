@@ -1402,9 +1402,7 @@ class TestMain:
     @patch("analyze_proprietary_blobs.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "toml"])
-    def test_main_with_firmware_toml_format(
-        self, mock_analyze, mock_get_firmware, capsys
-    ):
+    def test_main_with_firmware_toml_format(self, mock_analyze, mock_get_firmware, capsys):
         """Test main function with firmware file and TOML format."""
         # Mock firmware path
         mock_get_firmware.return_value = Path("test.img")
@@ -1441,9 +1439,7 @@ class TestMain:
     @patch("analyze_proprietary_blobs.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "json"])
-    def test_main_with_firmware_json_format(
-        self, mock_analyze, mock_get_firmware, capsys
-    ):
+    def test_main_with_firmware_json_format(self, mock_analyze, mock_get_firmware, capsys):
         """Test main function with firmware file and JSON format."""
         # Mock firmware path
         mock_get_firmware.return_value = Path("test.img")

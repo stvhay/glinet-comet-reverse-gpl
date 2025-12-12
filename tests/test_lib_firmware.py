@@ -95,9 +95,10 @@ class TestGetFirmwarePath:
 
     def test_exits_on_download_failure(self, tmp_path):
         """Test that it exits if download fails."""
-        with patch(
-            "subprocess.run", side_effect=subprocess.CalledProcessError(1, "curl")
-        ), pytest.raises(SystemExit):
+        with (
+            patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "curl")),
+            pytest.raises(SystemExit),
+        ):
             get_firmware_path(None, tmp_path)
 
     def test_uses_custom_firmware_url(self, tmp_path):

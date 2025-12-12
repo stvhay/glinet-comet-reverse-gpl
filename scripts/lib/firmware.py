@@ -7,9 +7,7 @@ from pathlib import Path
 from lib.logging import error, info
 
 # Default firmware URL for GL.iNet Comet (RM1)
-DEFAULT_FIRMWARE_URL = (
-    "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-)
+DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 
 def get_firmware_path(
