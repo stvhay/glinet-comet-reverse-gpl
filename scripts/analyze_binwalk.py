@@ -14,7 +14,6 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-import argparse
 import re
 import subprocess
 import sys
@@ -24,9 +23,8 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
-from lib.firmware import get_firmware_path
+from lib.base_script import AnalysisScript
 from lib.logging import error, info, section, success
-from lib.output import output_json, output_toml
 
 # Binwalk output format constants
 # Example line: "586164    0x8F1B4    Device tree blob (DTB)"
@@ -321,57 +319,42 @@ COMPLEX_FIELDS = [
 ]
 
 
-def main() -> None:
-    """Main entry point."""
-    # Parse arguments
-    parser = argparse.ArgumentParser(
-        description="Analyze firmware structure using binwalk",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "firmware",
-        nargs="?",
-        help="Path to firmware file (downloads default if not provided)",
-    )
-    parser.add_argument(
-        "--format",
-        choices=["toml", "json"],
-        default="toml",
-        help="Output format (default: toml)",
-    )
-    args = parser.parse_args()
+class BinwalkScript(AnalysisScript):
+    """Binwalk firmware analysis script."""
 
-    # Determine paths
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    output_dir = project_root / "output"
-    work_dir = Path("/tmp/fw_analysis")
-
-    # Get firmware path
-    firmware = get_firmware_path(args.firmware, work_dir)
-    firmware_path = str(firmware)
-
-    # Analyze firmware
-    analysis = analyze_firmware(firmware_path)
-
-    # Output in requested format
-    if args.format == "json":
-        print(output_json(analysis))
-    else:  # toml
-        print(
-            output_toml(
-                analysis,
-                title="Binwalk firmware analysis",
-                simple_fields=SIMPLE_FIELDS,
-                complex_fields=COMPLEX_FIELDS,
-            )
+    def __init__(self):
+        """Initialize binwalk analysis script."""
+        super().__init__(
+            description="Analyze firmware structure using binwalk",
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
         )
 
-    # Generate legacy offsets file
-    section("Extracting firmware offsets")
-    write_legacy_offsets_file(analysis, output_dir)
-    success("Binwalk analysis complete")
+    def analyze(self, firmware_path: str) -> AnalysisBase:
+        """Run binwalk analysis on firmware.
+
+        Args:
+            firmware_path: Path to firmware file
+
+        Returns:
+            BinwalkAnalysis results
+        """
+        return analyze_firmware(firmware_path)
+
+    def post_process(self, analysis: AnalysisBase) -> None:
+        """Generate legacy offsets file.
+
+        Args:
+            analysis: Completed binwalk analysis
+        """
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent
+        output_dir = project_root / "output"
+
+        section("Extracting firmware offsets")
+        write_legacy_offsets_file(analysis, output_dir)
 
 
 if __name__ == "__main__":
-    main()
+    BinwalkScript().run()
