@@ -41,6 +41,18 @@ nix develop
 
 Results go to `output/`. See the **[Wiki](https://github.com/stvhay/glinet-comet-reverse-gpl/wiki)** for detailed usage and analysis reports.
 
+## Quality Management
+
+This project follows an **ISO 9001:2015-aligned quality management system** adapted for AI-assisted open source development. Every finding in this analysis is traceable to automated scripts with documented methodology—ensuring reproducibility and credibility.
+
+**Key QMS Features:**
+- **100% Reproducibility** - All analysis results derive from committed scripts
+- **≥60% Test Coverage** - 619+ automated tests validate analysis correctness
+- **Dual-Trigger Reviews** - Quality reviews triggered by calendar date OR AI work-hours
+- **Evidence-Based Documentation** - Jinja templates auto-cite source scripts for every claim
+
+This rigor is essential for GPL compliance analysis where accuracy directly impacts legal obligations. See **[docs/quality/](docs/quality/)** for complete QMS documentation including quality policy, procedures, and risk management.
+
 ## Legal
 
 This repository contains only scripts and documentation. No proprietary code or binaries are included.
