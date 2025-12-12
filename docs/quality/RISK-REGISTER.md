@@ -1,8 +1,77 @@
-# Risk Register
+# Risk Register and Management Process
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
+**Version:** 1.0
 **Last Updated:** 2025-12-12
 **Review Frequency:** Quarterly
+**Next Review:** 2025-03-15
+
+---
+
+## Risk Management Process
+
+### Purpose
+
+This document defines the risk management process for the GL.iNet Comet GPL Compliance Analysis project, in accordance with ISO 9001:2015 Clause 6.1. It establishes how we identify, assess, mitigate, monitor, and integrate risks into our quality management system and operational workflows.
+
+### Process Overview
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐    ┌──────────────┐
+│ Identify    │ → │ Assess       │ → │ Mitigate    │ → │ Monitor      │
+│ Risks       │    │ & Prioritize │    │ & Control   │    │ & Review     │
+└─────────────┘    └──────────────┘    └─────────────┘    └──────────────┘
+       ↑                                                            │
+       └────────────────────────────────────────────────────────────┘
+                          Continuous Loop
+```
+
+### 1. Risk Identification
+
+**When risks are identified:**
+
+- **Proactively:**
+  - Project initiation (initial risk assessment)
+  - New analysis tasks (via issue templates)
+  - Tool or methodology changes
+  - External events (legal developments, tool vulnerabilities)
+
+- **Reactively:**
+  - Incidents or near-misses
+  - Stakeholder concerns
+  - Audit findings (when audits implemented)
+
+**Sources of risk information:**
+- Project team knowledge and experience
+- Historical data from similar projects
+- Legal and regulatory monitoring (GPL compliance landscape)
+- Technical literature and security advisories
+- Stakeholder feedback
+
+**Documentation:**
+- New risks added to Active Risks section below
+- Risk owner assigned
+- Initial assessment performed
+
+### 2. Risk Assessment
+
+**Likelihood Criteria:**
+
+| Level | Definition | Probability |
+|-------|-----------|-------------|
+| **High** | Expected to occur | >50% chance |
+| **Medium** | May occur | 10-50% chance |
+| **Low** | Unlikely to occur | <10% chance |
+
+**Impact Criteria:**
+
+| Level | Definition | Consequences |
+|-------|-----------|--------------|
+| **High** | Severe impact | Project failure, legal liability, major rework |
+| **Medium** | Moderate impact | Significant delays, quality issues, reputation damage |
+| **Low** | Minor impact | Small delays, easy to correct, limited scope |
+
+**Risk Level Determination:**
 
 ## Risk Assessment Matrix
 
@@ -17,6 +86,131 @@
 | Medium | Low | **Low** |
 | Low | Medium | **Low** |
 | Low | Low | **Low** |
+
+**Response Priority:**
+- **Critical**: Immediate action required, escalate to Project Lead
+- **High**: Address within current sprint/planning cycle
+- **Medium**: Monitor closely, plan mitigation
+- **Low**: Accept or monitor, periodic review
+
+### 3. Risk Treatment (Mitigation)
+
+**Treatment Strategies:**
+
+1. **Avoid:** Eliminate the risk by changing approach
+   - Example: Use established tools instead of custom solutions to avoid tool reliability risk
+
+2. **Mitigate:** Reduce likelihood or impact
+   - Example: Add regression tests to reduce false positive risk
+   - Example: Document methodology rigorously to reduce legal risk
+
+3. **Transfer:** Share risk with external party
+   - Example: Use established nix packages instead of manual dependency management
+
+4. **Accept:** Acknowledge risk but take no action (for low-level risks)
+   - Example: Accept risk of minor delays from learning new tools
+
+**Mitigation Documentation:**
+- Current mitigations listed for each risk in Active Risks section
+- Additional actions required specified
+- Owner assigned for implementation
+- Due dates tracked via GitHub Issues when appropriate
+
+**Integration with Development:**
+- High/Critical risks trigger protective measures in code
+- Testing strategies address identified technical risks
+- Issue templates include risk consideration prompts (future enhancement)
+
+### 4. Risk Monitoring and Control
+
+**Monitoring Frequency:**
+
+| Risk Level | Review Frequency | Trigger Points |
+|------------|------------------|----------------|
+| Critical | Weekly + ad-hoc | Any risk indicator change |
+| High | Monthly + quarterly formal review | Milestone completion, methodology changes |
+| Medium | Quarterly review | Standard quarterly review |
+| Low | Quarterly review | Standard quarterly review |
+
+**Key Risk Indicators (KRIs):**
+
+- **Legal Risk:** Changes to GPL enforcement landscape, vendor communications
+- **Technical Risk:** Test failure rates, bug reports, analysis inconsistencies
+- **Operational Risk:** CI/CD success rates, backup status, dependency updates
+- **Quality Risk:** Objective performance (see QUALITY-OBJECTIVES.md)
+
+**Monitoring Methods:**
+- Automated: CI/CD metrics, test coverage reports, dependency scans
+- Manual: Quarterly risk review, issue analysis, stakeholder feedback
+- External: GPL compliance news monitoring, tool security advisories
+
+### 5. Integration with Workflows
+
+**Issue Templates:**
+- Analysis task template prompts for risk identification
+- Bug template includes root cause analysis (addresses risk recurrence)
+- Infrastructure template considers tool/dependency risks
+
+**CI/CD Pipeline:**
+- Automated tests address technical risks (false positives, regressions)
+- Linting/formatting reduces code quality risks
+- Coverage thresholds maintain quality baseline
+
+**Code Review:**
+- Opus agent reviews significant changes (addresses implementation risks)
+- Focus areas aligned with risk register (security, correctness, maintainability)
+
+**Documentation:**
+- Source metadata addresses reproducibility risk
+- Methodology documentation addresses legal risk
+- Test coverage reports address quality risk
+
+### 6. Roles and Responsibilities
+
+**Project Lead:**
+- Overall risk management ownership
+- Critical/High risk escalation point
+- Quarterly risk review facilitation
+- Risk register maintenance
+
+**Development Team (Human + AI Agents):**
+- Identify risks during work
+- Implement mitigations in code/process
+- Monitor risk indicators
+- Report risk status changes
+
+**AI Agents:**
+- Planning Agent: Consider risks during task breakdown
+- Development Agent: Implement risk mitigations in code
+- Code Reviewer Agent: Identify new risks during review
+
+### 7. Risk Communication
+
+**Internal Communication:**
+- Risk register maintained in version control (transparent, auditable)
+- High/Critical risks discussed in Management Review (Phase 2)
+- Risk updates committed with explanatory commit messages
+
+**External Communication:**
+- Methodology documentation addresses stakeholder concerns about legal risk
+- Public repository demonstrates transparency (builds trust)
+- Analysis results include confidence levels and limitations
+
+### 8. Risk Register Maintenance
+
+**Updates Required When:**
+- New risks identified → Add to Active Risks
+- Risk status changes (likelihood, impact, mitigations) → Update entry
+- Risk resolved/no longer applicable → Move to Closed Risks
+- Quarterly review → Update all review dates, reassess all risks
+- Significant project changes → Full risk reassessment
+
+**Version Control:**
+- All changes to risk register committed to Git
+- Change rationale documented in commit messages
+- Historical risk data preserved in Git history
+
+---
 
 ## Active Risks
 

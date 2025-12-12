@@ -1,12 +1,20 @@
 # Quality Objectives
 
 **Project:** GL.iNet Comet GPL Compliance Analysis
+**Version:** 1.0
 **Last Updated:** 2025-12-12
 **Review Frequency:** Quarterly
+**Next Review:** 2025-03-15
 
 ## Purpose
 
-This document defines measurable quality objectives that guide the development and execution of firmware analysis for GPL compliance. These objectives support our Quality Policy and ensure consistent delivery of accurate, reproducible, and legally defensible analysis results.
+This document defines measurable quality objectives that guide the development and execution of firmware analysis for GPL compliance. These objectives support our [Quality Policy](QUALITY-POLICY.md) and ensure consistent delivery of accurate, reproducible, and legally defensible analysis results.
+
+**Alignment with Quality Policy:**
+- Supports our commitment to black box methodology (Objectives 2, 4)
+- Enables evidence-based decision making (Objectives 1, 3, 4)
+- Drives continuous improvement (Objective 5)
+- Demonstrates competence and resource management (Objectives 3, 4)
 
 ## Quality Objectives
 
