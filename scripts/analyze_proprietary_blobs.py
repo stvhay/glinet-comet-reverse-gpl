@@ -24,6 +24,12 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.finders import (
+    find_and_create,
+    find_files,
+    get_file_size,
+    get_relative_path,
+)
 from lib.firmware import (
     extract_firmware,
 )
@@ -140,9 +146,29 @@ class ProprietaryBlobsAnalysis(AnalysisBase):
         return False, None
 
 
-def get_file_size(file_path: Path) -> int:
-    """Get file size in bytes, handling cross-platform stat."""
-    return file_path.stat().st_size
+def _create_library_info(purpose_prefix: str):
+    """Create a LibraryInfo creator function for find_and_create.
+
+    Args:
+        purpose_prefix: Prefix for purpose description
+
+    Returns:
+        Creator function that takes (rootfs, path) and returns LibraryInfo
+    """
+
+    def creator(rootfs: Path, path: Path) -> LibraryInfo:
+        size = get_file_size(path)
+        rel_path = get_relative_path(rootfs, path)
+        # Extract base library name without version
+        base_name = path.name.split(".so")[0] + ".so"
+        return LibraryInfo(
+            name=base_name,
+            path=rel_path,
+            size=size,
+            purpose=f"{purpose_prefix} ({size} bytes)",
+        )
+
+    return creator
 
 
 def find_libraries(rootfs: Path, patterns: list[str], purpose_prefix: str) -> list[LibraryInfo]:
@@ -156,32 +182,13 @@ def find_libraries(rootfs: Path, patterns: list[str], purpose_prefix: str) -> li
     Returns:
         List of LibraryInfo objects for found libraries
     """
-    libraries = []
-
-    for pattern in patterns:
-        # Find files matching pattern
-        found_files = list(rootfs.rglob(pattern))
-
-        # Take first match for each pattern
-        if found_files:
-            lib_file = found_files[0]
-            if lib_file.is_file():
-                size = get_file_size(lib_file)
-                rel_path = "/" + str(lib_file.relative_to(rootfs))
-
-                # Extract base library name without version
-                base_name = lib_file.name.split(".so")[0] + ".so"
-
-                libraries.append(
-                    LibraryInfo(
-                        name=base_name,
-                        path=rel_path,
-                        size=size,
-                        purpose=f"{purpose_prefix} ({size} bytes)",
-                    )
-                )
-
-    return libraries
+    return find_and_create(
+        rootfs,
+        patterns,
+        _create_library_info(purpose_prefix),
+        file_type="file",
+        first_match_only=True,
+    )
 
 
 def find_all_rockchip_libs(rootfs: Path) -> list[str]:
@@ -193,22 +200,17 @@ def find_all_rockchip_libs(rootfs: Path) -> list[str]:
     Returns:
         List of paths relative to rootfs
     """
-    lib_paths = []
-
     # Search patterns for Rockchip libraries
     patterns = ["librockchip*", "librk*", "*rga*", "*mpp*"]
 
-    for pattern in patterns:
-        for lib_file in rootfs.rglob(pattern):
-            # Skip .pyc files
-            if lib_file.suffix == ".pyc":
-                continue
-            if lib_file.is_file():
-                rel_path = "/" + str(lib_file.relative_to(rootfs))
-                if rel_path not in lib_paths:
-                    lib_paths.append(rel_path)
+    found_paths = find_files(
+        rootfs,
+        patterns,
+        exclude_patterns=["*.pyc"],
+        file_type="file",
+    )
 
-    return sorted(lib_paths)
+    return [get_relative_path(rootfs, path) for path in found_paths]
 
 
 def find_wifi_bt_blobs(rootfs: Path) -> list[FirmwareBlob]:
@@ -220,8 +222,6 @@ def find_wifi_bt_blobs(rootfs: Path) -> list[FirmwareBlob]:
     Returns:
         List of FirmwareBlob objects
     """
-    blobs = []
-
     # Broadcom/Cypress WiFi patterns
     bcm_patterns = ["bcmdhd*.ko", "fw_bcm*.bin", "nvram*.txt", "brcmfmac*.bin"]
 
@@ -230,16 +230,20 @@ def find_wifi_bt_blobs(rootfs: Path) -> list[FirmwareBlob]:
 
     all_patterns = bcm_patterns + rtl_patterns
 
-    for pattern in all_patterns:
-        found_files = list(rootfs.rglob(pattern))
-        if found_files:
-            blob_file = found_files[0]
-            if blob_file.is_file():
-                size = get_file_size(blob_file)
-                rel_path = "/" + str(blob_file.relative_to(rootfs))
-                blobs.append(FirmwareBlob(name=blob_file.name, path=rel_path, size=size))
+    def create_blob(rootfs: Path, path: Path) -> FirmwareBlob:
+        return FirmwareBlob(
+            name=path.name,
+            path=get_relative_path(rootfs, path),
+            size=get_file_size(path),
+        )
 
-    return blobs
+    return find_and_create(
+        rootfs,
+        all_patterns,
+        create_blob,
+        file_type="file",
+        first_match_only=True,
+    )
 
 
 def find_firmware_blobs(rootfs: Path) -> list[FirmwareBlob]:
@@ -251,20 +255,23 @@ def find_firmware_blobs(rootfs: Path) -> list[FirmwareBlob]:
     Returns:
         List of FirmwareBlob objects
     """
-    blobs: list[FirmwareBlob] = []
     firmware_dir = rootfs / "lib" / "firmware"
 
     if not firmware_dir.exists():
-        return blobs
+        return []
 
-    for fw_file in firmware_dir.rglob("*"):
-        if fw_file.is_file():
-            size = get_file_size(fw_file)
-            rel_path = "/" + str(fw_file.relative_to(rootfs))
-            blobs.append(FirmwareBlob(name=fw_file.name, path=rel_path, size=size))
+    # Find all files in firmware directory
+    found_paths = find_files(firmware_dir, ["*"], file_type="file")
 
-    # Limit to first 50 for sanity
-    return blobs[:50]
+    # Convert to FirmwareBlob objects (limit to first 50)
+    return [
+        FirmwareBlob(
+            name=path.name,
+            path=get_relative_path(rootfs, path),
+            size=get_file_size(path),
+        )
+        for path in found_paths[:50]
+    ]
 
 
 def has_gpl_string(ko_file: Path) -> bool:
@@ -294,17 +301,16 @@ def find_kernel_modules(rootfs: Path) -> list[KernelModule]:
     Returns:
         List of KernelModule objects (limited to 30)
     """
-    modules = []
 
-    for ko_file in rootfs.rglob("*.ko"):
-        if ko_file.is_file():
-            size = get_file_size(ko_file)
-            rel_path = "/" + str(ko_file.relative_to(rootfs))
-            has_gpl = has_gpl_string(ko_file)
+    def create_module(rootfs: Path, path: Path) -> KernelModule:
+        return KernelModule(
+            name=path.name,
+            path=get_relative_path(rootfs, path),
+            size=get_file_size(path),
+            has_gpl=has_gpl_string(path),
+        )
 
-            modules.append(
-                KernelModule(name=ko_file.name, path=rel_path, size=size, has_gpl=has_gpl)
-            )
+    modules = find_and_create(rootfs, ["*.ko"], create_module, file_type="file")
 
     # Limit to first 30
     return modules[:30]
