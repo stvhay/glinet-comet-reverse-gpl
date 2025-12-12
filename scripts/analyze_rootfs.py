@@ -22,6 +22,11 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.finders import (
+    find_files,
+    get_file_size,
+    get_relative_path,
+)
 from lib.firmware import (
     extract_firmware,
     find_squashfs_rootfs,
@@ -158,11 +163,12 @@ def parse_os_release(rootfs: Path, analysis: RootfsAnalysis) -> None:
 def extract_kernel_version(rootfs: Path, analysis: RootfsAnalysis) -> None:
     """Extract kernel version from module vermagic."""
     # Find first .ko file
-    try:
-        ko_file = next(rootfs.rglob("*.ko"))
-    except StopIteration:
+    found_modules = find_files(rootfs, ["*.ko"], file_type="file", first_match_only=True)
+    if not found_modules:
         warn("No kernel modules found to extract version")
         return
+
+    ko_file = found_modules[0]
 
     try:
         # Run strings on the .ko file
@@ -189,19 +195,18 @@ def extract_kernel_version(rootfs: Path, analysis: RootfsAnalysis) -> None:
 
 def analyze_kernel_modules(rootfs: Path, analysis: RootfsAnalysis) -> None:
     """Analyze kernel modules (.ko files)."""
-    modules = []
-    for ko_file in rootfs.rglob("*.ko"):
-        if ko_file.is_file():
-            path_relative = str(ko_file.relative_to(rootfs))
-            modules.append(
-                KernelModule(
-                    name=ko_file.name,
-                    path=f"/{path_relative}",
-                    size=ko_file.stat().st_size,
-                )
-            )
+    found_modules = find_files(rootfs, ["*.ko"], file_type="file")
 
-    analysis.kernel_modules = sorted(modules, key=lambda m: m.path)
+    modules = [
+        KernelModule(
+            name=path.name,
+            path=get_relative_path(rootfs, path),
+            size=get_file_size(path),
+        )
+        for path in found_modules
+    ]
+
+    analysis.kernel_modules = modules  # Already sorted by find_files
     analysis.kernel_modules_count = len(modules)
     analysis.add_metadata(
         "kernel_modules_count",
@@ -212,20 +217,19 @@ def analyze_kernel_modules(rootfs: Path, analysis: RootfsAnalysis) -> None:
 
 def analyze_shared_libraries(rootfs: Path, analysis: RootfsAnalysis) -> None:
     """Analyze shared libraries (.so files)."""
-    libraries = []
-    for so_file in rootfs.rglob("*.so*"):
-        if so_file.is_file():
-            path_relative = str(so_file.relative_to(rootfs))
-            libraries.append(
-                SharedLibrary(
-                    name=so_file.name,
-                    path=f"/{path_relative}",
-                    size=so_file.stat().st_size,
-                )
-            )
+    found_libraries = find_files(rootfs, ["*.so*"], file_type="file")
 
-    # Sort and limit to first 100 for output
-    analysis.shared_libraries = sorted(libraries, key=lambda lib: lib.path)[:100]
+    libraries = [
+        SharedLibrary(
+            name=path.name,
+            path=get_relative_path(rootfs, path),
+            size=get_file_size(path),
+        )
+        for path in found_libraries
+    ]
+
+    # Already sorted by find_files, limit to first 100 for output
+    analysis.shared_libraries = libraries[:100]
     analysis.shared_libraries_count = len(libraries)
     analysis.add_metadata(
         "shared_libraries_count",
@@ -342,40 +346,34 @@ def analyze_license_files(rootfs: Path, analysis: RootfsAnalysis) -> None:
         "*COPYRIGHT*",
     ]
 
+    found_files = find_files(rootfs, license_patterns, file_type="file")
+
     license_files = []
-    for pattern in license_patterns:
-        for license_file in rootfs.rglob(pattern):
-            if not license_file.is_file():
-                continue
+    for license_file in found_files:
+        # Skip very large files
+        if get_file_size(license_file) > MAX_LICENSE_FILE_SIZE:
+            continue
 
-            # Skip very large files
-            if license_file.stat().st_size > MAX_LICENSE_FILE_SIZE:
-                continue
+        try:
+            content = license_file.read_text(encoding="utf-8", errors="replace")
+            # Get first N lines
+            lines = content.splitlines()[:MAX_LICENSE_PREVIEW_LINES]
+            preview = "\n".join(lines)
 
-            try:
-                content = license_file.read_text(encoding="utf-8", errors="replace")
-                # Get first N lines
-                lines = content.splitlines()[:MAX_LICENSE_PREVIEW_LINES]
-                preview = "\n".join(lines)
-
-                path_relative = str(license_file.relative_to(rootfs))
-                license_files.append(
-                    LicenseFile(
-                        path=f"/{path_relative}",
-                        content_preview=preview,
-                    )
+            license_files.append(
+                LicenseFile(
+                    path=get_relative_path(rootfs, license_file),
+                    content_preview=preview,
                 )
+            )
 
-                # Limit total license files
-                if len(license_files) >= MAX_LICENSE_FILES:
-                    break
-            except Exception as e:
-                warn(f"Failed to read license file {license_file}: {e}")
+            # Limit total license files
+            if len(license_files) >= MAX_LICENSE_FILES:
+                break
+        except Exception as e:
+            warn(f"Failed to read license file {license_file}: {e}")
 
-        if len(license_files) >= MAX_LICENSE_FILES:
-            break
-
-    analysis.license_files = sorted(license_files, key=lambda lf: lf.path)
+    analysis.license_files = license_files  # Already sorted by find_files
 
 
 def detect_library_licenses(rootfs: Path, analysis: RootfsAnalysis) -> None:
@@ -402,18 +400,24 @@ def detect_library_licenses(rootfs: Path, analysis: RootfsAnalysis) -> None:
 
     detected = []
     for pattern, license_str in known_licenses.items():
-        for lib_file in rootfs.rglob(f"*{pattern}*"):
-            if lib_file.is_file() and ".so" in lib_file.name:
-                detected.append(
-                    DetectedLicense(
-                        component=pattern,
-                        license=license_str,
-                        detection_method="Known library name matching",
-                    )
+        found_libs = find_files(
+            rootfs,
+            [f"*{pattern}*"],
+            file_type="file",
+            first_match_only=True,
+        )
+        # Filter for .so files
+        found_so_libs = [lib for lib in found_libs if ".so" in lib.name]
+        if found_so_libs:
+            detected.append(
+                DetectedLicense(
+                    component=pattern,
+                    license=license_str,
+                    detection_method="Known library name matching",
                 )
-                break  # Found at least one instance
+            )
 
-    analysis.detected_licenses = sorted(detected, key=lambda d: d.component)
+    analysis.detected_licenses = detected  # Already sorted by dict iteration order
 
 
 def analyze_rootfs(firmware_path: str, work_dir: Path) -> RootfsAnalysis:
