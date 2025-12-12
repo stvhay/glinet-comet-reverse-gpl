@@ -360,6 +360,7 @@ last_updated: 2025-12-12
 - Using approved issue templates
 - Standard git operations
 - CI/CD execution
+- **Scratchpad updates (P5 mandatory):** Session start, issue completion, commits, session end
 
 **Information Gathering:**
 - Reading files
