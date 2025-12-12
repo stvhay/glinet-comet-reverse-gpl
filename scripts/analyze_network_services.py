@@ -27,15 +27,17 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import (
+    extract_firmware,
+    find_squashfs_rootfs,
+    get_firmware_path,
+)
 from lib.logging import error, info, section, success, warn
 from lib.output import output_json, output_toml
 
 # Password hash analysis constants
 MIN_SHADOW_FIELDS = 2  # Minimum fields in /etc/shadow entry
 MIN_HASH_LENGTH = 13  # Minimum length for a valid password hash
-
-# Default firmware URL
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,41 +132,6 @@ class NetworkServicesAnalysis(AnalysisBase):
                 for p in value
             ]
         return False, None
-
-
-def run_binwalk_extract(firmware: Path, work_dir: Path) -> Path:
-    """Run binwalk extraction on firmware and return extract directory."""
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware.name}.extracted"
-
-    extract_base.mkdir(parents=True, exist_ok=True)
-
-    if not extract_dir.exists():
-        info("Extracting firmware with binwalk...")
-        try:
-            subprocess.run(
-                ["binwalk", "-e", "--run-as=root", str(firmware)],
-                cwd=extract_base,
-                check=False,
-                capture_output=True,
-            )
-        except FileNotFoundError:
-            error("binwalk command not found")
-            error("Please run this script within 'nix develop' shell")
-            sys.exit(1)
-
-    return extract_dir
-
-
-def find_squashfs_rootfs(extract_dir: Path) -> Path:
-    """Find SquashFS rootfs in extracted firmware."""
-    # Look for squashfs-root directory
-    for rootfs in extract_dir.rglob("squashfs-root"):
-        if rootfs.is_dir():
-            return rootfs
-
-    error(f"Could not find SquashFS rootfs in {extract_dir}")
-    sys.exit(1)
 
 
 def find_init_scripts(rootfs: Path) -> list[InitScript]:
@@ -433,7 +400,7 @@ def analyze_firmware(firmware_path: str) -> NetworkServicesAnalysis:  # noqa: PL
 
     # Extract firmware
     work_dir = Path("/tmp/fw_analysis")
-    extract_dir = run_binwalk_extract(firmware, work_dir)
+    extract_dir = extract_firmware(firmware, work_dir)
     rootfs = find_squashfs_rootfs(extract_dir)
 
     info(f"Using rootfs: {rootfs}")
@@ -627,22 +594,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        work_dir = Path("/tmp/fw_analysis")
-        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
+    # Determine paths
+    work_dir = Path("/tmp/fw_analysis")
 
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
-                check=True,
-            )
+    # Get firmware path
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze firmware
     analysis = analyze_firmware(firmware_path)

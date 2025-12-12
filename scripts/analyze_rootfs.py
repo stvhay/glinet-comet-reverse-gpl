@@ -22,11 +22,15 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import (
+    extract_firmware,
+    find_squashfs_rootfs,
+    get_firmware_path,
+)
 from lib.logging import error, info, section, success, warn
 from lib.output import output_json, output_toml
 
 # Constants
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 MAX_LICENSE_FILE_SIZE = 100000
 MAX_LICENSE_FILES = 50
 MAX_LICENSE_PREVIEW_LINES = 50
@@ -129,49 +133,6 @@ class RootfsAnalysis(AnalysisBase):
                 for dl in value
             ]
         return False, None
-
-
-def run_binwalk_extraction(firmware: Path, work_dir: Path) -> Path:
-    """Extract firmware using binwalk and return extraction directory."""
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware.name}.extracted"
-
-    if extract_dir.exists():
-        info(f"Using cached extraction: {extract_dir}")
-        return extract_dir
-
-    extract_base.mkdir(parents=True, exist_ok=True)
-
-    info("Extracting firmware with binwalk...")
-    try:
-        subprocess.run(
-            ["binwalk", "-e", "--run-as=root", str(firmware)],
-            cwd=extract_base,
-            capture_output=True,
-            check=False,
-        )
-    except FileNotFoundError:
-        error("binwalk command not found")
-        error("Please run this script within 'nix develop' shell")
-        sys.exit(1)
-
-    if not extract_dir.exists():
-        error(f"Binwalk extraction failed: {extract_dir}")
-        sys.exit(1)
-
-    return extract_dir
-
-
-def find_squashfs_rootfs(extract_dir: Path) -> Path:
-    """Find SquashFS rootfs in extraction directory."""
-    # Look for squashfs-root directory
-    for rootfs in extract_dir.rglob("squashfs-root"):
-        if rootfs.is_dir():
-            info(f"Found rootfs: {rootfs}")
-            return rootfs
-
-    error(f"Could not find SquashFS rootfs in {extract_dir}")
-    sys.exit(1)
 
 
 def parse_os_release(rootfs: Path, analysis: RootfsAnalysis) -> None:
@@ -469,7 +430,7 @@ def analyze_rootfs(firmware_path: str, work_dir: Path) -> RootfsAnalysis:
 
     # Extract firmware
     section("Extracting Firmware")
-    extract_dir = run_binwalk_extraction(firmware, work_dir)
+    extract_dir = extract_firmware(firmware, work_dir)
 
     # Find rootfs
     section("Finding SquashFS Rootfs")
@@ -557,20 +518,8 @@ def main() -> None:
     work_dir = Path("/tmp/fw_analysis")
 
     # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
-
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
-                check=True,
-            )
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze rootfs
     analysis = analyze_rootfs(firmware_path, work_dir)

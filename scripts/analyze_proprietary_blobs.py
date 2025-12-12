@@ -24,11 +24,17 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import (
+    extract_firmware,
+    get_firmware_path,
+)
+from lib.firmware import (
+    find_squashfs_rootfs as find_rootfs,
+)
 from lib.logging import error, info, section, success
 from lib.output import output_json, output_toml
 
 # Constants
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
 
 
@@ -353,60 +359,6 @@ def analyze_binary(lib_file: Path) -> BinaryAnalysis | None:
     )
 
 
-def extract_firmware(firmware_path: Path, work_dir: Path) -> Path:
-    """Extract firmware using binwalk if needed.
-
-    Args:
-        firmware_path: Path to firmware file
-        work_dir: Working directory for extractions
-
-    Returns:
-        Path to extraction directory
-    """
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware_path.name}.extracted"
-
-    if not extract_dir.exists():
-        info("Extracting firmware with binwalk...")
-        extract_base.mkdir(parents=True, exist_ok=True)
-
-        try:
-            subprocess.run(
-                ["binwalk", "-e", "--run-as=root", str(firmware_path)],
-                cwd=extract_base,
-                capture_output=True,
-                check=False,
-            )
-        except FileNotFoundError:
-            error("binwalk command not found")
-            error("Please run this script within 'nix develop' shell")
-            sys.exit(1)
-
-    return extract_dir
-
-
-def find_rootfs(extract_dir: Path) -> Path:
-    """Find SquashFS rootfs in extraction directory.
-
-    Args:
-        extract_dir: Path to extraction directory
-
-    Returns:
-        Path to squashfs-root directory
-
-    Raises:
-        SystemExit: If rootfs not found
-    """
-    # Look for squashfs-root directory
-    rootfs_dirs = list(extract_dir.rglob("squashfs-root"))
-
-    if not rootfs_dirs or not rootfs_dirs[0].is_dir():
-        error(f"Could not find SquashFS rootfs in {extract_dir}")
-        sys.exit(1)
-
-    return rootfs_dirs[0]
-
-
 def analyze_proprietary_blobs(firmware_path: str, work_dir: Path) -> ProprietaryBlobsAnalysis:
     """Analyze proprietary blobs in firmware.
 
@@ -575,24 +527,8 @@ def main() -> None:
     work_dir = Path("/tmp/fw_analysis")
 
     # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
-
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            try:
-                subprocess.run(
-                    ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
-                    check=True,
-                )
-            except subprocess.CalledProcessError as e:
-                error(f"Failed to download firmware: {e}")
-                sys.exit(1)
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze firmware
     analysis = analyze_proprietary_blobs(firmware_path, work_dir)

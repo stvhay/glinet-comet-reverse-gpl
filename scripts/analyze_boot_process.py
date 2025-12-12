@@ -30,11 +30,9 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import extract_firmware, get_firmware_path
 from lib.logging import error, info, section, success
 from lib.output import output_json, output_toml
-
-# Default firmware URL
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 # A/B redundancy detection threshold
 MIN_FIT_IMAGES_FOR_AB = 2
@@ -141,51 +139,6 @@ class BootProcessAnalysis(AnalysisBase):
                 {"parameter": c.parameter, "value": c.value, "source": c.source} for c in value
             ]
         return False, None
-
-
-def get_firmware_path(firmware_arg: str | None, work_dir: Path) -> Path:
-    """Get firmware path, downloading if necessary."""
-    if firmware_arg:
-        firmware = Path(firmware_arg)
-        if not firmware.exists():
-            error(f"Firmware file not found: {firmware}")
-            sys.exit(1)
-        return firmware
-
-    # Download default firmware
-    firmware_url = DEFAULT_FIRMWARE_URL
-    firmware_file = firmware_url.split("/")[-1]
-    firmware_path = work_dir / firmware_file
-
-    if not firmware_path.exists():
-        info(f"Downloading firmware: {firmware_url}")
-        work_dir.mkdir(parents=True, exist_ok=True)
-        subprocess.run(["curl", "-L", "-o", str(firmware_path), firmware_url], check=True)
-
-    return firmware_path
-
-
-def extract_firmware(firmware: Path, work_dir: Path) -> Path:
-    """Extract firmware using binwalk."""
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware.name}.extracted"
-
-    if not extract_dir.exists():
-        info("Extracting firmware with binwalk...")
-        extract_base.mkdir(parents=True, exist_ok=True)
-        try:
-            subprocess.run(
-                ["binwalk", "-e", "--run-as=root", str(firmware)],
-                cwd=extract_base,
-                capture_output=True,
-                check=False,
-            )
-        except FileNotFoundError:
-            error("binwalk command not found")
-            error("Please run this script within 'nix develop' shell")
-            sys.exit(1)
-
-    return extract_dir
 
 
 def find_rootfs(extract_dir: Path) -> Path | None:

@@ -27,6 +27,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import get_firmware_path
 from lib.logging import error, info, section, success, warn
 from lib.output import output_json, output_toml
 
@@ -441,21 +442,8 @@ def main() -> None:
     work_dir = Path("/tmp/fw_analysis")
 
     # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        firmware_url = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
-        firmware_file = firmware_url.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
-
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {firmware_url}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                ["curl", "-L", "-o", firmware_path, firmware_url],
-                check=True,
-            )
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze U-Boot
     analysis = analyze_uboot(firmware_path)

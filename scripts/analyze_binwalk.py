@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import get_firmware_path
 from lib.logging import error, info, section, success
 from lib.output import output_json, output_toml
 
@@ -32,9 +33,6 @@ from lib.output import output_json, output_toml
 BINWALK_HEX_OFFSET_INDEX = 1
 BINWALK_DESCRIPTION_START_INDEX = 2
 BINWALK_MIN_FIELDS = 3
-
-# Default firmware URL
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 
 @dataclass(frozen=True, slots=True)
@@ -350,20 +348,8 @@ def main() -> None:
     work_dir = Path("/tmp/fw_analysis")
 
     # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
-
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
-                check=True,
-            )
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze firmware
     analysis = analyze_firmware(firmware_path)

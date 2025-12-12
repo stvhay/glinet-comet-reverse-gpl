@@ -1399,10 +1399,16 @@ class TestAnalyzeProprietaryBlobs:
 class TestMain:
     """Test main function."""
 
+    @patch("analyze_proprietary_blobs.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "toml"])
-    def test_main_with_firmware_toml_format(self, mock_analyze, tmp_path, capsys):  # noqa: ARG002
+    def test_main_with_firmware_toml_format(
+        self, mock_analyze, mock_get_firmware, tmp_path, capsys
+    ):  # noqa: ARG002
         """Test main function with firmware file and TOML format."""
+        # Mock firmware path
+        mock_get_firmware.return_value = Path("test.img")
+
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1432,10 +1438,16 @@ class TestMain:
         assert parsed["firmware_file"] == "test.img"
         assert parsed["rockchip_count"] == 5
 
+    @patch("analyze_proprietary_blobs.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "json"])
-    def test_main_with_firmware_json_format(self, mock_analyze, tmp_path, capsys):  # noqa: ARG002
+    def test_main_with_firmware_json_format(
+        self, mock_analyze, mock_get_firmware, tmp_path, capsys
+    ):  # noqa: ARG002
         """Test main function with firmware file and JSON format."""
+        # Mock firmware path
+        mock_get_firmware.return_value = Path("test.img")
+
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",
@@ -1458,10 +1470,14 @@ class TestMain:
         assert parsed_json["rockchip_count"] == 5
         assert parsed_json["firmware_file_source"] == "filesystem"
 
+    @patch("analyze_proprietary_blobs.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img"])
-    def test_main_without_format_arg(self, mock_analyze, capsys):
+    def test_main_without_format_arg(self, mock_analyze, mock_get_firmware, capsys):
         """Test main function without format argument (defaults to TOML)."""
+        # Mock firmware path
+        mock_get_firmware.return_value = Path("test.img")
+
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
             firmware_file="test.img",

@@ -1072,14 +1072,13 @@ class TestMainFunction:
     """Test main() function with mocked dependencies."""
 
     @patch("analyze_secure_boot.analyze_secure_boot")
-    @patch("analyze_secure_boot.Path")
-    def test_main_with_firmware_arg_toml(self, mock_path_cls, mock_analyze, tmp_path):  # noqa: ARG002
+    @patch("analyze_secure_boot.get_firmware_path")
+    def test_main_with_firmware_arg_toml(self, mock_get_firmware, mock_analyze, tmp_path):  # noqa: ARG002
         """Test main() with firmware argument and TOML output."""
-        # Mock Path to simulate firmware file exists
+        # Mock get_firmware_path to return test firmware path
         mock_firmware = MagicMock()
-        mock_firmware.exists.return_value = True
         mock_firmware.name = "test.img"
-        mock_path_cls.return_value = mock_firmware
+        mock_get_firmware.return_value = mock_firmware
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(
@@ -1102,14 +1101,13 @@ class TestMainFunction:
             assert "Secure Boot Analysis" in output
 
     @patch("analyze_secure_boot.analyze_secure_boot")
-    @patch("analyze_secure_boot.Path")
-    def test_main_with_firmware_arg_json(self, mock_path_cls, mock_analyze):
+    @patch("analyze_secure_boot.get_firmware_path")
+    def test_main_with_firmware_arg_json(self, mock_get_firmware, mock_analyze):
         """Test main() with firmware argument and JSON output."""
-        # Mock Path to simulate firmware file exists
+        # Mock get_firmware_path to return test firmware path
         mock_firmware = MagicMock()
-        mock_firmware.exists.return_value = True
         mock_firmware.name = "test.img"
-        mock_path_cls.return_value = mock_firmware
+        mock_get_firmware.return_value = mock_firmware
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(

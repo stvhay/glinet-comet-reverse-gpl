@@ -17,13 +17,13 @@ Arguments:
 
 import argparse
 import re
-import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
+from lib.firmware import extract_firmware, get_firmware_path
 from lib.logging import error, info, section, success, warn
 from lib.output import output_json, output_toml
 
@@ -32,7 +32,6 @@ FDT_MAGIC = "d00dfeed"  # FDT magic number (big-endian)
 FIT_DESCRIPTION_MAX_LINES = 30
 SERIAL_CONFIG_CONTEXT_LINES = 10
 SERIAL_CONFIG_MAX_LINES = 20
-DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,43 +102,6 @@ class DeviceTreeAnalysis(AnalysisBase):
                 for dt in value
             ]
         return False, None
-
-
-def run_binwalk_extract(firmware: Path, work_dir: Path) -> Path:
-    """Extract firmware using binwalk and return extraction directory."""
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware.name}.extracted"
-
-    if extract_dir.exists():
-        info(f"Using existing extraction: {extract_dir}")
-        return extract_dir
-
-    info("Extracting firmware with binwalk...")
-    extract_base.mkdir(parents=True, exist_ok=True)
-
-    try:
-        subprocess.run(
-            ["binwalk", "-e", "--run-as=root", str(firmware)],
-            cwd=extract_base,
-            capture_output=True,
-            check=False,
-        )
-    except FileNotFoundError:
-        error("binwalk command not found")
-        error("Please run this script within 'nix develop' shell")
-        sys.exit(1)
-
-    # Check for extraction in expected location or nested extractions dir
-    if not extract_dir.exists():
-        # Sometimes binwalk creates a nested extractions directory
-        nested_extract_dir = extract_base / "extractions" / f"{firmware.name}.extracted"
-        if nested_extract_dir.exists():
-            extract_dir = nested_extract_dir
-        else:
-            error(f"Extraction failed: {extract_dir} not found")
-            sys.exit(1)
-
-    return extract_dir
 
 
 def find_dtb_files(extract_dir: Path) -> list[Path]:
@@ -328,7 +290,7 @@ def analyze_device_trees(firmware_path: str) -> DeviceTreeAnalysis:
 
     # Extract firmware
     section("Extracting Firmware")
-    extract_dir = run_binwalk_extract(firmware, work_dir)
+    extract_dir = extract_firmware(firmware, work_dir)
 
     # Create analysis object
     firmware_size = firmware.stat().st_size
@@ -393,20 +355,8 @@ def main() -> None:
     work_dir = Path("/tmp/fw_analysis")
 
     # Get firmware path
-    if args.firmware:
-        firmware_path = args.firmware
-    else:
-        # Default firmware URL - download if needed
-        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
-        firmware_path = str(work_dir / firmware_file)
-
-        if not Path(firmware_path).exists():
-            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
-            work_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(
-                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
-                check=True,
-            )
+    firmware = get_firmware_path(args.firmware, work_dir)
+    firmware_path = str(firmware)
 
     # Analyze device trees
     analysis = analyze_device_trees(firmware_path)
