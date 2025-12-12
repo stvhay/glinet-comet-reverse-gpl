@@ -153,12 +153,50 @@ EOF
 
 ### Code Quality
 
+**Quality Standards:**
 - Bash: quote variables, use `shellcheck`
 - Python: PEP 8, type hints for public APIs
 - Comment the why, not the what
 - Test scripts before committing
 - **Scripts must output their reasoning**: Show what was found and how
 - **Trace all values**: Every offset, signature, or identifier must be discoverable from script output
+
+**Quality Checks (MUST pass before commit/push):**
+
+1. **Run quality checks locally:**
+   ```bash
+   ./scripts/quality-check.sh
+   ```
+   This runs all CI checks locally:
+   - shellcheck on bash scripts
+   - ruff linting
+   - ruff formatting
+   - pytest with coverage
+
+2. **Pre-push hook installed:**
+   - Automatically runs quality checks before `git push`
+   - Prevents pushing code that will fail CI
+   - Located at `.git/hooks/pre-push`
+
+3. **CI Requirements:**
+   - All tests must pass (556+ tests)
+   - Zero ruff linting errors
+   - Code must be ruff-formatted
+   - Coverage threshold must be met
+
+**IMPORTANT:** Never push code without running quality checks first. CI failures after push indicate a process failure.
+
+**Quick fixes:**
+```bash
+# Fix linting issues automatically
+ruff check --fix scripts/ tests/
+
+# Format code automatically
+ruff format scripts/ tests/
+
+# Run tests
+pytest
+```
 
 ### Issue Templates
 
