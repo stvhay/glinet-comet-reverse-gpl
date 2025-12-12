@@ -86,3 +86,137 @@ jobs:
         with:
           name: analysis-results
           path: output/
+
+  # Auto-file bug issues when CI fails on main branch
+  report-failure:
+    runs-on: ubuntu-latest
+    needs: [check, test, analyze]
+    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check for existing failure issue
+        id: check_existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Search for open issues with ci-failure label and matching job names
+          EXISTING_ISSUE=$(gh issue list \
+            --label "ci-failure" \
+            --state open \
+            --json number,title \
+            --jq '.[] | select(.title | contains("CI Failure")) | .number' \
+            | head -n 1)
+
+          if [ -n "$EXISTING_ISSUE" ]; then
+            echo "existing_issue=$EXISTING_ISSUE" >> $GITHUB_OUTPUT
+            echo "Found existing issue: #$EXISTING_ISSUE"
+          else
+            echo "No existing CI failure issue found"
+          fi
+
+      - name: Determine failed job
+        id: failed_job
+        run: |
+          # Determine which job(s) failed by checking the needs context
+          FAILED_JOBS=""
+
+          if [ "${{ needs.check.result }}" == "failure" ]; then
+            FAILED_JOBS="${FAILED_JOBS}check "
+          fi
+
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            FAILED_JOBS="${FAILED_JOBS}test "
+          fi
+
+          if [ "${{ needs.analyze.result }}" == "failure" ]; then
+            FAILED_JOBS="${FAILED_JOBS}analyze "
+          fi
+
+          # Remove trailing space and save
+          FAILED_JOBS=$(echo "$FAILED_JOBS" | sed 's/ $//')
+          echo "failed_jobs=$FAILED_JOBS" >> $GITHUB_OUTPUT
+          echo "Failed jobs: $FAILED_JOBS"
+
+      - name: Create or update failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED_JOBS: ${{ steps.failed_job.outputs.failed_jobs }}
+          EXISTING_ISSUE: ${{ steps.check_existing.outputs.existing_issue }}
+        run: |
+          # Prepare issue details
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_SHORT="${COMMIT_SHA:0:7}"
+          BRANCH="${{ github.ref_name }}"
+
+          # Create issue title
+          TITLE="CI Failure: ${FAILED_JOBS} job(s) failed on ${BRANCH}"
+
+          # Create issue body
+          BODY=$(cat <<EOF
+          ## CI Failure Report
+
+          **Failed Job(s):** ${FAILED_JOBS}
+          **Branch:** \`${BRANCH}\`
+          **Commit:** ${COMMIT_SHORT} (\`${COMMIT_SHA}\`)
+          **Timestamp:** ${TIMESTAMP}
+          **Workflow Run:** ${RUN_URL}
+
+          ### Details
+
+          The following CI job(s) failed on the \`main\` branch:
+
+          $(for job in ${FAILED_JOBS}; do
+            echo "- **${job}**: Check the [workflow run](${RUN_URL}) for detailed logs"
+          done)
+
+          ### Next Steps
+
+          1. Review the [failed workflow run](${RUN_URL}) for error details
+          2. Reproduce the failure locally: \`nix develop\`
+          3. Fix the root cause
+          4. Ensure all tests pass before merging
+
+          ### Acceptance Criteria
+
+          - [ ] Root cause identified
+          - [ ] Fix implemented and tested
+          - [ ] CI passes on fix branch
+          - [ ] No regressions in other jobs
+
+          ---
+
+          *This issue was automatically created by the CI workflow.*
+          EOF
+          )
+
+          # Create new issue or comment on existing one
+          if [ -n "$EXISTING_ISSUE" ]; then
+            echo "Commenting on existing issue #$EXISTING_ISSUE"
+            COMMENT=$(cat <<EOF
+          ## New CI Failure Detected
+
+          **Commit:** ${COMMIT_SHORT} (\`${COMMIT_SHA}\`)
+          **Timestamp:** ${TIMESTAMP}
+          **Workflow Run:** ${RUN_URL}
+          **Failed Jobs:** ${FAILED_JOBS}
+
+          The CI is still failing. Please review the latest [workflow run](${RUN_URL}).
+          EOF
+          )
+            echo "$COMMENT" | gh issue comment "$EXISTING_ISSUE" --body-file -
+          else
+            echo "Creating new issue"
+            gh issue create \
+              --title "$TITLE" \
+              --body "$BODY" \
+              --label "type:bug" \
+              --label "ci-failure" \
+              --label "priority:high"
+          fi
+        continue-on-error: true
