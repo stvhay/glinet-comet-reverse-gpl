@@ -18,7 +18,6 @@ Arguments:
 """
 
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -31,11 +30,8 @@ from lib.finders import (
     get_file_size,
     get_relative_path,
 )
-from lib.firmware import (
-    extract_firmware,
-    find_squashfs_rootfs,
-)
-from lib.logging import error, info, section, warn
+from lib.firmware import find_squashfs_rootfs  # noqa: F401 - Re-exported for tests
+from lib.logging import section, warn
 
 # Password hash analysis constants
 MIN_SHADOW_FIELDS = 2  # Minimum fields in /etc/shadow entry
@@ -372,30 +368,24 @@ def find_firewall_rules(rootfs: Path) -> list[str]:
     return list(dict.fromkeys(rules))[:5]
 
 
-def analyze_firmware(firmware_path: str) -> NetworkServicesAnalysis:  # noqa: PLR0912, PLR0915
-    """Analyze firmware for network services and attack surface."""
+def analyze_firmware(  # noqa: PLR0915
+    firmware_path: str, rootfs: Path
+) -> NetworkServicesAnalysis:
+    """Analyze firmware for network services and attack surface.
+
+    Args:
+        firmware_path: Path to firmware file
+        rootfs: Path to extracted rootfs
+
+    Returns:
+        NetworkServicesAnalysis object with findings
+    """
     firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing: {firmware}")
-
-    # Get firmware size
-    firmware_size = firmware.stat().st_size
-
-    # Extract firmware
-    work_dir = Path("/tmp/fw_analysis")
-    extract_dir = extract_firmware(firmware, work_dir)
-    rootfs = find_squashfs_rootfs(extract_dir)
-
-    info(f"Using rootfs: {rootfs}")
 
     # Create analysis object
     analysis = NetworkServicesAnalysis(
         firmware_file=firmware.name,
-        firmware_size=firmware_size,
+        firmware_size=firmware.stat().st_size,
         rootfs_path=str(rootfs),
     )
 
@@ -582,7 +572,8 @@ class NetworkServicesScript(AnalysisScript):
         Returns:
             NetworkServicesAnalysis results
         """
-        return analyze_firmware(firmware_path)
+        _, rootfs = self.initialize_extraction(firmware_path)
+        return analyze_firmware(firmware_path, rootfs)
 
 
 if __name__ == "__main__":

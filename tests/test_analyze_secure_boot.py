@@ -1079,9 +1079,12 @@ class TestOutputToml:
 class TestMainFunction:
     """Test main() function with mocked dependencies."""
 
+    @patch("lib.base_script.AnalysisScript.load_offsets")
     @patch("analyze_secure_boot.analyze_secure_boot")
     @patch("lib.base_script.get_firmware_path")
-    def test_main_with_firmware_arg_toml(self, mock_get_firmware, mock_analyze, tmp_path):
+    def test_main_with_firmware_arg_toml(
+        self, mock_get_firmware, mock_analyze, mock_load_offsets, tmp_path
+    ):
         """Test main() with firmware argument and TOML output."""
         # Create temporary firmware file
         test_firmware = tmp_path / "test.img"
@@ -1089,6 +1092,9 @@ class TestMainFunction:
 
         # Mock get_firmware_path to return test firmware path
         mock_get_firmware.return_value = test_firmware
+
+        # Mock load_offsets to return empty dict
+        mock_load_offsets.return_value = {}
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(
@@ -1110,9 +1116,12 @@ class TestMainFunction:
             assert "has_otp_node" in output
             assert "Secure Boot Analysis" in output
 
+    @patch("lib.base_script.AnalysisScript.load_offsets")
     @patch("analyze_secure_boot.analyze_secure_boot")
     @patch("lib.base_script.get_firmware_path")
-    def test_main_with_firmware_arg_json(self, mock_get_firmware, mock_analyze, tmp_path):
+    def test_main_with_firmware_arg_json(
+        self, mock_get_firmware, mock_analyze, mock_load_offsets, tmp_path
+    ):
         """Test main() with firmware argument and JSON output."""
         # Create temporary firmware file
         test_firmware = tmp_path / "test.img"
@@ -1120,6 +1129,9 @@ class TestMainFunction:
 
         # Mock get_firmware_path to return test firmware path
         mock_get_firmware.return_value = test_firmware
+
+        # Mock load_offsets to return empty dict
+        mock_load_offsets.return_value = {}
 
         # Mock analyze_secure_boot to return analysis
         mock_analysis = SecureBootAnalysis(

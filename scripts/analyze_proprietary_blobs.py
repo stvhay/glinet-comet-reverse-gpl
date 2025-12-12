@@ -17,7 +17,6 @@ Arguments:
 """
 
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -30,13 +29,9 @@ from lib.finders import (
     get_file_size,
     get_relative_path,
 )
-from lib.firmware import (
-    extract_firmware,
-)
-from lib.firmware import (
-    find_squashfs_rootfs as find_rootfs,
-)
-from lib.logging import error, info, section
+from lib.firmware import extract_firmware  # noqa: F401 - Re-exported for tests
+from lib.firmware import find_squashfs_rootfs as find_rootfs  # noqa: F401 - Re-exported
+from lib.logging import section
 
 # Constants
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
@@ -363,29 +358,17 @@ def analyze_binary(lib_file: Path) -> BinaryAnalysis | None:
     )
 
 
-def analyze_proprietary_blobs(firmware_path: str, work_dir: Path) -> ProprietaryBlobsAnalysis:
+def analyze_proprietary_blobs(firmware_path: str, rootfs: Path) -> ProprietaryBlobsAnalysis:
     """Analyze proprietary blobs in firmware.
 
     Args:
         firmware_path: Path to firmware file
-        work_dir: Working directory for extractions
+        rootfs: Path to extracted rootfs
 
     Returns:
         ProprietaryBlobsAnalysis object with all findings
     """
     firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing proprietary blobs in: {firmware}")
-
-    # Extract firmware and find rootfs
-    extract_dir = extract_firmware(firmware, work_dir)
-    rootfs = find_rootfs(extract_dir)
-
-    info(f"Using rootfs: {rootfs}")
 
     section("Scanning for proprietary binaries")
 
@@ -528,7 +511,8 @@ class ProprietaryBlobsScript(AnalysisScript):
         Returns:
             ProprietaryBlobsAnalysis results
         """
-        return analyze_proprietary_blobs(firmware_path, self.work_dir)
+        _, rootfs = self.initialize_extraction(firmware_path)
+        return analyze_proprietary_blobs(firmware_path, rootfs)
 
 
 if __name__ == "__main__":

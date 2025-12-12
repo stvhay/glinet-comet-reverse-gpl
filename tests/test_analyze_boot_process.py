@@ -1503,9 +1503,13 @@ SQUASHFS_SIZE=52428800
         mock_run.side_effect = mock_subprocess_side_effect
 
         # Import and call the function (must be here for coverage)
-        from analyze_boot_process import analyze_boot_process  # noqa: PLC0415
+        from analyze_boot_process import (  # noqa: PLC0415
+            analyze_boot_process,
+            load_firmware_offsets,
+        )
 
-        result = analyze_boot_process(firmware, extract_dir, output_dir)
+        offsets = load_firmware_offsets(output_dir)
+        result = analyze_boot_process(str(firmware), extract_dir, offsets)
 
         # Verify results
         assert result.firmware_file == firmware.name

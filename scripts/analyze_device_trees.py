@@ -16,7 +16,6 @@ Arguments:
 """
 
 import re
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -25,7 +24,7 @@ from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.finders import find_files
 from lib.firmware import extract_firmware
-from lib.logging import error, info, section, warn
+from lib.logging import info, section, warn
 
 # Device tree analysis constants
 FDT_MAGIC = "d00dfeed"  # FDT magic number (big-endian)

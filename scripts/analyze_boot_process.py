@@ -29,8 +29,7 @@ from typing import Any
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.finders import find_files
-from lib.firmware import extract_firmware
-from lib.logging import error, info, section, success
+from lib.logging import error, section, success
 
 # A/B redundancy detection threshold
 MIN_FIT_IMAGES_FOR_AB = 2
@@ -185,18 +184,25 @@ def load_firmware_offsets(output_dir: Path) -> dict[str, str | int]:
             else:
                 offsets[key] = value
 
-    info("Loaded firmware offsets from binwalk analysis")
     return offsets
 
 
 def analyze_boot_process(
-    firmware: Path, extract_dir: Path, output_dir: Path
+    firmware_path: str, extract_dir: Path, offsets: dict[str, str | int]
 ) -> BootProcessAnalysis:
-    """Analyze boot process and partition layout."""
-    section("Analyzing boot chain")
+    """Analyze boot process and partition layout.
 
-    # Load offsets from binwalk analysis
-    offsets = load_firmware_offsets(output_dir)
+    Args:
+        firmware_path: Path to firmware file
+        extract_dir: Extraction directory
+        offsets: Firmware offsets from binwalk analysis
+
+    Returns:
+        BootProcessAnalysis object with findings
+    """
+    firmware = Path(firmware_path)
+
+    section("Analyzing boot chain")
 
     # Create analysis object
     analysis = BootProcessAnalysis(
@@ -825,19 +831,9 @@ class BootProcessScript(AnalysisScript):
         Returns:
             BootProcessAnalysis results
         """
-        firmware = Path(firmware_path)
-        info(f"Analyzing: {firmware}")
-
-        # Extract firmware
-        extract_dir = extract_firmware(firmware, self.work_dir)
-
-        # Determine output directory
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        output_dir = project_root / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        return analyze_boot_process(firmware, extract_dir, output_dir)
+        extract_dir = self.initialize_extraction(firmware_path, need_rootfs=False)
+        offsets = self.load_offsets()
+        return analyze_boot_process(firmware_path, extract_dir, offsets)
 
     def post_process(self, analysis: AnalysisBase) -> None:
         """Generate legacy markdown file.

@@ -24,7 +24,7 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
-from lib.logging import error, info, section, success
+from lib.logging import error, section, success
 
 # Binwalk output format constants
 # Example line: "586164    0x8F1B4    Device tree blob (DTB)"

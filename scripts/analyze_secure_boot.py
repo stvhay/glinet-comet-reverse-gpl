@@ -16,7 +16,6 @@ Arguments:
 
 import re
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -24,7 +23,7 @@ from typing import Any
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.extraction import extract_gzip_at_offset, extract_strings, filter_strings
-from lib.logging import error, info, section
+from lib.logging import section
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,8 +94,6 @@ def load_offsets(output_dir: Path) -> dict[str, str | int]:
     """
     offsets_file = output_dir / "binwalk-offsets.sh"
     if not offsets_file.exists():
-        error(f"Firmware offsets not found: {offsets_file}")
-        error("Run analyze_binwalk.py first to generate offset artifacts")
         raise FileNotFoundError(offsets_file)
 
     offsets = {}
@@ -114,7 +111,6 @@ def load_offsets(output_dir: Path) -> dict[str, str | int]:
                 else:
                     offsets[key] = value
 
-    info("Loaded firmware offsets from binwalk analysis")
     return offsets
 
 
@@ -134,7 +130,6 @@ def extract_firmware(firmware: Path, work_dir: Path) -> Path:
     extract_base.mkdir(parents=True, exist_ok=True)
 
     if not extract_dir.exists():
-        info("Extracting firmware with binwalk...")
         try:
             subprocess.run(
                 ["binwalk", "-e", "--run-as=root", str(firmware)],
@@ -142,10 +137,8 @@ def extract_firmware(firmware: Path, work_dir: Path) -> Path:
                 capture_output=True,
                 check=False,
             )
-        except FileNotFoundError:
-            error("binwalk command not found")
-            error("Please run this script within 'nix develop' shell")
-            sys.exit(1)
+        except FileNotFoundError as e:
+            raise FileNotFoundError("binwalk command not found") from e
 
     return extract_dir
 
@@ -264,28 +257,19 @@ def extract_device_tree_node(
 
 
 def analyze_secure_boot(  # noqa: PLR0912, PLR0915
-    firmware_path: str, output_dir: Path, work_dir: Path
+    firmware_path: str, offsets: dict[str, str | int], work_dir: Path
 ) -> SecureBootAnalysis:
     """Analyze secure boot configuration in firmware.
 
     Args:
         firmware_path: Path to firmware file
-        output_dir: Output directory (for reading offsets)
+        offsets: Firmware offsets from binwalk analysis
         work_dir: Work directory for extractions
 
     Returns:
         SecureBootAnalysis object with all findings
     """
     firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing secure boot in: {firmware}")
-
-    # Load offsets from binwalk analysis
-    offsets = load_offsets(output_dir)
 
     # Create analysis object
     analysis = SecureBootAnalysis(
@@ -518,13 +502,8 @@ class SecureBootScript(AnalysisScript):
         Returns:
             SecureBootAnalysis results
         """
-        # Determine output directory
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        output_dir = project_root / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        return analyze_secure_boot(firmware_path, output_dir, self.work_dir)
+        offsets = self.load_offsets()
+        return analyze_secure_boot(firmware_path, offsets, self.work_dir)
 
 
 if __name__ == "__main__":

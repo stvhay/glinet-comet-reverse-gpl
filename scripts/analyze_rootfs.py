@@ -26,7 +26,7 @@ from lib.finders import (
     get_file_size,
     get_relative_path,
 )
-from lib.firmware import find_squashfs_rootfs  # Re-exported for tests
+from lib.firmware import find_squashfs_rootfs  # noqa: F401 - Re-exported for tests
 from lib.logging import section, warn
 
 # Constants

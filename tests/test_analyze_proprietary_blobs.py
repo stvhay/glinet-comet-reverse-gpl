@@ -1376,7 +1376,7 @@ class TestAnalyzeProprietaryBlobs:
         mock_run.side_effect = mock_subprocess
 
         # Run analysis
-        analysis = analyze_proprietary_blobs(str(firmware), work_dir)
+        analysis = analyze_proprietary_blobs(str(firmware), rootfs)
 
         # Verify results
         assert analysis.firmware_file == firmware.name
@@ -1386,24 +1386,25 @@ class TestAnalyzeProprietaryBlobs:
         assert analysis.binary_analysis is not None
 
     def test_analyze_proprietary_blobs_nonexistent_firmware(self, tmp_path):
-        """Test that nonexistent firmware file causes SystemExit."""
+        """Test that nonexistent firmware file still works if rootfs exists."""
         firmware = tmp_path / "nonexistent.img"
-        work_dir = tmp_path / "work"
+        rootfs = tmp_path / "rootfs"
+        rootfs.mkdir()
 
-        with pytest.raises(SystemExit) as exc_info:
-            analyze_proprietary_blobs(str(firmware), work_dir)
-
-        assert exc_info.value.code == 1
+        # Should work fine - firmware path is only used for metadata
+        analysis = analyze_proprietary_blobs(str(firmware), rootfs)
+        assert analysis.firmware_file == firmware.name
 
 
 class TestMain:
     """Test main function."""
 
+    @patch("lib.base_script.AnalysisScript.initialize_extraction")
     @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "toml"])
     def test_main_with_firmware_toml_format(
-        self, mock_analyze, mock_get_firmware, capsys, tmp_path
+        self, mock_analyze, mock_get_firmware, mock_init_extraction, capsys, tmp_path
     ):
         """Test main function with firmware file and TOML format."""
         # Create temporary firmware file
@@ -1412,6 +1413,11 @@ class TestMain:
 
         # Mock firmware path
         mock_get_firmware.return_value = test_firmware
+
+        # Mock extraction to return fake rootfs
+        fake_rootfs = tmp_path / "squashfs-root"
+        fake_rootfs.mkdir()
+        mock_init_extraction.return_value = (tmp_path / "extract", fake_rootfs)
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1442,11 +1448,12 @@ class TestMain:
         assert parsed["firmware_file"] == "test.img"
         assert parsed["rockchip_count"] == 5
 
+    @patch("lib.base_script.AnalysisScript.initialize_extraction")
     @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "json"])
     def test_main_with_firmware_json_format(
-        self, mock_analyze, mock_get_firmware, capsys, tmp_path
+        self, mock_analyze, mock_get_firmware, mock_init_extraction, capsys, tmp_path
     ):
         """Test main function with firmware file and JSON format."""
         # Create temporary firmware file
@@ -1455,6 +1462,11 @@ class TestMain:
 
         # Mock firmware path
         mock_get_firmware.return_value = test_firmware
+
+        # Mock extraction to return fake rootfs
+        fake_rootfs = tmp_path / "squashfs-root"
+        fake_rootfs.mkdir()
+        mock_init_extraction.return_value = (tmp_path / "extract", fake_rootfs)
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1478,10 +1490,13 @@ class TestMain:
         assert parsed_json["rockchip_count"] == 5
         assert parsed_json["firmware_file_source"] == "filesystem"
 
+    @patch("lib.base_script.AnalysisScript.initialize_extraction")
     @patch("lib.base_script.get_firmware_path")
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img"])
-    def test_main_without_format_arg(self, mock_analyze, mock_get_firmware, capsys, tmp_path):
+    def test_main_without_format_arg(
+        self, mock_analyze, mock_get_firmware, mock_init_extraction, capsys, tmp_path
+    ):
         """Test main function without format argument (defaults to TOML)."""
         # Create temporary firmware file
         test_firmware = tmp_path / "test.img"
@@ -1489,6 +1504,11 @@ class TestMain:
 
         # Mock firmware path
         mock_get_firmware.return_value = test_firmware
+
+        # Mock extraction to return fake rootfs
+        fake_rootfs = tmp_path / "squashfs-root"
+        fake_rootfs.mkdir()
+        mock_init_extraction.return_value = (tmp_path / "extract", fake_rootfs)
 
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
