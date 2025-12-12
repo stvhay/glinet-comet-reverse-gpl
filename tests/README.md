@@ -46,12 +46,15 @@ tests/
 ├── __init__.py
 ├── README.md
 ├── test_analyze_binwalk.py    # Tests for analyze-binwalk.py
+├── test_render_template.py    # Tests for render_template.py and analysis.py
 └── fixtures/                   # Test data (future)
 ```
 
 ## Test Organization
 
 Each test file follows this structure:
+
+### test_analyze_binwalk.py
 
 1. **Unit tests** - Test individual functions and classes
    - `TestComponent` - Test Component dataclass
@@ -61,6 +64,27 @@ Each test file follows this structure:
 
 2. **Integration tests** - Test with realistic data
    - `TestIntegration` - End-to-end tests with sample binwalk output
+
+### test_render_template.py
+
+1. **Unit tests** - Test individual functions and classes
+   - `TestTrackedValue` - Test TrackedValue class for source attribution
+   - `TestFootnoteRegistry` - Test automatic footnote generation
+   - `TestConvertToTrackedValues` - Test metadata conversion logic
+   - `TestHashFile` - Test file hashing functions
+   - `TestAtomicWrite` - Test atomic file writing
+   - `TestManifestFunctions` - Test manifest creation and updates
+   - `TestCacheValidation` - Test cache invalidation logic
+   - `TestHashFirmware` - Test firmware hashing
+   - `TestHashAnalysisScript` - Test script hashing
+
+2. **Template rendering tests**
+   - `TestTemplateRendering` - Test Jinja template rendering with fixtures
+   - `TestAnalyzeFunction` - Test analyze() function with mocked scripts
+
+3. **Integration tests** - Test complete workflows
+   - `TestIntegrationWithRealTemplates` - Full workflow from script to rendered output
+   - `TestErrorHandling` - Error handling scenarios
 
 ## Coverage
 
