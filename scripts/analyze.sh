@@ -38,6 +38,7 @@ Options:
   -m MODULE      Run only specific module(s), comma-separated
                  Available: binwalk,device-trees,uboot,boot-process,
                            rootfs,network-services,proprietary-blobs,secure-boot,all
+  -f, --force    Force re-analysis (ignore cached results)
   -v, --verbose  Verbose output
 
 Arguments:
@@ -67,6 +68,7 @@ list_versions() {
 # Parse arguments
 MODULES="all"
 VERBOSE=""
+FORCE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -85,6 +87,10 @@ while [[ $# -gt 0 ]]; do
         -m)
             MODULES="$2"
             shift 2
+            ;;
+        -f|--force)
+            FORCE="1"
+            shift
             ;;
         -v|--verbose)
             VERBOSE="1"
@@ -109,6 +115,10 @@ done
 # Initialize
 init_dirs
 
+# Create results directory for TOML cache files
+RESULTS_DIR="${RESULTS_DIR:-$PROJECT_ROOT/results}"
+mkdir -p "$RESULTS_DIR"
+
 # Banner
 echo "=============================================="
 echo "  GL.iNet Comet (RM1) Firmware Analysis"
@@ -123,6 +133,8 @@ FIRMWARE_VERSION=$(extract_version "$FIRMWARE")
 info "Firmware: $FIRMWARE_FILE"
 info "Version: $FIRMWARE_VERSION"
 info "Output: $OUTPUT_DIR"
+info "Results cache: $RESULTS_DIR"
+[[ -n "$FORCE" ]] && info "Force mode: ignoring cached results"
 echo ""
 
 # Run extraction (shared by all modules)
@@ -133,38 +145,106 @@ export FIRMWARE
 export OUTPUT_DIR
 export WORK_DIR
 
-# Determine which modules to run
-run_module() {
-    local name="$1"
-    local script="$SCRIPT_DIR/analyze-$name.sh"
+# ==============================================================================
+# Module execution functions
+# ==============================================================================
 
-    if [[ ! -x "$script" ]]; then
-        warn "Module not found: $script"
-        return 1
-    fi
-
-    section "Running: $name"
-    if [[ -n "$VERBOSE" ]]; then
-        "$script" "$FIRMWARE"
-    else
-        "$script" "$FIRMWARE" 2>&1 | grep -E "^\[|Wrote" || true
-    fi
-}
+# Track errors
+FAILED_MODULES=()
 
 should_run() {
     local name="$1"
     [[ "$MODULES" == "all" ]] || [[ ",$MODULES," == *",$name,"* ]]
 }
 
-# Run selected modules
-should_run "binwalk" && run_module "binwalk"
-should_run "device-trees" && run_module "device-trees"
-should_run "uboot" && run_module "uboot"
-should_run "boot-process" && run_module "boot-process"
-should_run "rootfs" && run_module "rootfs"
-should_run "network-services" && run_module "network-services"
-should_run "proprietary-blobs" && run_module "proprietary-blobs"
-should_run "secure-boot" && run_module "secure-boot"
+# Run a Python analysis script that outputs TOML/JSON
+run_python_module() {
+    local name="$1"
+    local script="$SCRIPT_DIR/analyze-$name.py"
+    local result_file="$RESULTS_DIR/$name.toml"
+
+    if [[ ! -x "$script" ]]; then
+        warn "Module not found: $script"
+        FAILED_MODULES+=("$name")
+        return 1
+    fi
+
+    # Check if cached result exists and is newer than script
+    if [[ -z "$FORCE" ]] && [[ -f "$result_file" ]] && [[ "$result_file" -nt "$script" ]]; then
+        info "Using cached result: $name.toml"
+        return 0
+    fi
+
+    section "Running: $name (Python)"
+    if "$script" "$FIRMWARE" --format toml > "$result_file" 2>&1 | grep -E "^\[|✓" || true; then
+        success "Cached result: $name.toml"
+        return 0
+    else
+        error "Failed: $name"
+        FAILED_MODULES+=("$name")
+        return 1
+    fi
+}
+
+# Run a legacy bash script that outputs markdown
+run_bash_module() {
+    local name="$1"
+    local script="$SCRIPT_DIR/analyze-$name.sh"
+
+    if [[ ! -x "$script" ]]; then
+        warn "Module not found: $script"
+        FAILED_MODULES+=("$name")
+        return 1
+    fi
+
+    section "Running: $name (bash)"
+    if [[ -n "$VERBOSE" ]]; then
+        if "$script" "$FIRMWARE"; then
+            return 0
+        else
+            error "Failed: $name"
+            FAILED_MODULES+=("$name")
+            return 1
+        fi
+    else
+        if "$script" "$FIRMWARE" 2>&1 | grep -E "^\[|Wrote" || true; then
+            return 0
+        else
+            error "Failed: $name"
+            FAILED_MODULES+=("$name")
+            return 1
+        fi
+    fi
+}
+
+# ==============================================================================
+# Run analysis modules
+# ==============================================================================
+
+# Python modules (output TOML to results/)
+should_run "binwalk" && run_python_module "binwalk"
+
+# Bash modules (output markdown to output/) - to be migrated incrementally
+should_run "device-trees" && run_bash_module "device-trees"
+should_run "uboot" && run_bash_module "uboot"
+should_run "boot-process" && run_bash_module "boot-process"
+should_run "rootfs" && run_bash_module "rootfs"
+should_run "network-services" && run_bash_module "network-services"
+should_run "proprietary-blobs" && run_bash_module "proprietary-blobs"
+should_run "secure-boot" && run_bash_module "secure-boot"
+
+# ==============================================================================
+# Render wiki templates
+# ==============================================================================
+
+if [[ -x "$SCRIPT_DIR/render_wiki.sh" ]]; then
+    section "Rendering Wiki Templates"
+    if "$SCRIPT_DIR/render_wiki.sh"; then
+        success "Wiki pages generated"
+    else
+        warn "Wiki rendering failed (this is non-fatal)"
+    fi
+fi
 
 # ==============================================================================
 # Generate Summary
@@ -257,8 +337,46 @@ success "Wrote SUMMARY.md"
 section "Analysis Complete"
 
 echo ""
-echo "Output files:"
-find "$OUTPUT_DIR" -maxdepth 1 -name "*.md" -type f -printf "  %-40f %s\n" 2>/dev/null | sort
+if [[ ${#FAILED_MODULES[@]} -gt 0 ]]; then
+    warn "Some modules failed: ${FAILED_MODULES[*]}"
+    echo ""
+fi
+
+echo "Cached results (TOML):"
+result_count=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.toml" -type f 2>/dev/null | wc -l)
+if [[ $result_count -gt 0 ]]; then
+    find "$RESULTS_DIR" -maxdepth 1 -name "*.toml" -type f 2>/dev/null | while read -r f; do
+        echo "  - $(basename "$f")"
+    done
+else
+    echo "  (none yet - modules will be migrated incrementally)"
+fi
+
 echo ""
-echo "Run individual modules with:"
-echo "  ./scripts/analyze-<module>.sh $FIRMWARE"
+echo "Output files (markdown):"
+output_count=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l)
+if [[ $output_count -gt 0 ]]; then
+    find "$OUTPUT_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | while read -r f; do
+        echo "  - $(basename "$f")"
+    done
+else
+    echo "  (none)"
+fi
+
+echo ""
+echo "Wiki pages (generated from templates):"
+WIKI_DIR="$PROJECT_ROOT/wiki"
+wiki_count=$(find "$WIKI_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l)
+if [[ -d "$WIKI_DIR" ]] && [[ $wiki_count -gt 0 ]]; then
+    find "$WIKI_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | while read -r f; do
+        echo "  - $(basename "$f")"
+    done
+else
+    echo "  (none yet - create templates in templates/wiki/*.md.j2)"
+fi
+
+echo ""
+echo "Tips:"
+echo "  - Re-run with --force to ignore cached results"
+echo "  - Run individual modules: ./scripts/analyze-<module>.py"
+echo "  - Create Jinja templates in templates/wiki/ to auto-generate docs"
