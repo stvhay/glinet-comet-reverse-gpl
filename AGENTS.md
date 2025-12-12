@@ -27,6 +27,9 @@ nix develop
 # Render documentation templates
 python3 scripts/render_template.py templates/wiki/Example.md.j2 wiki/Example.md
 
+# Batch render all wiki templates
+./scripts/render_wiki.sh
+
 # Run tests
 pytest tests/ -v
 

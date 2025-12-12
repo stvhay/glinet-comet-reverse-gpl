@@ -5,3 +5,8 @@
 firmware_hash = "no-firmware-yet"
 script_hash = "de1db430c048fdcd"
 last_updated = "2025-12-11T17:49:44.178431"
+
+[device_tree_diff]
+firmware_hash = "no-firmware-yet"
+script_hash = "3651b918d08a9a5a"
+last_updated = "2025-12-11T22:41:32.908528"
