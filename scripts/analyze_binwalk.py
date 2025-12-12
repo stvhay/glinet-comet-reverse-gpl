@@ -19,7 +19,7 @@ import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -107,11 +107,9 @@ class BinwalkAnalysis:
 
     def to_dict(self) -> dict:
         """Convert to dictionary with source metadata."""
-        from dataclasses import fields
-
         result = {}
-        for field in fields(self):
-            key = field.name
+        for fld in fields(self):
+            key = fld.name
             if key.startswith("_"):
                 continue
 
