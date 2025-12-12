@@ -1,0 +1,51 @@
+{# Device Tree Analysis Template #}
+{% set dt = analyze('device_tree_diff') %}
+
+# Device Tree Analysis
+
+Analysis of GL.iNet Comet (RM1) device tree compared to reference Rockchip EVB design.
+
+## Device Identification
+
+The kernel device tree identifies the hardware as:
+
+- **Model**: {{ dt.model | src }}
+- **Compatible**: {{ dt.compatible | src }}
+- **Reference Board**: {{ dt.reference_board | src }}
+
+## Customization Level
+
+{{ dt.customization_level | capitalize }} customization from reference design.
+
+## Analysis
+
+The GL.iNet firmware's device tree shows:
+- Model name changed to "{{ dt.model }}" (product-specific identifier)
+- Compatible string maintained as "{{ dt.compatible }}" (hardware compatibility identifier)
+- This indicates GL.iNet is using the {{ dt.reference_board }} hardware design with minimal modifications
+
+## GPL Compliance Implications
+
+{{ dt.gpl_implications }}
+
+## Reference Sources
+
+The reference Rockchip device tree sources are available at:
+
+{% for source_url in dt.reference_sources %}
+- [{{ source_url.split('/')[-1] }}]({{ source_url }})
+{% endfor %}
+
+These files are licensed under GPL-2.0+ or MIT, as documented in their SPDX headers.
+
+## Methodology
+
+This analysis was performed by:
+1. Extracting device tree blob (DTB) from firmware
+2. Decompiling DTB to device tree source (DTS) using `dtc`
+3. Comparing with reference Rockchip EVB DTS from Firefly kernel repository
+4. Identifying customizations via diff analysis
+
+---
+
+{{ render_footnotes() }}

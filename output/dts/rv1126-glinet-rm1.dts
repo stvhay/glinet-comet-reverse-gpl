@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * GL.iNet Comet (RM1) KVM Device Tree
+ *
+ * Derived from Rockchip RV1126 EVB DDR3 V13 reference board
+ * Copyright (c) 2020 Rockchip Electronics Co., Ltd.
+ *
+ * This device tree was reverse-engineered from GL.iNet firmware:
+ *   https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img
+ *
+ * Methodology:
+ *   1. Extracted kernel FIT image device tree blob (DTB) from firmware
+ *   2. Decompiled DTB to DTS using dtc tool
+ *   3. Compared with reference Rockchip rv1126-evb-ddr3-v13.dts
+ *   4. Identified GL.iNet-specific customizations (diff)
+ *   5. Created derivative DTS using upstream includes + deltas
+ *
+ * Reference sources (GPL-2.0+ licensed):
+ *   https://gitlab.com/firefly-linux/kernel/-/blob/rv1126_rv1109/linux_release_v2.2.5g/arch/arm/boot/dts/rv1126.dtsi
+ *   https://gitlab.com/firefly-linux/kernel/-/blob/rv1126_rv1109/linux_release_v2.2.5g/arch/arm/boot/dts/rv1126-evb-v13.dtsi
+ *   https://gitlab.com/firefly-linux/kernel/-/blob/rv1126_rv1109/linux_release_v2.2.5g/arch/arm/boot/dts/rv1126-evb-ddr3-v13.dts
+ */
+
+/dts-v1/;
+
+#include "rv1126.dtsi"
+#include "rv1126-evb-v13.dtsi"
+
+/ {
+	model = "GL.iNet Comet (RM1)";
+	compatible = "glinet,rm1", "rockchip,rv1126-evb-ddr3-v13", "rockchip,rv1126";
+
+	chosen {
+		/*
+		 * GL.iNet customization: Added rootfstype=squashfs
+		 * Reference board uses ext4, GL.iNet uses squashfs for root
+		 */
+		bootargs = "earlycon=uart8250,mmio32,0xff570000 console=ttyFIQ0 root=PARTUUID=614e0000-0000 rootfstype=squashfs rootwait snd_aloop.index=7";
+	};
+
+	/*
+	 * GL.iNet hardware information node
+	 * Contains product-specific configuration and factory data partition layout
+	 */
+	gl_hw {
+		compatible = "gl-hw-info";
+		model = "rm1";
+		hdmipatch = "1-002b";
+		usb_pid = "1";
+		wan = "eth0";
+		flash_size = <0x2000>;  /* 8GB eMMC */
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/*
+		 * Factory data partition layout (mmcblk0p9)
+		 * Maps calibration data and device identifiers to partition offsets
+		 */
+		factory_data {
+			device_mac = "/dev/mmcblk0p9", "0x0a";
+			device_ddns = "/dev/mmcblk0p9", "0x10";
+			device_sn_bak = "/dev/mmcblk0p9", "0x20";
+			device_sn = "/dev/mmcblk0p9", "0x30";
+			country_code = "/dev/mmcblk0p9", "0x88";
+			device_token = "/dev/mmcblk0p9", "0x100";
+			dev_token = "/dev/mmcblk0p9", "0x120";
+			test_token = "/dev/mmcblk0p9", "0x140";
+			device_token2 = "/dev/mmcblk0p9", "0x160";
+			custom_token = "/dev/mmcblk0p9", "0x180";
+			device_cert = "/dev/mmcblk0p9", "0x1000";
+		};
+	};
+};

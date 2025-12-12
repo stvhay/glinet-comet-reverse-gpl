@@ -3,7 +3,6 @@ config.env
 
 # Downloaded and extracted firmware - do not commit
 downloads/
-output/
 partitions/
 
 # Extracted filesystems
@@ -19,7 +18,11 @@ extractions/
 *.bin
 *.img
 *.squashfs
-*.dts
+
+# Output directory - block most content except derivative analysis
+output/*
+!output/dts/
+output/dts/upstream/
 
 # Nix
 result
