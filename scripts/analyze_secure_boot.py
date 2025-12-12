@@ -1,0 +1,719 @@
+#!/usr/bin/env python3
+"""Analyze secure boot configuration in firmware.
+
+Usage: ./scripts/analyze_secure_boot.py [firmware.img] [--format FORMAT]
+
+Outputs: TOML (default) or JSON to stdout with source metadata
+
+This script extracts and analyzes secure boot related information from the firmware,
+including FIT image signatures, U-Boot verification strings, OP-TEE secure boot flags,
+and device tree OTP/crypto configuration.
+
+Arguments:
+    firmware.img      Path to firmware file (optional, downloads default if not provided)
+    --format FORMAT   Output format: 'toml' (default) or 'json'
+"""
+
+from __future__ import annotations
+
+import argparse
+import gzip
+import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass, field, fields
+from datetime import UTC, datetime
+from pathlib import Path
+
+import tomlkit
+
+# Color codes for stderr logging
+GREEN = "\033[0;32m"
+YELLOW = "\033[1;33m"
+RED = "\033[0;31m"
+BLUE = "\033[0;34m"
+NC = "\033[0m"  # No Color
+
+# TOML formatting constants
+TOML_MAX_COMMENT_LENGTH = 80
+TOML_COMMENT_TRUNCATE_LENGTH = 77
+
+# String extraction constants
+MIN_STRING_LENGTH = 4
+ASCII_PRINTABLE_MIN = 32
+ASCII_PRINTABLE_MAX = 126
+
+# Default firmware URL
+DEFAULT_FIRMWARE_URL = "https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
+
+
+def info(msg: str) -> None:
+    """Log info message to stderr."""
+    print(f"{GREEN}[INFO]{NC} {msg}", file=sys.stderr)
+
+
+def warn(msg: str) -> None:
+    """Log warning message to stderr."""
+    print(f"{YELLOW}[WARN]{NC} {msg}", file=sys.stderr)
+
+
+def error(msg: str) -> None:
+    """Log error message to stderr."""
+    print(f"{RED}[ERROR]{NC} {msg}", file=sys.stderr)
+
+
+def success(msg: str) -> None:
+    """Log success message to stderr."""
+    print(f"{GREEN}[OK]{NC} {msg}", file=sys.stderr)
+
+
+def section(msg: str) -> None:
+    """Log section header to stderr."""
+    print(f"\n{BLUE}=== {msg} ==={NC}", file=sys.stderr)
+
+
+@dataclass(frozen=True, slots=True)
+class FITSignature:
+    """FIT image signature information."""
+
+    image_type: str  # "bootloader" or "kernel"
+    algorithm: str  # RSA signature algorithm (e.g., "sha256,rsa2048")
+    key_name: str  # Key name hint
+    signed_components: str  # Components that are signed (e.g., "firmware,fdt")
+
+
+@dataclass(slots=True)
+class SecureBootAnalysis:
+    """Results of secure boot analysis."""
+
+    firmware_file: str
+    firmware_size: int
+    bootloader_fit_offset: str | None = None
+    kernel_fit_offset: str | None = None
+    uboot_offset: str | None = None
+    optee_offset: str | None = None
+
+    # FIT image signatures
+    bootloader_signature: FITSignature | None = None
+    kernel_signature: FITSignature | None = None
+
+    # U-Boot verification strings
+    uboot_verification_strings: list[str] = field(default_factory=list)
+    uboot_key_findings: list[str] = field(default_factory=list)
+
+    # OP-TEE secure boot strings
+    optee_secure_boot_strings: list[str] = field(default_factory=list)
+
+    # Device tree info
+    has_otp_node: bool = False
+    has_crypto_node: bool = False
+    otp_node_content: str | None = None
+    crypto_node_content: str | None = None
+
+    # Source metadata for each field
+    _source: dict[str, str] = field(default_factory=dict)
+    _method: dict[str, str] = field(default_factory=dict)
+
+    def add_metadata(self, field_name: str, source: str, method: str) -> None:
+        """Add source metadata for a field."""
+        self._source[field_name] = source
+        self._method[field_name] = method
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary with source metadata."""
+        result = {}
+        for fld in fields(self):
+            key = fld.name
+            if key.startswith("_"):
+                continue
+
+            value = getattr(self, key)
+            if value is None:
+                continue
+
+            # Convert dataclass fields to dicts
+            if key in ("bootloader_signature", "kernel_signature") and value is not None:
+                result[key] = {
+                    "image_type": value.image_type,
+                    "algorithm": value.algorithm,
+                    "key_name": value.key_name,
+                    "signed_components": value.signed_components,
+                }
+            elif isinstance(value, bool):
+                result[key] = value
+            elif isinstance(value, list):
+                if value:  # Only include non-empty lists
+                    result[key] = value
+            else:
+                result[key] = value
+
+            # Add source metadata if available
+            if key in self._source:
+                result[f"{key}_source"] = self._source[key]
+            if key in self._method:
+                result[f"{key}_method"] = self._method[key]
+
+        return result
+
+
+def load_offsets(output_dir: Path) -> dict[str, str | int]:
+    """Load firmware offsets from binwalk-offsets.sh.
+
+    Args:
+        output_dir: Directory containing binwalk-offsets.sh
+
+    Returns:
+        Dictionary with offset values (both hex strings and decimal ints)
+
+    Raises:
+        FileNotFoundError: If offsets file doesn't exist
+    """
+    offsets_file = output_dir / "binwalk-offsets.sh"
+    if not offsets_file.exists():
+        error(f"Firmware offsets not found: {offsets_file}")
+        error("Run analyze_binwalk.py first to generate offset artifacts")
+        raise FileNotFoundError(offsets_file)
+
+    offsets = {}
+    with offsets_file.open() as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            if "=" in line:
+                key, value = line.split("=", 1)
+                # Try to parse as int for _DEC variables
+                if key.endswith("_DEC"):
+                    offsets[key] = int(value)
+                else:
+                    offsets[key] = value
+
+    info("Loaded firmware offsets from binwalk analysis")
+    return offsets
+
+
+def extract_firmware(firmware: Path, work_dir: Path) -> Path:
+    """Extract firmware using binwalk.
+
+    Args:
+        firmware: Path to firmware file
+        work_dir: Work directory for extractions
+
+    Returns:
+        Path to extracted directory
+    """
+    extract_base = work_dir / "extractions"
+    extract_dir = extract_base / f"{firmware.name}.extracted"
+
+    extract_base.mkdir(parents=True, exist_ok=True)
+
+    if not extract_dir.exists():
+        info("Extracting firmware with binwalk...")
+        try:
+            subprocess.run(
+                ["binwalk", "-e", "--run-as=root", str(firmware)],
+                cwd=extract_base,
+                capture_output=True,
+                check=False,
+            )
+        except FileNotFoundError:
+            error("binwalk command not found")
+            error("Please run this script within 'nix develop' shell")
+            sys.exit(1)
+
+    return extract_dir
+
+
+def find_dtb_file(extract_dir: Path, offset_hex: str) -> Path | None:
+    """Find DTB file in extracted directory based on offset.
+
+    Args:
+        extract_dir: Extracted firmware directory
+        offset_hex: Hex offset (e.g., "0x8F1B4")
+
+    Returns:
+        Path to system.dtb file or None if not found
+    """
+    # Convert offset to uppercase hex without 0x prefix (binwalk directory naming)
+    offset_int = int(offset_hex, 16)
+    offset_upper = f"{offset_int:X}"
+
+    dtb_path = extract_dir / offset_upper / "system.dtb"
+    if dtb_path.exists():
+        return dtb_path
+
+    # Also try with 0x prefix
+    dtb_path_alt = extract_dir / offset_hex.upper() / "system.dtb"
+    if dtb_path_alt.exists():
+        return dtb_path_alt
+
+    return None
+
+
+def find_largest_dtb(extract_dir: Path) -> Path | None:
+    """Find the largest system.dtb file (full device tree).
+
+    Args:
+        extract_dir: Extracted firmware directory
+
+    Returns:
+        Path to largest system.dtb or None if not found
+    """
+    dtb_files = list(extract_dir.glob("*/system.dtb"))
+    if not dtb_files:
+        return None
+
+    # Return the largest file
+    return max(dtb_files, key=lambda p: p.stat().st_size)
+
+
+def extract_fit_signature(dtb_file: Path, image_type: str) -> FITSignature | None:
+    """Extract signature information from FIT image DTB.
+
+    Args:
+        dtb_file: Path to system.dtb file
+        image_type: "bootloader" or "kernel"
+
+    Returns:
+        FITSignature object or None if no signature found
+    """
+    if not dtb_file.exists():
+        return None
+
+    content = dtb_file.read_text(errors="ignore")
+
+    # Extract algorithm (look for RSA algorithm)
+    algo_match = re.search(r'algo = "([^"]+rsa[^"]*)"', content, re.IGNORECASE)
+    algorithm = algo_match.group(1) if algo_match else "unknown"
+
+    # Extract key name
+    key_match = re.search(r'key-name-hint = "([^"]+)"', content)
+    key_name = key_match.group(1) if key_match else "unknown"
+
+    # Extract signed components
+    signed_match = re.search(r'sign-images = "([^"]+)"', content)
+    signed_components = signed_match.group(1) if signed_match else "unknown"
+
+    # Only return if we found at least one piece of info
+    if algorithm != "unknown" or key_name != "unknown" or signed_components != "unknown":
+        return FITSignature(
+            image_type=image_type,
+            algorithm=algorithm,
+            key_name=key_name,
+            signed_components=signed_components,
+        )
+
+    return None
+
+
+def extract_gzip_strings(firmware: Path, offset_dec: int, max_bytes: int) -> list[str]:
+    """Extract strings from gzip-compressed data in firmware.
+
+    Args:
+        firmware: Path to firmware file
+        offset_dec: Decimal offset to start reading
+        max_bytes: Maximum bytes to read
+
+    Returns:
+        List of strings found in decompressed data
+    """
+    try:
+        # Read compressed data
+        with firmware.open("rb") as f:
+            f.seek(offset_dec)
+            compressed_data = f.read(max_bytes)
+
+        # Decompress
+        decompressed = gzip.decompress(compressed_data)
+
+        # Extract strings (printable ASCII, min length MIN_STRING_LENGTH)
+        strings = []
+        current = []
+        for byte in decompressed:
+            if ASCII_PRINTABLE_MIN <= byte <= ASCII_PRINTABLE_MAX:  # Printable ASCII
+                current.append(chr(byte))
+            elif current:
+                if len(current) >= MIN_STRING_LENGTH:
+                    strings.append("".join(current))
+                current = []
+
+        # Don't forget last string
+        if current and len(current) >= MIN_STRING_LENGTH:
+            strings.append("".join(current))
+
+        return strings
+    except (OSError, gzip.BadGzipFile):
+        return []
+
+
+def filter_strings(strings: list[str], patterns: list[str]) -> list[str]:
+    """Filter strings by multiple regex patterns.
+
+    Args:
+        strings: List of strings to filter
+        patterns: List of regex patterns (ORed together)
+
+    Returns:
+        Sorted unique list of matching strings
+    """
+    if not patterns:
+        return []
+
+    # Combine patterns with OR
+    combined_pattern = "|".join(f"({p})" for p in patterns)
+    regex = re.compile(combined_pattern, re.IGNORECASE)
+
+    matches = [s for s in strings if regex.search(s)]
+    return sorted(set(matches))
+
+
+def extract_device_tree_node(
+    dtb_file: Path, node_pattern: str, lines_after: int = 10
+) -> str | None:
+    """Extract device tree node content.
+
+    Args:
+        dtb_file: Path to DTB file
+        node_pattern: Regex pattern to match node (e.g., "otp@")
+        lines_after: Number of lines to extract after match
+
+    Returns:
+        Node content or None if not found
+    """
+    if not dtb_file.exists():
+        return None
+
+    content = dtb_file.read_text(errors="ignore")
+    lines = content.splitlines()
+
+    for i, line in enumerate(lines):
+        if re.search(node_pattern, line):
+            # Extract this line and N lines after
+            end_idx = min(i + lines_after + 1, len(lines))
+            return "\n".join(lines[i:end_idx])
+
+    return None
+
+
+def analyze_secure_boot(  # noqa: PLR0912, PLR0915
+    firmware_path: str, output_dir: Path, work_dir: Path
+) -> SecureBootAnalysis:
+    """Analyze secure boot configuration in firmware.
+
+    Args:
+        firmware_path: Path to firmware file
+        output_dir: Output directory (for reading offsets)
+        work_dir: Work directory for extractions
+
+    Returns:
+        SecureBootAnalysis object with all findings
+    """
+    firmware = Path(firmware_path)
+
+    if not firmware.exists():
+        error(f"Firmware file not found: {firmware}")
+        sys.exit(1)
+
+    info(f"Analyzing secure boot in: {firmware}")
+
+    # Load offsets from binwalk analysis
+    offsets = load_offsets(output_dir)
+
+    # Create analysis object
+    analysis = SecureBootAnalysis(
+        firmware_file=firmware.name,
+        firmware_size=firmware.stat().st_size,
+    )
+
+    analysis.add_metadata("firmware_file", "secure_boot", "Path(firmware).name")
+    analysis.add_metadata("firmware_size", "secure_boot", "Path(firmware).stat().st_size")
+
+    # Set offsets from binwalk
+    if bootloader_offset := offsets.get("BOOTLOADER_FIT_OFFSET"):
+        analysis.bootloader_fit_offset = str(bootloader_offset)
+        analysis.add_metadata(
+            "bootloader_fit_offset",
+            "binwalk",
+            "loaded from binwalk-offsets.sh BOOTLOADER_FIT_OFFSET",
+        )
+
+    if kernel_offset := offsets.get("KERNEL_FIT_OFFSET"):
+        analysis.kernel_fit_offset = str(kernel_offset)
+        analysis.add_metadata(
+            "kernel_fit_offset",
+            "binwalk",
+            "loaded from binwalk-offsets.sh KERNEL_FIT_OFFSET",
+        )
+
+    if uboot_offset := offsets.get("UBOOT_GZ_OFFSET"):
+        analysis.uboot_offset = str(uboot_offset)
+        analysis.add_metadata(
+            "uboot_offset", "binwalk", "loaded from binwalk-offsets.sh UBOOT_GZ_OFFSET"
+        )
+
+    if optee_offset := offsets.get("OPTEE_GZ_OFFSET"):
+        analysis.optee_offset = str(optee_offset)
+        analysis.add_metadata(
+            "optee_offset", "binwalk", "loaded from binwalk-offsets.sh OPTEE_GZ_OFFSET"
+        )
+
+    # Extract firmware
+    section("Extracting firmware")
+    extract_dir = extract_firmware(firmware, work_dir)
+
+    # Analyze FIT signatures
+    section("Analyzing FIT signatures")
+
+    if analysis.bootloader_fit_offset and (
+        bootloader_dtb := find_dtb_file(extract_dir, analysis.bootloader_fit_offset)
+    ):
+        analysis.bootloader_signature = extract_fit_signature(bootloader_dtb, "bootloader")
+        if analysis.bootloader_signature:
+            analysis.add_metadata(
+                "bootloader_signature",
+                "fit_dtb",
+                f"extracted from {bootloader_dtb.relative_to(extract_dir)} using regex",
+            )
+
+    if analysis.kernel_fit_offset and (
+        kernel_dtb := find_dtb_file(extract_dir, analysis.kernel_fit_offset)
+    ):
+        analysis.kernel_signature = extract_fit_signature(kernel_dtb, "kernel")
+        if analysis.kernel_signature:
+            analysis.add_metadata(
+                "kernel_signature",
+                "fit_dtb",
+                f"extracted from {kernel_dtb.relative_to(extract_dir)} using regex",
+            )
+
+    # Analyze U-Boot strings
+    section("Analyzing U-Boot verification strings")
+
+    if uboot_offset_dec := offsets.get("UBOOT_GZ_OFFSET_DEC"):
+        uboot_strings = extract_gzip_strings(firmware, uboot_offset_dec, 500000)
+
+        # Filter for verification-related strings
+        verification_patterns = [
+            r"verified",
+            r"signature",
+            r"secure.?boot",
+            r"FIT.*sign",
+            r"required",
+            r"rsa.*verify",
+        ]
+        analysis.uboot_verification_strings = filter_strings(uboot_strings, verification_patterns)[
+            :30
+        ]
+
+        if analysis.uboot_verification_strings:
+            analysis.add_metadata(
+                "uboot_verification_strings",
+                "strings",
+                (
+                    "gunzip U-Boot | strings | grep -E "
+                    "'verified|signature|secure.?boot|FIT.*sign|required|rsa.*verify'"
+                ),
+            )
+
+        # Key findings
+        key_patterns = [
+            r"FIT:.*signed",
+            r"Verified-boot:",
+            r"Can't read verified-boot",
+            r"CONFIG_FIT_SIGNATURE",
+        ]
+        analysis.uboot_key_findings = filter_strings(uboot_strings, key_patterns)
+
+        if analysis.uboot_key_findings:
+            analysis.add_metadata(
+                "uboot_key_findings",
+                "strings",
+                (
+                    "gunzip U-Boot | strings | grep -E "
+                    "'FIT:.*signed|Verified-boot:|Can't read verified-boot|CONFIG_FIT_SIGNATURE'"
+                ),
+            )
+
+    # Analyze OP-TEE strings
+    section("Analyzing OP-TEE secure boot strings")
+
+    if optee_offset_dec := offsets.get("OPTEE_GZ_OFFSET_DEC"):
+        optee_strings = extract_gzip_strings(firmware, optee_offset_dec, 300000)
+
+        # Filter for secure boot related strings
+        secure_boot_patterns = [
+            r"secure.?boot",
+            r"otp.*key",
+            r"set.*flag",
+            r"key.*index",
+            r"enable.*flag",
+        ]
+        analysis.optee_secure_boot_strings = filter_strings(optee_strings, secure_boot_patterns)[
+            :30
+        ]
+
+        if analysis.optee_secure_boot_strings:
+            analysis.add_metadata(
+                "optee_secure_boot_strings",
+                "strings",
+                (
+                    "gunzip OP-TEE | strings | grep -E "
+                    "'secure.?boot|otp.*key|set.*flag|key.*index|enable.*flag'"
+                ),
+            )
+
+    # Analyze device tree
+    section("Analyzing device tree OTP/crypto nodes")
+
+    if largest_dtb := find_largest_dtb(extract_dir):
+        # Check for OTP node
+        if otp_content := extract_device_tree_node(largest_dtb, r"otp@", 20):
+            analysis.has_otp_node = True
+            analysis.otp_node_content = otp_content
+            analysis.add_metadata(
+                "has_otp_node",
+                "device_tree",
+                f"grep 'otp@' in {largest_dtb.relative_to(extract_dir)}",
+            )
+            analysis.add_metadata(
+                "otp_node_content",
+                "device_tree",
+                f"extracted 20 lines after 'otp@' match in {largest_dtb.relative_to(extract_dir)}",
+            )
+
+        # Check for crypto node
+        if crypto_content := extract_device_tree_node(largest_dtb, r"crypto@", 20):
+            analysis.has_crypto_node = True
+            analysis.crypto_node_content = crypto_content
+            analysis.add_metadata(
+                "has_crypto_node",
+                "device_tree",
+                f"grep 'crypto@' in {largest_dtb.relative_to(extract_dir)}",
+            )
+            analysis.add_metadata(
+                "crypto_node_content",
+                "device_tree",
+                (
+                    f"extracted 20 lines after 'crypto@' match in "
+                    f"{largest_dtb.relative_to(extract_dir)}"
+                ),
+            )
+
+    return analysis
+
+
+def output_toml(analysis: SecureBootAnalysis) -> str:
+    """Convert analysis to TOML format.
+
+    Args:
+        analysis: SecureBootAnalysis object
+
+    Returns:
+        TOML string with source metadata as comments
+    """
+    doc = tomlkit.document()
+
+    # Add header
+    doc.add(tomlkit.comment("Secure Boot Analysis"))
+    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
+    doc.add(tomlkit.nl())
+
+    # Convert analysis to dict
+    data = analysis.to_dict()
+
+    # Add fields to TOML, with source metadata as comments
+    for key, value in data.items():
+        # Skip source/method metadata fields (we'll add them as comments)
+        if key.endswith("_source") or key.endswith("_method"):
+            continue
+
+        # Add source metadata as comment above field
+        if f"{key}_source" in data:
+            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
+        if f"{key}_method" in data:
+            method = data[f"{key}_method"]
+            # Wrap long method descriptions
+            if len(method) > TOML_MAX_COMMENT_LENGTH:
+                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
+            else:
+                doc.add(tomlkit.comment(f"Method: {method}"))
+
+        doc.add(key, value)
+        doc.add(tomlkit.nl())
+
+    # Generate TOML string
+    toml_str = tomlkit.dumps(doc)
+
+    # Validate by parsing it back
+    try:
+        tomlkit.loads(toml_str)
+    except Exception as e:
+        error(f"Generated invalid TOML: {e}")
+        sys.exit(1)
+
+    return toml_str
+
+
+def main() -> None:
+    """Main entry point."""
+    # Parse arguments
+    parser = argparse.ArgumentParser(
+        description="Analyze secure boot configuration in firmware",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "firmware",
+        nargs="?",
+        help="Path to firmware file (downloads default if not provided)",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["toml", "json"],
+        default="toml",
+        help="Output format (default: toml)",
+    )
+    args = parser.parse_args()
+
+    # Determine paths
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    output_dir = project_root / "output"
+    work_dir = Path("/tmp/fw_analysis")
+
+    # Get firmware path
+    if args.firmware:
+        firmware_path = args.firmware
+    else:
+        # Default firmware - download if needed
+        firmware_file = DEFAULT_FIRMWARE_URL.split("/")[-1]
+        firmware_path = str(work_dir / firmware_file)
+
+        if not Path(firmware_path).exists():
+            info(f"Downloading firmware: {DEFAULT_FIRMWARE_URL}")
+            work_dir.mkdir(parents=True, exist_ok=True)
+            subprocess.run(
+                ["curl", "-L", "-o", firmware_path, DEFAULT_FIRMWARE_URL],
+                check=True,
+            )
+
+    # Analyze secure boot
+    analysis = analyze_secure_boot(firmware_path, output_dir, work_dir)
+
+    # Output in requested format
+    if args.format == "json":
+        json_str = json.dumps(analysis.to_dict(), indent=2)
+        # Validate by parsing it back
+        try:
+            json.loads(json_str)
+        except Exception as e:
+            error(f"Generated invalid JSON: {e}")
+            sys.exit(1)
+        print(json_str)
+    else:  # toml
+        print(output_toml(analysis))
+
+
+if __name__ == "__main__":
+    main()
