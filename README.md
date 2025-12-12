@@ -59,4 +59,12 @@ This repository contains only scripts and documentation. No proprietary code or 
 
 ## License
 
-[GPL-2.0](LICENSE)
+**AGPL-3.0 with Military Use Restrictions**
+
+This project is licensed under the GNU Affero General Public License v3.0 with additional restrictions prohibiting military, weapons, and paramilitary use.
+
+- [LICENSE](LICENSE) - Full AGPL-3.0 text
+- [LICENSE.ADDENDUM](LICENSE.ADDENDUM) - Additional restrictions
+- [RELICENSING.md](RELICENSING.md) - Relicensing notice (from GPL-2.0)
+
+⚠️ **Non-OSI Compliant:** The additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.

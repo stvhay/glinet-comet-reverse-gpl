@@ -1,0 +1,36 @@
+# Additional Use Restrictions
+
+In addition to the GNU Affero General Public License v3.0, the following restrictions apply:
+
+## Prohibited Uses
+
+This software may NOT be used, directly or indirectly, for:
+
+1. **Military purposes**, including but not limited to:
+   - Defense applications
+   - Military intelligence or surveillance
+   - Weapons development, testing, or deployment
+   - Military training or simulation systems
+
+2. **Weapons development or deployment**, including but not limited to:
+   - Autonomous weapons systems
+   - Targeting systems
+   - Weapons control systems
+   - Ammunition or explosive devices
+
+3. **Paramilitary activities**, including but not limited to:
+   - Private military contractors
+   - Mercenary operations
+   - Unlawful armed groups
+
+## Enforcement
+
+Any use of this software for prohibited purposes constitutes a material breach of the license and automatically terminates all rights granted under both the AGPL-3.0 and this addendum.
+
+## Precedence
+
+In case of conflict, restrictions in this addendum take precedence over permissions in the base AGPL-3.0 license.
+
+## OSI Compliance
+
+**Note:** These additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.

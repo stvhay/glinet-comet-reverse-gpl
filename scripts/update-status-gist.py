@@ -26,7 +26,10 @@ def main():
 
     # Read gist ID
     if not GIST_ID_FILE.exists():
-        print("Error: Gist not created yet. Run ./scripts/create-status-gist.sh first", file=sys.stderr)
+        print(
+            "Error: Gist not created yet. Run ./scripts/create-status-gist.sh first",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     gist_id = GIST_ID_FILE.read_text().strip()
@@ -34,10 +37,10 @@ def main():
     # Update timestamp in scratchpad content
     timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p %Z")
     scratchpad_content = re.sub(
-        r'^\*\*Last Updated:\*\* .*',
-        f'**Last Updated:** {timestamp}',
+        r"^\*\*Last Updated:\*\* .*",
+        f"**Last Updated:** {timestamp}",
         scratchpad_content,
-        flags=re.MULTILINE
+        flags=re.MULTILINE,
     )
 
     # Render template
@@ -53,15 +56,15 @@ def main():
     )
 
     # Write to temp file and update gist
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
         f.write(rendered)
         temp_path = f.name
 
     try:
         subprocess.run(
-            ['gh', 'gist', 'edit', gist_id, temp_path, '--filename', 'scratchpad.md'],
+            ["gh", "gist", "edit", gist_id, temp_path, "--filename", "scratchpad.md"],
             check=True,
-            capture_output=True
+            capture_output=True,
         )
         print(f"✓ Updated: https://gist.github.com/{gist_id}")
     finally:
