@@ -266,48 +266,34 @@ def analyze_dtb_file(dtb_path: Path, extract_dir: Path) -> DeviceTree:
     )
 
 
-def analyze_device_trees(firmware_path: str) -> DeviceTreeAnalysis:
+def analyze_device_trees(firmware_path: str, work_dir: Path) -> DeviceTreeAnalysis:
     """Analyze device trees in firmware and return structured results.
 
     Args:
         firmware_path: Path to firmware image
+        work_dir: Working directory for extraction
 
     Returns:
         DeviceTreeAnalysis object with all extracted data
     """
-    firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing: {firmware}")
-
-    # Determine working directory
-    work_dir = Path("/tmp/fw_analysis")
-    work_dir.mkdir(parents=True, exist_ok=True)
-
     # Extract firmware
     section("Extracting Firmware")
+    firmware = Path(firmware_path)
     extract_dir = extract_firmware(firmware, work_dir)
 
-    # Create analysis object
-    firmware_size = firmware.stat().st_size
+    # Create analysis object with firmware metadata
     analysis = DeviceTreeAnalysis(
         firmware_file=firmware.name,
-        firmware_size=firmware_size,
+        firmware_size=firmware.stat().st_size,
     )
-
     analysis.add_metadata("firmware_file", "firmware", "Path(firmware).name")
     analysis.add_metadata("firmware_size", "firmware", "Path(firmware).stat().st_size")
 
     # Find DTB files
     section("Finding Device Tree Blobs")
     dtb_files = find_dtb_files(extract_dir)
-    analysis.dtb_count = len(dtb_files)
-    analysis.add_metadata("dtb_count", "binwalk", "find extracted DTB files")
-
-    info(f"Found {analysis.dtb_count} DTB/DTS files")
+    analysis.set_count_with_metadata("dtb_count", dtb_files, "binwalk", "find extracted DTB files")
+    info(f"Found {analysis.dtb_count} device tree blobs")
 
     # Analyze each DTB
     for dtb_path in dtb_files:
@@ -351,7 +337,7 @@ class DeviceTreeScript(AnalysisScript):
         Returns:
             DeviceTreeAnalysis results
         """
-        return analyze_device_trees(firmware_path)
+        return analyze_device_trees(firmware_path, self.work_dir)
 
     def get_success_message(self, analysis: AnalysisBase) -> str:
         """Generate success message after analysis.
@@ -363,7 +349,7 @@ class DeviceTreeScript(AnalysisScript):
             Success message string
         """
         if isinstance(analysis, DeviceTreeAnalysis):
-            return f"Analyzed {analysis.dtb_count} device tree(s)"
+            return self.format_count_message(analysis.dtb_count, "device tree")
         return super().get_success_message(analysis)
 
 

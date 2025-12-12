@@ -148,27 +148,16 @@ def _extract_offset_from_lines(
 
 def analyze_firmware(firmware_path: str) -> BinwalkAnalysis:
     """Analyze firmware with binwalk and return structured results."""
-    firmware = Path(firmware_path)
-
-    if not firmware.exists():
-        error(f"Firmware file not found: {firmware}")
-        sys.exit(1)
-
-    info(f"Analyzing: {firmware}")
-
     # Run binwalk
     section("Binwalk Signature Scan")
+    firmware = Path(firmware_path)
     binwalk_output = run_binwalk(firmware)
 
-    # Get firmware size
-    firmware_size = firmware.stat().st_size
-
-    # Create analysis object
+    # Create analysis object with firmware metadata
     analysis = BinwalkAnalysis(
         firmware_file=firmware.name,
-        firmware_size=firmware_size,
+        firmware_size=firmware.stat().st_size,
     )
-
     analysis.add_metadata("firmware_file", "binwalk", "Path(firmware).name")
     analysis.add_metadata("firmware_size", "binwalk", "Path(firmware).stat().st_size")
 
@@ -348,12 +337,8 @@ class BinwalkScript(AnalysisScript):
         Args:
             analysis: Completed binwalk analysis
         """
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        output_dir = project_root / "output"
-
         section("Extracting firmware offsets")
-        write_legacy_offsets_file(analysis, output_dir)
+        write_legacy_offsets_file(analysis, self.output_dir)
 
 
 if __name__ == "__main__":
