@@ -61,8 +61,8 @@
       "Bash(sh:*)",
       "Bash(scripts/:*)",
       "Bash(./scripts/:*)",
-      "Bash(/Users/hays/Projects/glinet-comet-reversing/scripts/:*)",
-      "Bash(/tmp/:*)"
+      "Bash(/tmp/:*)",
+      "Bash(unzip:*)"
     ],
     "block": [
       "Bash(git push:*)",
