@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# DEPRECATED: This bash script has been replaced by analyze_device_trees.py
+# Please use: ./scripts/analyze_device_trees.py [firmware.img] [--format toml|json]
+#
 # Extract and analyze Device Tree Blobs from firmware
 #
 # Usage: ./scripts/analyze-device-trees.sh [firmware.img]
@@ -9,6 +12,10 @@
 # - Device tree model and compatible strings
 # - FIT image structure (if present)
 # - Hardware configuration details
+#
+# MIGRATION NOTE: The Python version outputs structured TOML/JSON with source
+# metadata instead of markdown. This bash script is kept for backward
+# compatibility but will be removed in a future version.
 
 set -euo pipefail
 

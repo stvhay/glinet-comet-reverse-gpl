@@ -223,11 +223,11 @@ run_bash_module() {
 
 # Python modules (output TOML to results/)
 should_run "binwalk" && run_python_module "binwalk"
+should_run "device-trees" && run_python_module "device-trees"
 should_run "uboot" && run_python_module "uboot"
 should_run "rootfs" && run_python_module "rootfs"
 
 # Bash modules (output markdown to output/) - to be migrated incrementally
-should_run "device-trees" && run_bash_module "device-trees"
 should_run "boot-process" && run_bash_module "boot-process"
 should_run "network-services" && run_bash_module "network-services"
 should_run "proprietary-blobs" && run_bash_module "proprietary-blobs"
