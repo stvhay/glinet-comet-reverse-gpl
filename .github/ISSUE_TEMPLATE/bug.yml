@@ -84,6 +84,28 @@ body:
       required: true
 
   - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause Analysis
+      description: |
+        After investigation, what caused this bug? (Can be filled in during fix)
+
+        Consider:
+        - What was the underlying cause?
+        - Why wasn't this caught earlier?
+        - What category: Logic error, incorrect assumption, missing validation, etc.?
+      placeholder: |
+        Example:
+        The script used `grep 'Linux version'` which matched a debug string
+        instead of the actual kernel version string. The test fixture didn't
+        include this edge case.
+
+        Category: Incorrect assumption about string uniqueness
+        Why not caught: Test data too simple, didn't match real firmware complexity
+    validations:
+      required: false
+
+  - type: textarea
     id: environment
     attributes:
       label: Environment

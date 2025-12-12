@@ -8,6 +8,24 @@ Guidance for Claude Code when working with this repository.
 
 **Repository**: https://github.com/stvhay/glinet-comet-reverse-gpl
 
+## Quality Management
+
+This project follows an ISO 9001:2015-aligned quality management system to ensure accuracy, reproducibility, and credibility of analysis results.
+
+**Quality Documentation:**
+- [Quality Objectives](docs/quality/QUALITY-OBJECTIVES.md) - Measurable targets for analysis accuracy, test coverage, and continuous improvement
+- [Risk Register](docs/quality/RISK-REGISTER.md) - Identified risks and mitigations (legal, technical, operational)
+- ISO 9001 Gap Analysis: `docs/reports/iso-9001-gap-analysis-2025-12-12.md`
+
+**Key Quality Principles:**
+1. **100% Reproducibility** - All findings traceable to automated scripts
+2. **≥60% Test Coverage** - Enforced by CI/CD
+3. **Zero Linting Errors** - Code quality gates prevent broken code
+4. **Evidence-Based** - Every conclusion backed by documented methodology
+5. **Continuous Improvement** - Regular refactoring to reduce technical debt
+
+See [Issue Templates](.github/ISSUE_TEMPLATE/) for quality gates enforced during development.
+
 ## Reverse Engineering Methodology
 
 This project follows strict **black box reverse engineering** principles:
