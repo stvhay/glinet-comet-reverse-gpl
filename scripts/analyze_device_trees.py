@@ -23,6 +23,7 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.finders import find_files
 from lib.firmware import extract_firmware
 from lib.logging import error, info, section, warn
 
@@ -106,8 +107,7 @@ class DeviceTreeAnalysis(AnalysisBase):
 def find_dtb_files(extract_dir: Path) -> list[Path]:
     """Find all device tree blob files in extraction directory."""
     # Look for system.dtb files (these are FIT images or DTBs extracted by binwalk)
-    dtb_files = list(extract_dir.rglob("system.dtb"))
-    return sorted(dtb_files)
+    return find_files(extract_dir, ["system.dtb"], file_type="file")
 
 
 def _extract_fit_description(dts_content: str) -> str | None:
