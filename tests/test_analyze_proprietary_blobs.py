@@ -831,14 +831,14 @@ class TestAnalyzeBinary:
         lib_file.write_bytes(b"dummy")
 
         # Mock file and strings commands
-        def mock_subprocess(*args, **kwargs):
+        def mock_subprocess(*args, **_kwargs):
             cmd = args[0]
             if cmd[0] == "file":
                 return MagicMock(
                     stdout="ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV)",
                     returncode=0,
                 )
-            elif cmd[0] == "strings":
+            if cmd[0] == "strings":
                 return MagicMock(
                     stdout=(
                         "random text\n"
@@ -871,11 +871,11 @@ class TestAnalyzeBinary:
         # Create many interesting strings
         strings = "\n".join([f"Copyright {i}" for i in range(100)])
 
-        def mock_subprocess(*args, **kwargs):
+        def mock_subprocess(*args, **_kwargs):
             cmd = args[0]
             if cmd[0] == "file":
                 return MagicMock(stdout="ELF", returncode=0)
-            elif cmd[0] == "strings":
+            if cmd[0] == "strings":
                 return MagicMock(stdout=strings, returncode=0)
             return MagicMock(returncode=1)
 
@@ -914,11 +914,11 @@ class TestAnalyzeBinary:
         lib_file = tmp_path / "test.so"
         lib_file.write_bytes(b"dummy")
 
-        def mock_subprocess(*args, **kwargs):
+        def mock_subprocess(*args, **_kwargs):
             cmd = args[0]
             if cmd[0] == "file":
                 return MagicMock(stdout="ELF", returncode=0)
-            elif cmd[0] == "strings":
+            if cmd[0] == "strings":
                 raise Exception("strings command failed")
             return MagicMock(returncode=1)
 
@@ -1063,7 +1063,7 @@ class TestIntegration:
 
     @patch("analyze_proprietary_blobs.has_gpl_string")
     @patch("subprocess.run")
-    def test_realistic_proprietary_blobs_analysis(
+    def test_realistic_proprietary_blobs_analysis(  # noqa: PLR0915
         self, mock_run, mock_has_gpl, tmp_path
     ):
         """Test complete analysis workflow with realistic filesystem."""
@@ -1097,14 +1097,14 @@ class TestIntegration:
         mock_has_gpl.side_effect = [True, False]
 
         # Mock binary analysis
-        def mock_subprocess(*args, **kwargs):
+        def mock_subprocess(*args, **_kwargs):
             cmd = args[0]
             if cmd[0] == "file":
                 return MagicMock(
                     stdout="ELF 64-bit LSB shared object",
                     returncode=0,
                 )
-            elif cmd[0] == "strings":
+            if cmd[0] == "strings":
                 return MagicMock(
                     stdout="Copyright 2023 Rockchip\nVersion 1.0\n",
                     returncode=0,
@@ -1350,13 +1350,13 @@ class TestAnalyzeProprietaryBlobs:
         mock_has_gpl.return_value = True
 
         # Mock subprocess (binwalk and binary analysis)
-        def mock_subprocess(*args, **kwargs):
+        def mock_subprocess(*args, **_kwargs):
             cmd = args[0]
             if isinstance(cmd, list) and "binwalk" in cmd:
                 return MagicMock(returncode=0)
-            elif isinstance(cmd, list) and cmd[0] == "file":
+            if isinstance(cmd, list) and cmd[0] == "file":
                 return MagicMock(stdout="ELF 64-bit LSB shared object", returncode=0)
-            elif isinstance(cmd, list) and cmd[0] == "strings":
+            if isinstance(cmd, list) and cmd[0] == "strings":
                 return MagicMock(
                     stdout="Copyright 2023 Rockchip\nVersion 1.0\n", returncode=0
                 )
@@ -1390,7 +1390,7 @@ class TestMain:
 
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "toml"])
-    def test_main_with_firmware_toml_format(self, mock_analyze, tmp_path, capsys):
+    def test_main_with_firmware_toml_format(self, mock_analyze, tmp_path, capsys):  # noqa: ARG002
         """Test main function with firmware file and TOML format."""
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(
@@ -1423,7 +1423,7 @@ class TestMain:
 
     @patch("analyze_proprietary_blobs.analyze_proprietary_blobs")
     @patch("sys.argv", ["analyze_proprietary_blobs.py", "test.img", "--format", "json"])
-    def test_main_with_firmware_json_format(self, mock_analyze, tmp_path, capsys):
+    def test_main_with_firmware_json_format(self, mock_analyze, tmp_path, capsys):  # noqa: ARG002
         """Test main function with firmware file and JSON format."""
         # Create mock analysis result
         analysis = ProprietaryBlobsAnalysis(

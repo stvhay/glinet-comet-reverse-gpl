@@ -14,10 +14,6 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_network_services import (
-    MIN_HASH_LENGTH,
-    MIN_SHADOW_FIELDS,
-    TOML_COMMENT_TRUNCATE_LENGTH,
-    TOML_MAX_COMMENT_LENGTH,
     InitScript,
     NetworkServicesAnalysis,
     PasswordEntry,
@@ -28,8 +24,8 @@ from analyze_network_services import (
     find_init_scripts,
     find_network_services,
     find_sensitive_files,
-    find_ssh_server,
     find_squashfs_rootfs,
+    find_ssh_server,
     find_systemd_services,
     find_web_frameworks,
     find_web_servers,
@@ -980,7 +976,7 @@ class TestIntegration:
     """Integration tests with realistic data."""
 
     @patch("subprocess.run")
-    def test_realistic_network_services_analysis(self, mock_run, tmp_path):
+    def test_realistic_network_services_analysis(self, mock_run, tmp_path):  # noqa: PLR0915
         """Test complete analysis workflow with realistic filesystem."""
         # Create realistic filesystem structure
         rootfs = tmp_path / "squashfs-root"
@@ -1111,7 +1107,7 @@ class TestMainFunction:
 
     @patch("analyze_network_services.analyze_firmware")
     @patch("sys.argv", ["analyze_network_services.py"])
-    def test_main_default_format(self, mock_analyze, capsys):
+    def test_main_default_format(self, mock_analyze, capsys):  # noqa: ARG002
         """Test main() with default TOML format."""
         # Create a simple analysis result
         analysis = NetworkServicesAnalysis(

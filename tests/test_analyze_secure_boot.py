@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import gzip
+import io
+import json
 import sys
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -14,20 +17,19 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_secure_boot import (
-    ASCII_PRINTABLE_MAX,
-    ASCII_PRINTABLE_MIN,
-    MIN_STRING_LENGTH,
     TOML_COMMENT_TRUNCATE_LENGTH,
     TOML_MAX_COMMENT_LENGTH,
     FITSignature,
     SecureBootAnalysis,
     extract_device_tree_node,
+    extract_firmware,
     extract_fit_signature,
     extract_gzip_strings,
     filter_strings,
     find_dtb_file,
     find_largest_dtb,
     load_offsets,
+    main,
     output_toml,
 )
 
@@ -1033,7 +1035,7 @@ class TestMainFunction:
 
     @patch("analyze_secure_boot.analyze_secure_boot")
     @patch("analyze_secure_boot.Path")
-    def test_main_with_firmware_arg_toml(self, mock_path_cls, mock_analyze, tmp_path):
+    def test_main_with_firmware_arg_toml(self, mock_path_cls, mock_analyze, tmp_path):  # noqa: ARG002
         """Test main() with firmware argument and TOML output."""
         # Mock Path to simulate firmware file exists
         mock_firmware = MagicMock()
@@ -1051,12 +1053,7 @@ class TestMainFunction:
 
         # Mock sys.argv
         with patch("sys.argv", ["analyze_secure_boot.py", "test.img", "--format", "toml"]):
-            from analyze_secure_boot import main
-
             # Capture stdout
-            import io
-            from contextlib import redirect_stdout
-
             f = io.StringIO()
             with redirect_stdout(f):
                 main()
@@ -1086,28 +1083,19 @@ class TestMainFunction:
 
         # Mock sys.argv
         with patch("sys.argv", ["analyze_secure_boot.py", "test.img", "--format", "json"]):
-            from analyze_secure_boot import main
-
             # Capture stdout
-            import io
-            from contextlib import redirect_stdout
-
             f = io.StringIO()
             with redirect_stdout(f):
                 main()
 
             output = f.getvalue()
             # Should be valid JSON
-            import json
-
             parsed = json.loads(output)
             assert parsed["firmware_file"] == "test.img"
             assert parsed["has_otp_node"] is True
 
     def test_extract_firmware(self, tmp_path):
         """Test extract_firmware function."""
-        from analyze_secure_boot import extract_firmware
-
         # Create fake firmware file
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"test firmware")
@@ -1130,7 +1118,7 @@ class TestMainFunction:
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    def test_realistic_secure_boot_analysis(self, tmp_path):
+    def test_realistic_secure_boot_analysis(self, tmp_path):  # noqa: ARG002
         """Test creating a realistic SecureBootAnalysis object."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -1167,8 +1155,10 @@ class TestIntegration:
             ],
             has_otp_node=True,
             has_crypto_node=True,
-            otp_node_content="otp@fe388000 {\n    compatible = \"rockchip,rk3568-otp\";\n};",
-            crypto_node_content="crypto@fe380000 {\n    compatible = \"rockchip,rk3568-crypto\";\n};",
+            otp_node_content="otp@fe388000 {"
+            "\n    compatible = \"rockchip,rk3568-otp\";\n};",
+            crypto_node_content="crypto@fe380000 {"
+            "\n    compatible = \"rockchip,rk3568-crypto\";\n};",
         )
 
         # Add metadata

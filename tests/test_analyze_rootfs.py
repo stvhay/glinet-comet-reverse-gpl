@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import tomlkit
@@ -911,7 +911,7 @@ class TestIntegration:
         (license_dir / "LICENSE").write_text("GNU GENERAL PUBLIC LICENSE\nVersion 2\n")
 
         # Mock subprocess for strings commands (kernel version and busybox)
-        def mock_subprocess_side_effect(*args, **kwargs):
+        def mock_subprocess_side_effect(*args, **_kwargs):
             mock_result = MagicMock()
             # Check which file is being processed
             cmd = args[0]

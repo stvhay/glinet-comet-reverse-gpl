@@ -516,9 +516,19 @@ class TestIntegration:
 
         # Add metadata
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
-        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
-        analysis.add_metadata("version", "gzip_extraction", "gunzip data at offset 0x901B4 | strings")
-        analysis.add_metadata("build_date", "gzip_extraction", "gunzip data at offset 0x901B4 | strings | grep build date pattern")
+        analysis.add_metadata(
+            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
+        )
+        analysis.add_metadata(
+            "version",
+            "gzip_extraction",
+            "gunzip data at offset 0x901B4 | strings",
+        )
+        analysis.add_metadata(
+            "build_date",
+            "gzip_extraction",
+            "gunzip data at offset 0x901B4 | strings | grep build date pattern",
+        )
 
         # Test to_dict
         result = analysis.to_dict()
@@ -551,10 +561,24 @@ class TestIntegration:
         )
 
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
-        analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
-        analysis.add_metadata("version", "gzip_extraction", "gunzip data at offset 0x901B4 | strings")
-        analysis.add_metadata("build_date", "gzip_extraction", "gunzip data at offset 0x901B4 | strings | grep build date")
-        analysis.add_metadata("boot_commands", "gzip_extraction", "strings matching '^boot(cmd|args|delay)='")
+        analysis.add_metadata(
+            "firmware_size", "filesystem", "Path(firmware).stat().st_size"
+        )
+        analysis.add_metadata(
+            "version",
+            "gzip_extraction",
+            "gunzip data at offset 0x901B4 | strings",
+        )
+        analysis.add_metadata(
+            "build_date",
+            "gzip_extraction",
+            "gunzip data at offset 0x901B4 | strings | grep build date",
+        )
+        analysis.add_metadata(
+            "boot_commands",
+            "gzip_extraction",
+            "strings matching '^boot(cmd|args|delay)='",
+        )
         analysis.add_metadata("extraction_offset", "binwalk", "UBOOT_GZ_OFFSET")
 
         toml_str = output_toml(analysis)
