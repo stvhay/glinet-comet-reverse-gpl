@@ -27,8 +27,6 @@ Usage:
 """
 
 import subprocess
-import sys
-import tempfile
 from pathlib import Path
 
 from scripts.lib.scratchpad_cache import CACHE_DIR, update
@@ -40,6 +38,7 @@ GIST_UPDATE_SCRIPT = REPO_ROOT / "scripts" / "update-status-gist.sh"
 
 class ConformanceError(Exception):
     """Raised when file modification violates conformance rules."""
+
     pass
 
 
@@ -79,7 +78,8 @@ def get_current_issue() -> tuple[int, str] | None:
         return None
 
     lines = issue_file.read_text().strip().split("\n")
-    if len(lines) < 2:
+    EXPECTED_LINE_COUNT = 2  # issue_number and issue_title
+    if len(lines) < EXPECTED_LINE_COUNT:
         return None
 
     try:
@@ -141,30 +141,21 @@ def _git_commit_and_push(file_path: str, commit_message: str) -> None:
         commit_message: Commit message
     """
     # Add file
-    subprocess.run(
-        ["git", "add", file_path],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True
-    )
+    subprocess.run(["git", "add", file_path], cwd=REPO_ROOT, check=True, capture_output=True)
 
     # Commit with conventional commit format + Claude attribution
-    full_message = f"{commit_message}\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+    full_message = (
+        f"{commit_message}\n\n"
+        "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\n"
+        "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+    )
 
     subprocess.run(
-        ["git", "commit", "-m", full_message],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True
+        ["git", "commit", "-m", full_message], cwd=REPO_ROOT, check=True, capture_output=True
     )
 
     # Push to remote
-    subprocess.run(
-        ["git", "push"],
-        cwd=REPO_ROOT,
-        check=True,
-        capture_output=True
-    )
+    subprocess.run(["git", "push"], cwd=REPO_ROOT, check=True, capture_output=True)
 
     print(f"✅ Committed and pushed: {commit_message}")
 
