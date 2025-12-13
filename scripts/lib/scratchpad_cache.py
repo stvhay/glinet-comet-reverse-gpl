@@ -19,7 +19,7 @@ Usage:
 """
 
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Cache directory
@@ -59,7 +59,7 @@ def update_timestamp() -> None:
         update_timestamp()
         # Writes: "2025-12-13 01:00 UTC"
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     timestamp = now.strftime("%Y-%m-%d %H:%M UTC")
     _atomic_write(CACHE_DIR / "last-updated.txt", timestamp)
 
@@ -112,10 +112,7 @@ def add_commit(commit_hash: str, commit_msg: str) -> None:
     commits_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Read existing commits
-    if commits_file.exists():
-        commits = commits_file.read_text().strip().split("\n")
-    else:
-        commits = []
+    commits = commits_file.read_text().strip().split("\n") if commits_file.exists() else []
 
     # Add new commit
     commits.append(f"{commit_hash} - {commit_msg}")
