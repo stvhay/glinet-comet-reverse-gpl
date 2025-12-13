@@ -1,0 +1,5 @@
+[2025-12-13 18:50]
+WHAT: Created lib/offsets.py with OffsetManager class and 17 unit tests
+WHY: Consolidate duplicated offset loading logic across 4 scripts (analyze_uboot.py, analyze_secure_boot.py, analyze_boot_process.py, analyze_binwalk.py)
+NEXT: Refactor the 4 scripts to use OffsetManager, verify all tests pass
+STATUS: lib/offsets.py created (128 lines), test_offsets.py created (17 tests), all tests passing

@@ -80,40 +80,6 @@ class SecureBootAnalysis(AnalysisBase):
         return False, None
 
 
-def load_offsets(output_dir: Path) -> dict[str, str | int]:
-    """Load firmware offsets from binwalk-offsets.sh.
-
-    Args:
-        output_dir: Directory containing binwalk-offsets.sh
-
-    Returns:
-        Dictionary with offset values (both hex strings and decimal ints)
-
-    Raises:
-        FileNotFoundError: If offsets file doesn't exist
-    """
-    offsets_file = output_dir / "binwalk-offsets.sh"
-    if not offsets_file.exists():
-        raise FileNotFoundError(offsets_file)
-
-    offsets = {}
-    with offsets_file.open() as f:
-        for raw_line in f:
-            line = raw_line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            if "=" in line:
-                key, value = line.split("=", 1)
-                # Try to parse as int for _DEC variables
-                if key.endswith("_DEC"):
-                    offsets[key] = int(value)
-                else:
-                    offsets[key] = value
-
-    return offsets
-
-
 def extract_firmware(firmware: Path, work_dir: Path) -> Path:
     """Extract firmware using binwalk.
 

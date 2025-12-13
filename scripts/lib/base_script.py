@@ -15,6 +15,7 @@ from typing import TextIO
 from lib.analysis_base import AnalysisBase
 from lib.firmware import extract_firmware, find_squashfs_rootfs, get_firmware_path
 from lib.logging import error, info, success, warn
+from lib.offsets import OffsetManager
 from lib.output import output_json, output_toml
 
 
@@ -176,35 +177,18 @@ class AnalysisScript(ABC):
         Returns:
             Dictionary mapping offset names to values (str for hex, int for decimal)
         """
-        offsets_file = self.output_dir / "binwalk-offsets.sh"
-
-        if not offsets_file.exists():
+        manager = OffsetManager(self.output_dir)
+        try:
+            manager.load_from_shell_script()
+            return manager.offsets
+        except FileNotFoundError as e:
             if require_exists:
-                error(f"Firmware offsets not found: {offsets_file}")
+                error(f"Firmware offsets not found: {e}")
                 error("Run analyze_binwalk.py first to generate offsets")
                 sys.exit(1)
             else:
-                warn(f"Firmware offsets not found: {offsets_file}")
+                warn(f"Firmware offsets not found: {self.output_dir / 'binwalk-offsets.sh'}")
                 return {}
-
-        offsets = {}
-        with offsets_file.open() as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if not line or line.startswith("#"):
-                    continue
-
-                if "=" in line:
-                    key, value = line.split("=", 1)
-                    value = value.strip('"').strip("'")
-
-                    # Store decimal values as int, hex as string
-                    if key.endswith("_DEC"):
-                        offsets[key] = int(value)
-                    else:
-                        offsets[key] = value
-
-        return offsets
 
     def format_count_message(self, count: int, item_type: str) -> str:
         """Generate 'Analyzed N item(s)' message.

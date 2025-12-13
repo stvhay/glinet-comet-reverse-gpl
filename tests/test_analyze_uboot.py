@@ -13,7 +13,6 @@ from analyze_uboot import (
     COMPLEX_FIELDS,
     SIMPLE_FIELDS,
     UBootAnalysis,
-    load_binwalk_offsets,
 )
 from lib.extraction import extract_strings
 from lib.output import TOML_COMMENT_TRUNCATE_LENGTH, TOML_MAX_COMMENT_LENGTH, output_toml
@@ -216,118 +215,6 @@ class TestExtractStrings:
 
         assert len(result) == 1
         assert result[0] == long_text
-
-
-class TestLoadBinwalkOffsets:
-    """Test load_binwalk_offsets function."""
-
-    def test_load_nonexistent_file(self, tmp_path):
-        """Test loading from non-existent file."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result == {}
-
-    def test_load_empty_file(self, tmp_path):
-        """Test loading from empty file."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result == {}
-
-    def test_load_decimal_offsets(self, tmp_path):
-        """Test loading decimal offsets."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET_DEC=590260
-DTB_OFFSET_DEC=586164
-TEE_OFFSET_DEC=1037748
-""")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result["UBOOT_GZ"] == 590260
-        assert result["DTB"] == 586164
-        assert result["TEE"] == 1037748
-
-    def test_load_hex_offsets(self, tmp_path):
-        """Test loading hexadecimal offsets."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET=0x901B4
-DTB_OFFSET=0x8F1B4
-TEE_OFFSET=0xFD5B4
-""")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result["UBOOT_GZ_HEX"] == "0x901B4"
-        assert result["DTB_HEX"] == "0x8F1B4"
-        assert result["TEE_HEX"] == "0xFD5B4"
-
-    def test_load_mixed_offsets(self, tmp_path):
-        """Test loading both decimal and hex offsets."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET_DEC=590260
-UBOOT_GZ_OFFSET=0x901B4
-DTB_OFFSET_DEC=586164
-DTB_OFFSET=0x8F1B4
-""")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result["UBOOT_GZ"] == 590260
-        assert result["UBOOT_GZ_HEX"] == "0x901B4"
-        assert result["DTB"] == 586164
-        assert result["DTB_HEX"] == "0x8F1B4"
-
-    def test_load_ignores_comments(self, tmp_path):
-        """Test that comments are ignored."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-# This is a comment
-UBOOT_GZ_OFFSET_DEC=590260
-# Another comment
-DTB_OFFSET_DEC=586164
-""")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert result["UBOOT_GZ"] == 590260
-        assert result["DTB"] == 586164
-
-    def test_load_ignores_invalid_lines(self, tmp_path):
-        """Test that invalid lines are ignored."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET_DEC=590260
-INVALID LINE
-ALSO INVALID
-DTB_OFFSET_DEC=586164
-""")
-
-        result = load_binwalk_offsets(output_dir)
-
-        assert len(result) == 2
-        assert result["UBOOT_GZ"] == 590260
-        assert result["DTB"] == 586164
 
 
 class TestOutputToml:

@@ -30,6 +30,7 @@ from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.finders import find_files
 from lib.logging import error, section, success
+from lib.offsets import OffsetManager
 
 # A/B redundancy detection threshold
 MIN_FIT_IMAGES_FOR_AB = 2
@@ -158,33 +159,14 @@ def get_fit_info(dts_file: Path) -> str | None:
 @cache
 def load_firmware_offsets(output_dir: Path) -> dict[str, str | int]:
     """Load firmware offsets from binwalk analysis artifact."""
-    offsets_file = output_dir / "binwalk-offsets.sh"
-
-    if not offsets_file.exists():
-        error(f"Firmware offsets not found: {offsets_file}")
+    manager = OffsetManager(output_dir)
+    try:
+        manager.load_from_shell_script()
+        return manager.offsets
+    except FileNotFoundError as e:
+        error(f"Firmware offsets not found: {e}")
         error("Run analyze_binwalk.py first to generate offset artifacts")
         sys.exit(1)
-
-    # Parse shell variable assignments
-    offsets: dict[str, str | int] = {}
-    content = offsets_file.read_text()
-
-    for raw_line in content.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
-            continue
-
-        if "=" in line:
-            key, value = line.split("=", 1)
-            # Remove quotes if present
-            value = value.strip('"').strip("'")
-            # Store as int if it looks like a decimal number
-            if value.isdigit():
-                offsets[key] = int(value)
-            else:
-                offsets[key] = value
-
-    return offsets
 
 
 def analyze_boot_process(

@@ -29,6 +29,7 @@ from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.extraction import extract_gzip_at_offset, extract_strings
 from lib.logging import error, info, section, success, warn
+from lib.offsets import OffsetManager
 
 # U-Boot extraction constants
 UBOOT_EXTRACT_SIZE = 500000  # Read 500KB to capture full gzip stream
@@ -89,32 +90,6 @@ def run_strings(firmware: Path) -> str:
 # extract_gzip_at_offset and extract_strings_from_data are now imported from lib.extraction
 
 
-def load_binwalk_offsets(output_dir: Path) -> dict[str, int]:
-    """Load firmware offsets from binwalk-offsets.sh."""
-    offsets_file = output_dir / "binwalk-offsets.sh"
-
-    if not offsets_file.exists():
-        warn("Firmware offsets not found: binwalk-offsets.sh")
-        warn("Run analyze_binwalk.py first to generate offset artifacts")
-        return {}
-
-    offsets = {}
-    with offsets_file.open("r") as f:
-        for line in f:
-            # Parse lines like: UBOOT_GZ_OFFSET_DEC=123456
-            if match := re.match(r"^([A-Z_]+)_OFFSET_DEC=(\d+)", line):
-                name = match.group(1)
-                value = int(match.group(2))
-                offsets[name] = value
-            # Also parse hex offsets like: UBOOT_GZ_OFFSET=0x1E240
-            elif match := re.match(r"^([A-Z_]+)_OFFSET=(0x[0-9A-Fa-f]+)", line):
-                name = match.group(1)
-                value_hex = match.group(2)
-                offsets[f"{name}_HEX"] = value_hex
-
-    return offsets
-
-
 def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noqa: PLR0912, PLR0915
     """Analyze U-Boot bootloader in firmware and return structured results."""
     firmware = Path(firmware_path)
@@ -128,7 +103,12 @@ def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noq
     analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
 
     # Load offsets from binwalk analysis
-    offsets = load_binwalk_offsets(output_dir)
+    offset_manager = OffsetManager(output_dir)
+    try:
+        offset_manager.load_from_shell_script()
+    except FileNotFoundError:
+        warn("Firmware offsets not found: binwalk-offsets.sh")
+        warn("Run analyze_binwalk.py first to generate offset artifacts")
 
     section("Extracting U-Boot version")
 
@@ -150,9 +130,9 @@ def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noq
             break
 
     # Method 2: Try extracting from gzip-compressed U-Boot binary
-    if not analysis.version and "UBOOT_GZ" in offsets:
-        offset_dec = offsets["UBOOT_GZ"]
-        offset_hex = offsets.get("UBOOT_GZ_HEX", hex(offset_dec))
+    offset_dec = offset_manager.get_dec("UBOOT_GZ")
+    if not analysis.version and offset_dec is not None:
+        offset_hex = offset_manager.get_hex("UBOOT_GZ") or hex(offset_dec)
 
         info(f"Attempting to extract U-Boot from gzip at offset {offset_hex}")
 

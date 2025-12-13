@@ -1,0 +1,5 @@
+[2025-12-13 19:15]
+WHAT: Refactored 4 scripts to use OffsetManager - eliminated ~80 lines of duplicated offset loading logic
+WHY: Consolidate offset management into single utility class with consistent API, better error handling, and comprehensive test coverage
+NEXT: Run full test suite to verify no regressions, commit work
+STATUS: 4 scripts refactored (analyze_uboot.py, analyze_secure_boot.py via base_script.py, analyze_boot_process.py, lib/base_script.py), all 194 affected tests passing, quote stripping edge case fixed

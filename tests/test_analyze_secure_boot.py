@@ -25,7 +25,6 @@ from analyze_secure_boot import (
     extract_fit_signature,
     find_dtb_file,
     find_largest_dtb,
-    load_offsets,
 )
 from lib.extraction import extract_gzip_at_offset, extract_strings, filter_strings
 from lib.output import output_toml
@@ -298,118 +297,6 @@ class TestSecureBootAnalysis:
         """Test that SecureBootAnalysis uses slots for memory efficiency."""
         # Verify it has slots defined
         assert hasattr(SecureBootAnalysis, "__slots__")
-
-
-class TestLoadOffsets:
-    """Test load_offsets function."""
-
-    def test_load_offsets_missing_file(self, tmp_path):
-        """Test loading offsets when file doesn't exist."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-
-        with pytest.raises(FileNotFoundError):
-            load_offsets(output_dir)
-
-    def test_load_offsets_empty_file(self, tmp_path):
-        """Test loading offsets from empty file."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("")
-
-        result = load_offsets(output_dir)
-
-        assert result == {}
-
-    def test_load_offsets_decimal_values(self, tmp_path):
-        """Test loading decimal offset values."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET_DEC=590260
-BOOTLOADER_FIT_OFFSET_DEC=32768
-KERNEL_FIT_OFFSET_DEC=524288
-""")
-
-        result = load_offsets(output_dir)
-
-        assert result["UBOOT_GZ_OFFSET_DEC"] == 590260
-        assert result["BOOTLOADER_FIT_OFFSET_DEC"] == 32768
-        assert result["KERNEL_FIT_OFFSET_DEC"] == 524288
-
-    def test_load_offsets_hex_values(self, tmp_path):
-        """Test loading hexadecimal offset values."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-BOOTLOADER_FIT_OFFSET=0x8000
-KERNEL_FIT_OFFSET=0x80000
-UBOOT_GZ_OFFSET=0x901B4
-OPTEE_GZ_OFFSET=0xFD5B4
-""")
-
-        result = load_offsets(output_dir)
-
-        assert result["BOOTLOADER_FIT_OFFSET"] == "0x8000"
-        assert result["KERNEL_FIT_OFFSET"] == "0x80000"
-        assert result["UBOOT_GZ_OFFSET"] == "0x901B4"
-        assert result["OPTEE_GZ_OFFSET"] == "0xFD5B4"
-
-    def test_load_offsets_mixed_types(self, tmp_path):
-        """Test loading both decimal and hex offsets."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-UBOOT_GZ_OFFSET=0x901B4
-UBOOT_GZ_OFFSET_DEC=590260
-KERNEL_FIT_OFFSET=0x80000
-KERNEL_FIT_OFFSET_DEC=524288
-""")
-
-        result = load_offsets(output_dir)
-
-        assert result["UBOOT_GZ_OFFSET"] == "0x901B4"
-        assert result["UBOOT_GZ_OFFSET_DEC"] == 590260
-        assert result["KERNEL_FIT_OFFSET"] == "0x80000"
-        assert result["KERNEL_FIT_OFFSET_DEC"] == 524288
-
-    def test_load_offsets_ignores_comments(self, tmp_path):
-        """Test that comments are ignored."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-# This is a comment
-UBOOT_GZ_OFFSET=0x901B4
-# Another comment
-UBOOT_GZ_OFFSET_DEC=590260
-""")
-
-        result = load_offsets(output_dir)
-
-        assert len(result) == 2
-        assert result["UBOOT_GZ_OFFSET"] == "0x901B4"
-
-    def test_load_offsets_ignores_empty_lines(self, tmp_path):
-        """Test that empty lines are ignored."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        offsets_file = output_dir / "binwalk-offsets.sh"
-        offsets_file.write_text("""
-
-UBOOT_GZ_OFFSET=0x901B4
-
-KERNEL_FIT_OFFSET=0x80000
-
-""")
-
-        result = load_offsets(output_dir)
-
-        assert len(result) == 2
 
 
 class TestFindDtbFile:
