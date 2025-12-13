@@ -33,7 +33,7 @@ from scripts.lib.scratchpad_cache import CACHE_DIR, update
 
 # Git configuration
 REPO_ROOT = Path("/Users/hays/Projects/glinet-comet-reversing")
-GIST_UPDATE_SCRIPT = REPO_ROOT / "scripts" / "update-status-gist.sh"
+GIST_UPDATE_SCRIPT = REPO_ROOT / "scripts" / "update-status-gist.py"
 
 
 class ConformanceError(Exception):
