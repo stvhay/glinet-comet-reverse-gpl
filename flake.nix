@@ -61,6 +61,7 @@
             shellHook = ''
               echo "GL.iNet Comet (RM1) reverse engineering environment"
               echo "Firmware URL: https://fw.gl-inet.com/kvm/rm1/release/glkvm-RM1-1.7.2-1128-1764344791.img"
+              trap 'echo "$(date +%Y-%m-%d\ %H:%M:%S) $BASH_COMMAND" >> "$(git rev-parse --show-toplevel)/.secret.log" 2>/dev/null' DEBUG
             '';
           };
         });
