@@ -15,31 +15,19 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
+from lib.devicetree import DeviceTreeParser, HardwareComponent
 from lib.finders import find_files
 from lib.firmware import extract_firmware
 from lib.logging import info, section, warn
 
 # Device tree analysis constants
 FDT_MAGIC = "d00dfeed"  # FDT magic number (big-endian)
-FIT_DESCRIPTION_MAX_LINES = 30
-SERIAL_CONFIG_CONTEXT_LINES = 10
-SERIAL_CONFIG_MAX_LINES = 20
-
-
-@dataclass(frozen=True, slots=True)
-class HardwareComponent:
-    """A hardware component identified in the device tree."""
-
-    type: str  # Component type (e.g., "gpio", "usb", "spi")
-    node: str  # Device tree node name
-    description: str  # Full description from DTS
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,72 +97,6 @@ def find_dtb_files(extract_dir: Path) -> list[Path]:
     return find_files(extract_dir, ["system.dtb"], file_type="file")
 
 
-def _extract_fit_description(dts_content: str) -> str | None:
-    """Extract FIT image description from DTS content."""
-    if "description" not in dts_content or "FIT" not in dts_content:
-        return None
-
-    fit_lines = []
-    for line in dts_content.splitlines():
-        if re.search(
-            r"^\s*(description|type|arch|os|compression|algo|key-name-hint|sign-images)\s*=",
-            line,
-        ):
-            fit_lines.append(line.strip())
-            if len(fit_lines) >= FIT_DESCRIPTION_MAX_LINES:
-                break
-
-    return "\n".join(fit_lines) if fit_lines else None
-
-
-def _extract_serial_config(dts_content: str) -> str | None:
-    """Extract serial/UART configuration from DTS content."""
-    if "baudrate" not in dts_content and "fiq-debugger" not in dts_content:
-        return None
-
-    serial_lines = []
-    in_serial_block = False
-    lines_collected = 0
-
-    for line in dts_content.splitlines():
-        if "fiq-debugger" in line or "serial@" in line:
-            in_serial_block = True
-            serial_lines.append(line.strip())
-            lines_collected = 0
-        elif in_serial_block:
-            serial_lines.append(line.strip())
-            lines_collected += 1
-            if lines_collected >= SERIAL_CONFIG_CONTEXT_LINES:
-                break
-
-    return "\n".join(serial_lines[:SERIAL_CONFIG_MAX_LINES]) if serial_lines else None
-
-
-def _extract_hardware_components(dts_content: str) -> list[HardwareComponent]:
-    """Extract hardware components from DTS content."""
-    hardware_components: list[HardwareComponent] = []
-
-    # Map of component types to their regex patterns
-    component_patterns = {
-        "gpio": r"(gpio\d+):\s*gpio@([0-9a-fA-F]+)",
-        "usb": r"(usb\d+):\s*usb@([0-9a-fA-F]+)",
-        "spi": r"(spi\d+):\s*spi@([0-9a-fA-F]+)",
-        "i2c": r"(i2c\d+):\s*i2c@([0-9a-fA-F]+)",
-        "uart": r"(serial\d+|uart\d+):\s*serial@([0-9a-fA-F]+)",
-    }
-
-    for comp_type, pattern in component_patterns.items():
-        for match in re.finditer(pattern, dts_content):
-            node = match.group(1)
-            addr = match.group(2)
-            description = f"{comp_type.upper()} controller at 0x{addr}"
-            hardware_components.append(
-                HardwareComponent(type=comp_type, node=node, description=description)
-            )
-
-    return hardware_components
-
-
 def parse_dts_content(dts_content: str) -> dict[str, str | list[HardwareComponent]]:
     """Parse DTS content and extract key information.
 
@@ -184,37 +106,9 @@ def parse_dts_content(dts_content: str) -> dict[str, str | list[HardwareComponen
     Returns:
         Dictionary with extracted information
     """
-    result: dict[str, str | list[HardwareComponent]] = {}
-
-    # Determine type
-    if "FIT Image" in dts_content or re.search(r"fit.*source", dts_content):
-        result["type"] = "FIT Image (Flattened Image Tree)"
-    elif "U-Boot" in dts_content:
-        result["type"] = "U-Boot Device Tree"
-    else:
-        result["type"] = "Device Tree"
-
-    # Extract model
-    if model_match := re.search(r'^\s*model\s*=\s*"([^"]*)"', dts_content, re.MULTILINE):
-        result["model"] = model_match.group(1)
-
-    # Extract compatible string
-    if compat_match := re.search(r'^\s*compatible\s*=\s*"([^"]*)"', dts_content, re.MULTILINE):
-        result["compatible"] = compat_match.group(1)
-
-    # Extract FIT description if present
-    if fit_desc := _extract_fit_description(dts_content):
-        result["fit_description"] = fit_desc
-
-    # Extract serial/UART configuration
-    if serial_config := _extract_serial_config(dts_content):
-        result["serial_config"] = serial_config
-
-    # Extract hardware components
-    if hardware_components := _extract_hardware_components(dts_content):
-        result["hardware_components"] = hardware_components
-
-    return result
+    # Use DeviceTreeParser for all extraction
+    parser = DeviceTreeParser(dts_content)
+    return parser.parse()
 
 
 def analyze_dtb_file(dtb_path: Path, extract_dir: Path) -> DeviceTree:
