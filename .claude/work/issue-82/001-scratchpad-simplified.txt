@@ -1,0 +1,5 @@
+[2025-12-13 12:15]
+WHAT: Simplified scratchpad format from 110+ lines to 8 lines with checkpoint integration
+WHY: Remove 80+ lines of hardcoded content that became stale, reduce maintenance burden, align with embedded workflow system (Epic #77)
+NEXT: Ready for Issue #83 (pilot) - first decision point for Epic #77
+STATUS: scripts/generate-scratchpad.sh modified (110→67 lines), SCRATCHPAD-FORMAT-SIMPLIFICATION.md created (413 lines), shellcheck passing, all 668 tests passing, pushed to origin/main (commit 660f810)
