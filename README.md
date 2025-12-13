@@ -7,7 +7,7 @@
 
 > **⏸️ PROJECT PAUSED** - December 2025
 >
-> This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **conditionally achieved** - GL.iNet has agreed to release source code (see [forum discussion](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955/21)).
+> This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **conditionally achieved** - GL.iNet has [agreed](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955/21) to release source code.
 >
 > **Potential Purpose Evolution:** This project may evolve into a pilot for validating agentic ISO 9001 QMS tooling implementation using ARM board reverse engineering as the application domain.
 >
