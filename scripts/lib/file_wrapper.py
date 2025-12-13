@@ -168,7 +168,6 @@ def wrapped_edit(
     new_string: str,
     replace_all: bool = False,
     commit_message: str | None = None,
-    auto_commit: bool = True,
 ) -> None:
     """Edit file with cache enforcement, conformance check, and auto-commit.
 
@@ -180,7 +179,6 @@ def wrapped_edit(
         new_string: Replacement text
         replace_all: Replace all occurrences (default: False)
         commit_message: Commit message (auto-generated if None)
-        auto_commit: Automatically commit and push (default: True)
 
     Raises:
         ConformanceError: If issue_number is not provided or invalid
@@ -194,6 +192,7 @@ def wrapped_edit(
             old_string="recieve",
             new_string="receive"
         )
+        # Automatically commits and pushes - no bypass allowed
     """
     # 1. Conformance check: issue_number must be provided and valid
     if not isinstance(issue_number, int) or issue_number <= 0:
@@ -235,17 +234,16 @@ def wrapped_edit(
     # 3. Regenerate scratchpad (cache was updated in step 1)
     _regenerate_scratchpad()
 
-    # 4. Auto-commit if requested
-    if auto_commit:
-        if commit_message is None:
-            # Auto-generate commit message
-            file_name = Path(file_path).name
-            commit_message = f"edit: {work_description} ({file_name})"
+    # 4. Auto-commit (ALWAYS - no bypass)
+    if commit_message is None:
+        # Auto-generate commit message
+        file_name = Path(file_path).name
+        commit_message = f"edit: {work_description} ({file_name})"
 
-        _git_commit_and_push(str(file_path), commit_message)
+    _git_commit_and_push(str(file_path), commit_message)
 
-        # 5. Push gist
-        _push_gist()
+    # 5. Push gist
+    _push_gist()
 
 
 def wrapped_write(
@@ -254,7 +252,6 @@ def wrapped_write(
     file_path: str,
     content: str,
     commit_message: str | None = None,
-    auto_commit: bool = True,
 ) -> None:
     """Write file with cache enforcement, conformance check, and auto-commit.
 
@@ -264,7 +261,6 @@ def wrapped_write(
         file_path: Path to file (absolute or relative to repo root)
         content: File content to write
         commit_message: Commit message (auto-generated if None)
-        auto_commit: Automatically commit and push (default: True)
 
     Raises:
         ConformanceError: If issue_number is not provided or invalid
@@ -276,6 +272,7 @@ def wrapped_write(
             file_path="scripts/analyze_new.py",
             content="#!/usr/bin/env python3\\n..."
         )
+        # Automatically commits and pushes - no bypass allowed
     """
     # 1. Conformance check: issue_number must be provided and valid
     if not isinstance(issue_number, int) or issue_number <= 0:
@@ -302,18 +299,17 @@ def wrapped_write(
     # 3. Regenerate scratchpad (cache was updated in step 1)
     _regenerate_scratchpad()
 
-    # 4. Auto-commit if requested
-    if auto_commit:
-        if commit_message is None:
-            # Auto-generate commit message
-            file_name = Path(file_path).name
-            action = "feat" if is_new == "Created" else "edit"
-            commit_message = f"{action}: {work_description} ({file_name})"
+    # 4. Auto-commit (ALWAYS - no bypass)
+    if commit_message is None:
+        # Auto-generate commit message
+        file_name = Path(file_path).name
+        action = "feat" if is_new == "Created" else "edit"
+        commit_message = f"{action}: {work_description} ({file_name})"
 
-        _git_commit_and_push(str(file_path), commit_message)
+    _git_commit_and_push(str(file_path), commit_message)
 
-        # 5. Push gist
-        _push_gist()
+    # 5. Push gist
+    _push_gist()
 
 
 def clear_current_issue() -> None:
