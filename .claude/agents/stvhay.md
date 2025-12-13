@@ -360,7 +360,18 @@ last_updated: 2025-12-12
 - Using approved issue templates
 - Standard git operations
 - CI/CD execution
-- **Scratchpad updates (P5 mandatory):** Session start, issue completion, commits, session end
+- **Scratchpad updates (P5 mandatory) - WORKFLOW CHECKLIST:**
+  - Use cache system: `update("Current work description")` - fast, <100ms
+  - [ ] **Session start:** Update when beginning work (<5 min)
+  - [ ] **After every commit:** Post-commit hook auto-updates (verify in output)
+  - [ ] **Every 15 minutes:** Update during ANY active work (issue work, transitional work, cleanup, RCA, documentation)
+    - RULE: If >10 min since last update, STOP and update NOW
+    - Use: `update("What I'm doing right now")`
+  - [ ] **Issue completion:** Update within 5 min of closing issue
+  - [ ] **Session end:** Update before responding "work complete" (use session-end-checklist.md)
+  - **AUTOMATED ENFORCEMENT:** Pre-commit hook BLOCKS commits if scratchpad >15 min stale
+  - **Cache location:** `/tmp/claude-glinet-comet-reversing/.scratchpad-cache/`
+  - **Reference:** P5 Section 5.5 (PROCEDURES.md), NCR-2025-12-13-001
 
 **Information Gathering:**
 - Reading files

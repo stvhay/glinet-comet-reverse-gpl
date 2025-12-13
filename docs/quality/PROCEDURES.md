@@ -1228,7 +1228,50 @@ graph TD
 
 ---
 
-#### Step 3: After Each Commit (RECOMMENDED)
+#### Step 2.5: During Transitional Work (MANDATORY)
+
+**Trigger:** Work continues after issue completion but before session end
+
+**Examples of Transitional Work:**
+- Preparing session summaries
+- Answering user questions about completed work
+- Planning next issues
+- Documentation cleanup
+- RCA preparation
+- Code review of completed work
+- Waiting for user approval/decisions
+- Implementing corrective actions (like this one!)
+
+**Action:** Apply periodic updates (every 15 minutes - same as Step 4)
+
+**Quality Gate:** Transitional work is "active work" and requires same update frequency as issue work
+
+**Update Format:**
+```markdown
+**Last Updated:** [UTC timestamp]
+**Current Work:** [Describe transitional work]
+```
+
+**Examples:**
+- "Preparing summary of Issue #31 for user"
+- "Awaiting user review of proposed changes"
+- "Implementing CA #1-5 from NCR-2025-12-13-001"
+- "Conducting RCA of P5 violation"
+
+**Rationale:** Transitional work phases can extend for significant time. Without updates during these phases, work-hour tracking fails and crash recovery is impossible.
+
+**Cache System Usage:**
+```python
+from scripts.lib.scratchpad_cache import update
+update("Current transitional work description")
+# Fast, <100ms, auto-regenerates scratchpad.md
+```
+
+**Implementation Note:** This step was added via NCR-2025-12-13-001 to address gap identified in RCA of scratchpad staleness violations.
+
+---
+
+#### Step 3: After Each Commit (AUTOMATED)
 
 **Trigger:** Commit created and pushed
 
