@@ -15,21 +15,17 @@ class TestHardwareComponent:
 
     def test_hardware_component_creation(self):
         """Test creating HardwareComponent."""
-        comp = HardwareComponent(
-            type="gpio", node="gpio0", description="GPIO controller at 0x1234"
-        )
+        comp = HardwareComponent(type="gpio", node="gpio0", description="GPIO controller at 0x1234")
         assert comp.type == "gpio"
         assert comp.node == "gpio0"
         assert comp.description == "GPIO controller at 0x1234"
 
     def test_hardware_component_immutable(self):
         """Test that HardwareComponent is frozen (immutable)."""
-        comp = HardwareComponent(
-            type="usb", node="usb0", description="USB controller"
-        )
+        comp = HardwareComponent(type="usb", node="usb0", description="USB controller")
         try:
             comp.type = "spi"  # Should raise FrozenInstanceError
-            assert False, "Should not be able to modify frozen dataclass"
+            raise AssertionError("Should not be able to modify frozen dataclass")
         except Exception:
             pass  # Expected
 
@@ -62,7 +58,7 @@ class TestDeviceTreeParserExtractModel:
 
     def test_extract_model_missing(self):
         """Test when model is missing."""
-        dts = "compatible = \"test\ndevice\";"
+        dts = 'compatible = "test\ndevice";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_model() is None
 
@@ -138,15 +134,15 @@ class TestDeviceTreeParserExtractFitDescription:
 
     def test_extract_fit_description_not_fit(self):
         """Test when DTS is not a FIT image."""
-        dts = "model = \"Test Board\";"
+        dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_fit_description() is None
 
     def test_extract_fit_description_max_lines(self):
         """Test that FIT extraction respects line limit."""
         # Create DTS with 40 FIT properties (exceeds max)
-        lines = ["FIT Image"]
-        lines.extend([f'description{i} = "value{i}";' for i in range(40)])
+        lines = ["FIT Image description"]
+        lines.extend([f'description = "value{i}";' for i in range(40)])
         dts = "\n".join(lines)
 
         parser = DeviceTreeParser(dts)
@@ -175,6 +171,7 @@ class TestDeviceTreeParserExtractSerialConfig:
     def test_extract_serial_config_serial_node(self):
         """Test extracting serial config with serial@ node."""
         dts = """
+        baudrate = <1500000>;
         serial@fe650000 {
             compatible = "rockchip,rk3588-uart";
             reg = <0xfe650000 0x100>;
@@ -188,7 +185,7 @@ class TestDeviceTreeParserExtractSerialConfig:
     def test_extract_serial_config_baudrate(self):
         """Test extracting serial config with baudrate."""
         dts = """
-        uart {
+        fiq-debugger {
             baudrate = <1500000>;
         };
         """
@@ -199,7 +196,7 @@ class TestDeviceTreeParserExtractSerialConfig:
 
     def test_extract_serial_config_missing(self):
         """Test when serial config is missing."""
-        dts = "model = \"Test Board\";"
+        dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_serial_config() is None
 
@@ -242,7 +239,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
 
     def test_extract_spi_components(self):
         """Test extracting SPI components."""
-        dts = "spi0: spi@feb10000 { compatible = \"rockchip,spi\"; };"
+        dts = 'spi0: spi@feb10000 { compatible = "rockchip,spi"; };'
         parser = DeviceTreeParser(dts)
         components = parser.extract_hardware_components()
 
@@ -251,7 +248,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
 
     def test_extract_i2c_components(self):
         """Test extracting I2C components."""
-        dts = "i2c0: i2c@fd880000 { compatible = \"rockchip,i2c\"; };"
+        dts = 'i2c0: i2c@fd880000 { compatible = "rockchip,i2c"; };'
         parser = DeviceTreeParser(dts)
         components = parser.extract_hardware_components()
 
@@ -288,7 +285,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
 
     def test_extract_hardware_components_empty(self):
         """Test when no hardware components found."""
-        dts = "model = \"Test Board\";"
+        dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
         components = parser.extract_hardware_components()
 
@@ -312,7 +309,7 @@ class TestDeviceTreeParserIsFitImage:
 
     def test_is_fit_image_false(self):
         """Test non-FIT DTS."""
-        dts = "model = \"Regular Device Tree\";"
+        dts = 'model = "Regular Device Tree";'
         parser = DeviceTreeParser(dts)
         assert parser.is_fit_image() is False
 
@@ -334,7 +331,7 @@ class TestDeviceTreeParserGetType:
 
     def test_get_type_regular(self):
         """Test type detection for regular device tree."""
-        dts = "model = \"Regular Board\";"
+        dts = 'model = "Regular Board";'
         parser = DeviceTreeParser(dts)
         assert parser.get_type() == "Device Tree"
 
@@ -386,7 +383,7 @@ class TestDeviceTreeParserParse:
 
     def test_parse_minimal_dts(self):
         """Test parsing minimal DTS."""
-        dts = "model = \"Minimal Board\";"
+        dts = 'model = "Minimal Board";'
         parser = DeviceTreeParser(dts)
         result = parser.parse()
 
@@ -424,7 +421,7 @@ class TestIntegration:
                 interrupts = <0 277 4>;
             };
 
-            usb_host0_ehci: usb@fc800000 {
+            usb0: usb@fc800000 {
                 compatible = "generic-ehci";
                 reg = <0x0 0xfc800000 0x0 0x40000>;
             };
@@ -449,6 +446,7 @@ class TestIntegration:
         """Test with realistic FIT image DTS."""
         dts = """
         /dts-v1/;
+        FIT Image
 
         / {
             description = "U-Boot fitImage for Rockchip RK3588";
