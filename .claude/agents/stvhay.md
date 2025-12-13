@@ -372,6 +372,26 @@ last_updated: 2025-12-12
   - **AUTOMATED ENFORCEMENT:** Pre-commit hook BLOCKS commits if scratchpad >15 min stale
   - **Cache location:** `/tmp/claude-glinet-comet-reversing/.scratchpad-cache/`
   - **Reference:** P5 Section 5.5 (PROCEDURES.md), NCR-2025-12-13-001
+- **File modifications (MANDATORY - BLOCKING):**
+  - ALL file edits/writes MUST use wrapper: `wrapped_edit(issue_number, ...)` or `wrapped_write(issue_number, ...)`
+  - Direct Edit/Write tool use is a NON-CONFORMANCE
+  - Wrapper enforces:
+    - Issue number requirement (all changes traceable)
+    - Cache update before modification (P5 compliance)
+    - Automatic commit with incremental message
+    - Automatic gist push for scratchpad sync
+  - Example:
+    ```python
+    from scripts.lib.file_wrapper import wrapped_edit
+    wrapped_edit(
+        issue_number=73,  # REQUIRED
+        work_description="Fix typo in README",
+        file_path="README.md",
+        old_string="old text",
+        new_string="new text"
+    )
+    ```
+  - **Reference:** scripts/lib/file_wrapper.py, Issue #73, NCR-2025-12-13-001
 
 **Information Gathering:**
 - Reading files
