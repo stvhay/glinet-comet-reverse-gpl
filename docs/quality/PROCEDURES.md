@@ -1414,17 +1414,59 @@ Where "fresh" = Updated within 15 minutes
 - **P4 (Corrective Action):** Bug fixes tracked in scratchpad
 - **Management Review:** Session summaries provide work-hour data for Section 6.1
 
-### 5.12 Automation Opportunities
+### 5.12 Tools and Automation
 
-**Current State:** Manual updates by AI agent
+**Current State:** Automated system with cache-based updates and conformance enforcement
+
+**Implemented Automation (NCR-2025-12-13-001):**
+
+1. **Cache System** (`scripts/lib/scratchpad_cache.py`)
+   - Fast atomic updates (<100ms)
+   - Simple Python API: `update("work description")`
+   - Cache files: `/tmp/claude-glinet-comet-reversing/.scratchpad-cache/`
+   - Automatic scratchpad regeneration from cache
+
+2. **Git Hooks** (Automated P5 enforcement)
+   - **Pre-commit hook:** BLOCKS commits if scratchpad >15 min stale (MANDATORY)
+   - **Post-commit hook:** Auto-updates scratchpad cache after every commit
+   - Location: `.git/hooks/pre-commit`, `.git/hooks/post-commit`
+
+3. **File Wrapper System** (`scripts/lib/file_wrapper.py`, Issue #73)
+   - **MANDATORY** for all file modifications (Edit/Write operations)
+   - Enforces: issue tracking, cache updates, auto-commit, conformance checks
+   - API: `wrapped_edit(issue_number, work_description, file_path, ...)`
+   - Raises `ConformanceError` if issue_number missing or invalid
+   - Benefits:
+     - All code changes traceable to GitHub issues
+     - Cache updated automatically BEFORE file modification
+     - Incremental commits with auto-generated messages
+     - Gist push after each commit (when configured)
+
+**Usage Example:**
+```python
+from scripts.lib.file_wrapper import wrapped_edit
+from scripts.lib.scratchpad_cache import update
+
+# Fast cache update (no file modification)
+update("Working on Issue #73")
+
+# File modification (cache update + commit + push)
+wrapped_edit(
+    issue_number=73,
+    work_description="Fix typo in docs",
+    file_path="README.md",
+    old_string="recieve",
+    new_string="receive",
+    auto_commit=True  # default
+)
+```
 
 **Future Improvements:**
-1. **Git hooks:** Auto-update scratchpad on commit
-2. **Issue webhooks:** Auto-update on issue state change
-3. **Gist API:** Auto-publish on scratchpad modification
-4. **Dashboard:** Real-time work status visualization
+1. **Issue webhooks:** Auto-update on issue state change (GitHub webhooks)
+2. **Gist API:** Complete gist publish script (`scripts/update-status-gist.sh`)
+3. **Dashboard:** Real-time work status visualization
 
-**Priority:** Medium (manual process adequate, automation reduces errors)
+**Priority:** High (automation now enforces compliance, prevents non-conformances)
 
 ### 5.13 Troubleshooting
 
