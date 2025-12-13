@@ -1,12 +1,49 @@
+#!/usr/bin/env bash
+# Generate scratchpad.md from cache files
+# This script reads simple cache files and renders the full scratchpad
+
+set -euo pipefail
+
+CACHE_DIR="/tmp/claude-glinet-comet-reversing/.scratchpad-cache"
+SCRATCHPAD="/tmp/claude-glinet-comet-reversing/scratchpad.md"
+REPO_SCRATCHPAD="/Users/hays/Projects/glinet-comet-reversing/.scratchpad.md"
+
+# Ensure cache directory exists
+mkdir -p "$CACHE_DIR"
+
+# Read cache files (with defaults if missing)
+LAST_UPDATED=$(cat "$CACHE_DIR/last-updated.txt" 2>/dev/null || date -u "+%Y-%m-%d %H:%M UTC")
+CURRENT_WORK=$(cat "$CACHE_DIR/current-work.txt" 2>/dev/null || echo "No active work")
+
+# Read completions (multi-line)
+COMPLETIONS=""
+if [ -f "$CACHE_DIR/completions.txt" ]; then
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        COMPLETIONS="${COMPLETIONS}- ${line}\n"
+    done < "$CACHE_DIR/completions.txt"
+fi
+
+# Read recent commits (multi-line)
+COMMITS=""
+if [ -f "$CACHE_DIR/commits.txt" ]; then
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        COMMITS="${COMMITS}- ${line}\n"
+    done < "$CACHE_DIR/commits.txt"
+fi
+
+# Generate scratchpad content
+cat > "$SCRATCHPAD" <<EOF
 # Work Status: [GL.iNet Comet Reversing](https://github.com/stvhay/glinet-comet-reverse-gpl)
 
-**Last Updated:** 2025-12-13 00:58 UTC
-**Current Work:** ⚠️ STOP WORK - Cache system WORKS, implementing remaining CAs (1,2,4,5)
+**Last Updated:** $LAST_UPDATED
+**Current Work:** $CURRENT_WORK
 
 ## Recent Completions (This Session)
 
-### Completions
-- ✅ **Cache System** - Fast scratchpad updates implemented\n
+${COMPLETIONS:+### Completions
+$COMPLETIONS}
 ### Issues Closed
 - ✅ [#71](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/71) - Scratchpad staleness corrective action (CLOSED)
 - ✅ [#60](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/60) - Add status link to README (CLOSED)
@@ -62,7 +99,7 @@
 
 ## Recent Commits (Last 9)
 
-
+${COMMITS:+$COMMITS}
 ## Session Summary
 
 **Work completed:** 6 issues + 1 epic (Epic #64 + issues #49, #58, #59, #60, #63, #71)
@@ -71,3 +108,10 @@
 **Corrective Action:** Issue #71 COMPLETE - scratchpad staleness addressed with P5 procedure + agent profile update
 **Starting:** Epic #30 (Refactoring) per user request
 
+EOF
+
+# Also copy to repo location for commit
+cp "$SCRATCHPAD" "$REPO_SCRATCHPAD"
+
+echo "✅ Scratchpad generated: $SCRATCHPAD"
+echo "✅ Copied to repo: $REPO_SCRATCHPAD"
