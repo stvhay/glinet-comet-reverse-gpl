@@ -568,9 +568,10 @@ This NCR will be closed when:
 **Type:** Process Non-Conformance (P5 violation)
 **Category:** Session Management
 **Severity:** Medium (low risk, high QMS concern)
-**Status:** OPEN - Stop Work in Effect
+**Status:** IN VERIFICATION (30-day monitoring period, ends 2026-01-13)
 **Opened:** 2025-12-13
-**Closed:** [Pending verification]
+**Verification Start:** 2025-12-13 (all CAs implemented)
+**Closed:** [Pending - verification ends 2026-01-13]
 
 **Related Documents:**
 - RCA-2025-12-13-scratchpad-staleness.md (Root cause analysis)
