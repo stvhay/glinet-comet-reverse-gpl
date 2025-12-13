@@ -3,6 +3,18 @@
 [![CI](https://github.com/stvhay/glinet-comet-reverse-gpl/actions/workflows/ci.yml/badge.svg)](https://github.com/stvhay/glinet-comet-reverse-gpl/actions/workflows/ci.yml)
 [![Live Status](https://img.shields.io/badge/status-live%20updates-blue)](https://gist.github.com/stvhay/165f51b518db358f3515610af94e01fb)
 
+---
+
+> **⏸️ PROJECT PAUSED** - December 2025
+>
+> This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **conditionally achieved** - GL.iNet has agreed to release source code (see [forum discussion](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955/21)).
+>
+> **Potential Purpose Evolution:** This project may evolve into a pilot for validating agentic ISO 9001 QMS tooling implementation using ARM board reverse engineering as the application domain.
+>
+> **Status:** Work may resume when priorities allow. For questions or interest in the QMS tooling work, please open an issue.
+
+---
+
 **GL.iNet ships GPL-licensed software in their Comet KVM device but has not released the required source code.**
 
 This project analyzes the firmware to document what source code GL.iNet must provide under the GPL license.
