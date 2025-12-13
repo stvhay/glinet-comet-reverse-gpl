@@ -1,0 +1,5 @@
+[2025-12-13 21:20]
+WHAT: Issue #88 closed - Project pause status added to README
+WHY: Communicate project status to repository visitors; document conditional achievement of GPL compliance goal
+NEXT: No active work - project paused until further notice
+STATUS: README.md updated with pause notice and link to GL.iNet forum agreement, commits 78e91d5 and d07a925, scratchpad updated, Issue #88 closed

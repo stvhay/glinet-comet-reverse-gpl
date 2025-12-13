@@ -1,0 +1,148 @@
+name: Ideation / Hypothesis
+description: Exploratory ideas, hypotheses to validate, and strategic questions
+title: "[Ideation] "
+labels: ["type:ideation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Ideation Issue
+
+        This template is for exploratory ideas, hypotheses that need validation, strategic questions,
+        and design patterns to evaluate. Ideation issues are not committed to implementation -
+        they're for thinking, discussion, and investigation.
+
+  - type: dropdown
+    id: ideation_type
+    attributes:
+      label: Type
+      description: What kind of ideation is this?
+      options:
+        - Hypothesis to validate
+        - Design pattern evaluation
+        - Strategic question
+        - Process improvement idea
+        - Technical exploration
+        - Cost-benefit analysis
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis / Idea
+      description: What's the core idea or hypothesis?
+      placeholder: |
+        Example:
+        "The custom agent pattern (specialized agent.md files) may be the most direct
+        technical mapping to 'internalizing purpose' - context shapes behavior more
+        naturally than bolt-on compliance instructions."
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+      description: Why is this worth exploring? What problem does it address?
+      placeholder: |
+        Example:
+        - Addresses NCR-2025-12-13-001: agents optimizing compliance vs internalizing purpose
+        - Provides separation of concerns
+        - Leverages context as primary control mechanism
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation_approach
+    attributes:
+      label: Validation Approach
+      description: How could this be tested or validated?
+      placeholder: |
+        Example:
+        - Pilot test on Issue #35
+        - Measure consistency of outputs
+        - Compare with baseline approach
+        - Gather qualitative feedback
+    validations:
+      required: false
+
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: Success Criteria
+      description: What would validate this hypothesis? What would invalidate it?
+      placeholder: |
+        Success indicators:
+        - ✅ Custom agents produce consistent results
+        - ✅ Less correction/reminder needed
+        - ✅ Work feels more natural
+
+        Failure indicators:
+        - ❌ No measurable improvement
+        - ❌ Added complexity without benefit
+        - ❌ Cognitive overhead too high
+    validations:
+      required: false
+
+  - type: textarea
+    id: related_work
+    attributes:
+      label: Related Work / References
+      description: Links to related issues, documents, or external references
+      placeholder: |
+        - Issue #77: Embedded Workflow System
+        - NCR-2025-12-13-001: QA purpose internalization
+        - docs/quality/PILOT-REVIEW-ISSUE-35.md
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is exploring this?
+      options:
+        - Critical (blocking current work)
+        - High (should explore soon)
+        - Medium (valuable but not urgent)
+        - Low (interesting but can wait)
+        - Backlog (capture for future consideration)
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      description: Current state of this ideation
+      options:
+        - Open (not yet explored)
+        - Investigating (active exploration)
+        - Validated (hypothesis confirmed)
+        - Invalidated (hypothesis disproven)
+        - Deferred (postponed for later)
+        - Superseded (replaced by better idea)
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: next_steps
+    attributes:
+      label: Next Steps
+      description: What should happen next with this idea?
+      placeholder: |
+        - [ ] Review and discuss
+        - [ ] Design validation experiment
+        - [ ] Create implementation issue (if validated)
+        - [ ] Document findings
+        - [ ] Make Go/No-Go decision
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
