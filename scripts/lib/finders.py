@@ -139,7 +139,7 @@ def find_by_names(
             rootfs,
             [name],
             file_type=file_type,
-            first_match_only=True,  # type: ignore[arg-type]
+            first_match_only=True,
         )
         if found:
             results[name] = found[0]
@@ -149,7 +149,7 @@ def find_by_names(
                 rootfs,
                 [f"{name}*"],
                 file_type=file_type,
-                first_match_only=True,  # type: ignore[arg-type]
+                first_match_only=True,
             )
             results[name] = found[0] if found else None
 

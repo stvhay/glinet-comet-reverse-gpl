@@ -10,7 +10,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 from lib.analysis_base import AnalysisBase
 from lib.firmware import extract_firmware, find_squashfs_rootfs, get_firmware_path
@@ -124,7 +124,7 @@ class AnalysisScript(ABC):
         self,
         analysis_class: type[AnalysisBase],
         firmware_path: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> tuple[Path, AnalysisBase]:
         """Create analysis object with standard firmware metadata.
 

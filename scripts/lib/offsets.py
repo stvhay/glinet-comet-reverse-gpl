@@ -56,7 +56,7 @@ class OffsetManager:
                     else:
                         self.offsets[key] = value
 
-    def get(self, key: str, default=None) -> int | str | None:
+    def get(self, key: str, default: int | str | None = None) -> int | str | None:
         """Get offset by key.
 
         Args:
