@@ -51,8 +51,8 @@ jobs:
           for f in *.md; do
             # Remove .md extension from internal links
             sed -i 's/\](\([^)]*\)\.md)/](\1)/g' "$f"
-            # Fix analysis/ prefix
-            sed -i 's/](analysis\//](/g' "$f"
+            # Fix analysis/ prefix - strip prefix but keep filename
+            sed -i 's/](analysis\/\([^)]*\))/](\1)/g' "$f"
             # Fix reference/ prefix - these become reference-filename
             sed -i 's/](\.\.\/reference\/\([^)]*\))/](reference-\1)/g' "$f"
             # Fix parent directory references to repo

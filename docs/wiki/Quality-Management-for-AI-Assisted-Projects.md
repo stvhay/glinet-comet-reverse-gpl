@@ -312,7 +312,7 @@ A quarterly review involves:
 
 **Benefit**: Catch integration bugs that unit tests miss
 
-See: [Refactoring Plan 2025](../refactoring-plan-2025.md) Phase 4.1
+See: [Refactoring Plan 2025](../archive/refactoring-plan-2025.md) Phase 4.1
 
 #### 📈 Competency-Aware Agent Delegation
 
