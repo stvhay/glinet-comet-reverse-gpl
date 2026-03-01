@@ -32,7 +32,7 @@ from lib.logging import error, info, section, success, warn
 from lib.offsets import OffsetManager
 
 # U-Boot extraction constants
-UBOOT_EXTRACT_SIZE = 500000  # Read 500KB to capture full gzip stream
+UBOOT_EXTRACT_SIZE = 1000000  # Read 1MB to capture full gzip stream (decompresses to ~841KB)
 
 # Field lists for TOML output
 SIMPLE_FIELDS = [
@@ -213,7 +213,7 @@ def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noq
 
         # Extract copyright/license information
         license_strings = [
-            s for s in uboot_strings if re.search(r"copyright|license|GPL", s, re.IGNORECASE)
+            s for s in uboot_strings if re.search(r"copyright|license|\bGPL\b", s, re.IGNORECASE)
         ]
         if license_strings:
             analysis.copyright_license = license_strings[:10]  # Limit to first 10
