@@ -554,7 +554,7 @@ COMPLEX_FIELDS = [
 class NetworkServicesScript(AnalysisScript):
     """Network services analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize network services analysis script."""
         super().__init__(
             description="Analyze network services and attack surface",

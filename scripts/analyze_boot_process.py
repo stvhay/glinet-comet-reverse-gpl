@@ -795,7 +795,7 @@ COMPLEX_FIELDS = [
 class BootProcessScript(AnalysisScript):
     """Boot process analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize boot process analysis script."""
         super().__init__(
             description="Analyze boot process and partition layout",

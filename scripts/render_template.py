@@ -31,9 +31,9 @@ class FootnoteRegistry:
     Tracks all footnotes and assigns sequential numbers.
     """
 
-    def __init__(self):
-        self.footnotes = []  # List of (source, method) tuples
-        self.footnote_map = {}  # Map (source, method) to footnote number
+    def __init__(self) -> None:
+        self.footnotes: list[tuple[str, str | None]] = []
+        self.footnote_map: dict[tuple[str, str | None], int] = {}
 
     def add(self, tracked_value: TrackedValue) -> int:
         """
@@ -131,7 +131,7 @@ def render_template(template_path: Path, output_path: Path | None = None) -> str
     return rendered
 
 
-def main():
+def main() -> None:
     """CLI entry point."""
     if len(sys.argv) < MIN_ARGS_REQUIRED:
         print("Usage: render_template.py TEMPLATE [OUTPUT]", file=sys.stderr)

@@ -47,7 +47,7 @@ class AnalysisBase:
         self._method[field_name] = method
 
     def set_count_with_metadata(
-        self, field_name: str, items: list, source: str, method: str
+        self, field_name: str, items: list[Any], source: str, method: str
     ) -> None:
         """Set a count field to len(items) and add metadata.
 

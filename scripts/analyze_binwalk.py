@@ -311,7 +311,7 @@ COMPLEX_FIELDS = [
 class BinwalkScript(AnalysisScript):
     """Binwalk firmware analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize binwalk analysis script."""
         super().__init__(
             description="Analyze firmware structure using binwalk",

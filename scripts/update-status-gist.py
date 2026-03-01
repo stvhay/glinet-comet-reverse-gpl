@@ -15,7 +15,7 @@ GIST_ID_FILE = Path("/tmp/claude-glinet-comet-reversing/gist-id.txt")
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 
 
-def main():
+def main() -> None:
     """Render and update gist with current scratchpad content."""
     # Read scratchpad
     if not SCRATCHPAD_PATH.exists():

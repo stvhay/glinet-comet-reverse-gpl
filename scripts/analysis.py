@@ -33,38 +33,38 @@ class TrackedValue:
         method: Discovery method (e.g., "binwalk -e firmware.img | grep kernel")
     """
 
-    def __init__(self, value: Any, source: str, method: str | None = None):
+    def __init__(self, value: Any, source: str, method: str | None = None) -> None:
         self.value = value
         self.source = source
         self.method = method
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of value."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return detailed representation."""
         return f"TrackedValue({self.value!r}, source={self.source!r}, method={self.method!r})"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Return hash of the value for use in sets/dicts."""
         return hash(self.value)
 
     # Support common operations on the wrapped value
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, TrackedValue):
-            return self.value == other.value
-        return self.value == other
+            return bool(self.value == other.value)
+        return bool(self.value == other)
 
-    def __int__(self):
+    def __int__(self) -> int:
         return int(self.value)
 
-    def __float__(self):
+    def __float__(self) -> float:
         return float(self.value)
 
 
 @cache
-def analyze(analysis_type: str) -> dict:
+def analyze(analysis_type: str) -> dict[str, Any]:
     """
     Main function called from Jinja templates.
 
@@ -109,7 +109,7 @@ def analyze(analysis_type: str) -> dict:
     return convert_to_tracked_values(result, analysis_type)
 
 
-def convert_to_tracked_values(result: dict, analysis_type: str) -> dict:
+def convert_to_tracked_values(result: dict[str, Any], analysis_type: str) -> dict[str, Any]:
     """
     Convert result dictionary to use TrackedValue objects.
 
@@ -188,7 +188,7 @@ def update_manifest(analysis_type: str, manifest_file: Path) -> None:
         tomlkit.dump(manifest, f)
 
 
-def run_analysis(analysis_type: str) -> dict:
+def run_analysis(analysis_type: str) -> dict[str, Any]:
     """
     Execute analysis script and parse JSON output.
 

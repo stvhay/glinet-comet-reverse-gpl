@@ -481,7 +481,7 @@ COMPLEX_FIELDS = [
 class RootfsScript(AnalysisScript):
     """Root filesystem analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize rootfs analysis script."""
         super().__init__(
             description="Analyze root filesystem contents",

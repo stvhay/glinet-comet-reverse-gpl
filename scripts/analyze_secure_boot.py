@@ -450,7 +450,7 @@ COMPLEX_FIELDS = [
 class SecureBootScript(AnalysisScript):
     """Secure boot analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize secure boot analysis script."""
         super().__init__(
             description="Analyze secure boot configuration in firmware",

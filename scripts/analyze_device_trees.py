@@ -212,7 +212,7 @@ COMPLEX_FIELDS = [
 class DeviceTreeScript(AnalysisScript):
     """Device tree analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize device tree analysis script."""
         super().__init__(
             description="Analyze device tree blobs from firmware",

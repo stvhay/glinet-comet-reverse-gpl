@@ -17,6 +17,7 @@ Arguments:
 """
 
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -141,7 +142,7 @@ class ProprietaryBlobsAnalysis(AnalysisBase):
         return False, None
 
 
-def _create_library_info(purpose_prefix: str):
+def _create_library_info(purpose_prefix: str) -> Callable[[Path, Path], "LibraryInfo"]:
     """Create a LibraryInfo creator function for find_and_create.
 
     Args:
@@ -493,7 +494,7 @@ COMPLEX_FIELDS = [
 class ProprietaryBlobsScript(AnalysisScript):
     """Proprietary blobs analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize proprietary blobs analysis script."""
         super().__init__(
             description="Analyze proprietary/closed-source binaries in firmware",

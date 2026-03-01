@@ -358,7 +358,7 @@ def write_legacy_markdown(analysis: UBootAnalysis, output_dir: Path) -> None:  #
 class UBootScript(AnalysisScript):
     """U-Boot analysis script."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize U-Boot analysis script."""
         super().__init__(
             description="Analyze U-Boot bootloader information from firmware",
