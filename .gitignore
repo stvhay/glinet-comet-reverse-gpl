@@ -47,8 +47,17 @@ htmlcov/
 *.cover
 .hypothesis/
 
-# Claude Code local settings
+# Claude Code - local settings and personal tooling
 .claude/settings.local.json
+.claude/bin/
+.claude/var/
+.claude/lib/
+.claude/hooks/
+.claude/etc/
+.claude/commands/
+.claude/scripts/
+.claude/skills/
+.claude/work/
 
 # Working scratchpad (session-local, synced to gist separately)
 .scratchpad.md
