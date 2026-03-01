@@ -99,7 +99,7 @@ def output_toml(  # noqa: PLR0912
         doc.add(tomlkit.nl())
 
     # Generate TOML string
-    toml_str = tomlkit.dumps(doc)
+    toml_str: str = tomlkit.dumps(doc)
 
     # Validate by parsing it back
     try:

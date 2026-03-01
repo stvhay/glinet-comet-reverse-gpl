@@ -92,7 +92,7 @@ def render_template(template_path: Path, output_path: Path | None = None) -> str
     # Create footnote registry for this render
     footnote_registry = FootnoteRegistry()
 
-    def src_filter(value):
+    def src_filter(value: object) -> str:
         """
         Jinja filter to render a value with source footnote.
 
@@ -104,12 +104,12 @@ def render_template(template_path: Path, output_path: Path | None = None) -> str
         """
         if isinstance(value, TrackedValue):
             footnote_num = footnote_registry.add(value)
-            return Markup(f"{value.value}[^{footnote_num}]")
+            return str(Markup(f"{value.value}[^{footnote_num}]"))
         return str(value)
 
-    def render_footnotes():
+    def render_footnotes() -> str:
         """Function to render all collected footnotes."""
-        return Markup(footnote_registry.render())
+        return str(Markup(footnote_registry.render()))
 
     # Make functions available to templates
     env.globals["analyze"] = analyze
@@ -118,7 +118,7 @@ def render_template(template_path: Path, output_path: Path | None = None) -> str
 
     # Load and render template
     template = env.get_template(template_path.name)
-    rendered = template.render()
+    rendered: str = template.render()
 
     # Write to file or return
     if output_path:

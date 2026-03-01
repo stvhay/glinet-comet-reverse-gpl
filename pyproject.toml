@@ -53,6 +53,18 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = ["tomlkit", "tomlkit.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["jinja2", "jinja2.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["markupsafe", "markupsafe.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

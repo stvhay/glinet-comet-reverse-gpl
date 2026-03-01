@@ -164,10 +164,9 @@ def is_cache_valid(analysis_type: str, manifest_file: Path) -> bool:
 
     # Compare with manifest
     cached = manifest[analysis_type]
-    return (
-        cached.get("firmware_hash") == current_fw_hash
-        and cached.get("script_hash") == current_script_hash
-    )
+    fw_match: bool = cached.get("firmware_hash") == current_fw_hash
+    script_match: bool = cached.get("script_hash") == current_script_hash
+    return fw_match and script_match
 
 
 def update_manifest(analysis_type: str, manifest_file: Path) -> None:
@@ -201,7 +200,8 @@ def run_analysis(analysis_type: str) -> dict[str, Any]:
     bash_script = Path(f"scripts/analyze_{analysis_type}.sh")
     if bash_script.exists():
         output = subprocess.check_output([bash_script], text=True, cwd=Path.cwd())
-        return json.loads(output)
+        result: dict[str, Any] = json.loads(output)
+        return result
 
     # Try Python version
     py_script = Path(f"scripts/analyze_{analysis_type}.py")
@@ -212,8 +212,8 @@ def run_analysis(analysis_type: str) -> dict[str, Any]:
             raise ImportError(f"Cannot load spec for {py_script}")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        result: dict[str, Any] = module.analyze()
-        return result
+        py_result: dict[str, Any] = module.analyze()
+        return py_result
 
     raise FileNotFoundError(
         f"No analysis script found for '{analysis_type}'. "
