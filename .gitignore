@@ -22,10 +22,11 @@ extractions/
 *.img
 *.squashfs
 
-# Output directory - block most content except derivative analysis
+# Output directories - generated analysis artifacts
 output/*
 !output/dts/
 output/dts/upstream/
+scripts/output/
 
 # Nix
 result
