@@ -34,7 +34,7 @@ def get_firmware_path(
         return firmware
 
     # Download default firmware
-    firmware_file = firmware_url.split("/")[-1]
+    firmware_file = firmware_url.rsplit("/", maxsplit=1)[-1]
     firmware_path = work_dir / firmware_file
 
     if not firmware_path.exists():
