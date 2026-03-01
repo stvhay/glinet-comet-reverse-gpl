@@ -105,19 +105,19 @@ Kernel at 0x2000[^1]
 **1. Run analysis scripts (outputs TOML with source metadata):**
 ```bash
 # Analysis scripts now output TOML (default) or JSON
-./scripts/analyze_device_trees.py > results/device-trees.toml
-./scripts/analyze_rootfs.py > results/rootfs.toml
-./scripts/analyze_uboot.py > results/uboot.toml
-./scripts/analyze_boot_process.py > results/boot-process.toml
-./scripts/analyze_network_services.py > results/network-services.toml
-./scripts/analyze_proprietary_blobs.py > results/proprietary-blobs.toml
-./scripts/analyze_secure_boot.py > results/secure-boot.toml
+uv run python3 scripts/analyze_device_trees.py > results/device-trees.toml
+uv run python3 scripts/analyze_rootfs.py > results/rootfs.toml
+uv run python3 scripts/analyze_uboot.py > results/uboot.toml
+uv run python3 scripts/analyze_boot_process.py > results/boot-process.toml
+uv run python3 scripts/analyze_network_services.py > results/network-services.toml
+uv run python3 scripts/analyze_proprietary_blobs.py > results/proprietary-blobs.toml
+uv run python3 scripts/analyze_secure_boot.py > results/secure-boot.toml
 ```
 
 **2. Render templates (consumes TOML/JSON):**
 ```bash
 # Render single template
-./scripts/render_template.py templates/wiki/Kernel.md.j2 wiki/Kernel.md
+uv run python3 scripts/render_template.py templates/wiki/Kernel.md.j2 wiki/Kernel.md
 
 # Render all templates
 ./scripts/render_wiki.sh  # (when available)
@@ -156,7 +156,17 @@ See `docs/design-jinja-documentation.md` for complete architecture.
 
 ### Environment
 
-ALL commands require nix: `nix develop` or `direnv allow`
+**Setup:** `direnv allow` (loads nix flake automatically)
+
+The nix flake provides system tools (binwalk, dtc, strings, shellcheck, etc.). Python dependencies are managed by `uv` from `pyproject.toml`. Use `uv run` to execute Python commands:
+
+```bash
+uv run pytest                              # Run tests
+uv run python3 scripts/analyze_uboot.py    # Run analysis script
+uv run ruff check scripts/ tests/          # Lint
+```
+
+`uv` is available system-wide; `uv.lock` is committed for reproducibility.
 
 ### Git Standards
 
@@ -193,10 +203,10 @@ All quality checks are integrated into pytest for simplicity and consistency:
 
 1. **Single command to run all checks:**
    ```bash
-   pytest
+   uv run pytest
    ```
    This runs:
-   - All unit tests (559+ tests)
+   - All unit tests
    - Code formatting checks (test_code_quality.py)
    - Code linting checks (test_code_quality.py)
    - Shellcheck on bash scripts (test_code_quality.py)
@@ -218,16 +228,16 @@ All quality checks are integrated into pytest for simplicity and consistency:
 **Quick fixes:**
 ```bash
 # See specific quality failures
-pytest tests/test_code_quality.py -v
+uv run pytest tests/test_code_quality.py -v
 
 # Fix linting issues automatically
-ruff check --fix scripts/ tests/
+uv run ruff check --fix scripts/ tests/
 
 # Format code automatically
-ruff format scripts/ tests/
+uv run ruff format scripts/ tests/
 
 # Run all tests with coverage
-pytest
+uv run pytest
 ```
 
 ### Embedded Workflow (Checkpoint Files)
