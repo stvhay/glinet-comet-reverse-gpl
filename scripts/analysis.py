@@ -14,9 +14,11 @@ import json
 import os
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from datetime import datetime
 from functools import cache
+from io import TextIOWrapper
 from pathlib import Path
 from typing import Any
 
@@ -206,9 +208,12 @@ def run_analysis(analysis_type: str) -> dict[str, Any]:
     if py_script.exists():
         # Import and call Python function
         spec = importlib.util.spec_from_file_location(analysis_type, py_script)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load spec for {py_script}")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        return module.analyze()
+        result: dict[str, Any] = module.analyze()
+        return result
 
     raise FileNotFoundError(
         f"No analysis script found for '{analysis_type}'. "
@@ -254,7 +259,7 @@ def hash_file(filepath: Path) -> str:
 
 
 @contextmanager
-def atomic_write(filepath: Path):  # type: ignore[misc]
+def atomic_write(filepath: Path) -> Iterator[TextIOWrapper]:
     """
     Context manager for atomic file writes.
 

@@ -338,7 +338,8 @@ class BinwalkScript(AnalysisScript):
             analysis: Completed binwalk analysis
         """
         section("Extracting firmware offsets")
-        write_legacy_offsets_file(analysis, self.output_dir)
+        if isinstance(analysis, BinwalkAnalysis):
+            write_legacy_offsets_file(analysis, self.output_dir)
 
 
 if __name__ == "__main__":

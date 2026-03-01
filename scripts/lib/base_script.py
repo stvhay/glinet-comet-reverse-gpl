@@ -10,7 +10,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Literal, TextIO, overload
 
 from lib.analysis_base import AnalysisBase
 from lib.firmware import extract_firmware, find_squashfs_rootfs, get_firmware_path
@@ -137,7 +137,7 @@ class AnalysisScript(ABC):
             Tuple of (firmware Path object, instantiated analysis object)
         """
         firmware = Path(firmware_path)
-        analysis = analysis_class(
+        analysis = analysis_class(  # type: ignore[call-arg]
             firmware_file=firmware.name,
             firmware_size=firmware.stat().st_size,
             **kwargs,
@@ -145,6 +145,16 @@ class AnalysisScript(ABC):
         analysis.add_metadata("firmware_file", "filesystem", "Path(firmware).name")
         analysis.add_metadata("firmware_size", "filesystem", "Path(firmware).stat().st_size")
         return firmware, analysis
+
+    @overload
+    def initialize_extraction(
+        self, firmware_path: str, need_rootfs: Literal[True] = ...
+    ) -> tuple[Path, Path]: ...
+
+    @overload
+    def initialize_extraction(
+        self, firmware_path: str, need_rootfs: Literal[False] = ...
+    ) -> Path: ...
 
     def initialize_extraction(
         self, firmware_path: str, need_rootfs: bool = True

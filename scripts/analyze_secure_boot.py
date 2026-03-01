@@ -307,7 +307,8 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     # Analyze U-Boot strings
     section("Analyzing U-Boot verification strings")
 
-    if uboot_offset_dec := offsets.get("UBOOT_GZ_OFFSET_DEC"):
+    uboot_offset_dec = offsets.get("UBOOT_GZ_OFFSET_DEC")
+    if isinstance(uboot_offset_dec, int):
         # Extract and decompress U-Boot gzip data
         uboot_data = extract_gzip_at_offset(firmware, uboot_offset_dec, 500000, use_dd=False)
         uboot_strings = extract_strings(uboot_data) if uboot_data else []
@@ -357,7 +358,8 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     # Analyze OP-TEE strings
     section("Analyzing OP-TEE secure boot strings")
 
-    if optee_offset_dec := offsets.get("OPTEE_GZ_OFFSET_DEC"):
+    optee_offset_dec = offsets.get("OPTEE_GZ_OFFSET_DEC")
+    if isinstance(optee_offset_dec, int):
         # Extract and decompress OP-TEE gzip data
         optee_data = extract_gzip_at_offset(firmware, optee_offset_dec, 300000, use_dd=False)
         optee_strings = extract_strings(optee_data) if optee_data else []
