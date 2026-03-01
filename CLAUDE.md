@@ -111,9 +111,9 @@ Use commands from `.claude/settings.local.json` authorization list. Prefer autho
 
 Follow the Completed Staff Work doctrine when reporting findings or making recommendations. Present solutions, not problems. See [`standards/COMPLETED-STAFF-WORK.md`](standards/COMPLETED-STAFF-WORK.md).
 
-## Embedded Workflow
+## Traceability
 
-Checkpoint files enable work resumption across sessions. See [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) for format, quality criteria, and when to write checkpoints.
+Every factual claim must trace to a script output. See [`docs/plans/2026-03-01-traceability-enforcement-design.md`](docs/plans/2026-03-01-traceability-enforcement-design.md) for the enforcement design. Use `<!-- cite: results/<file>.toml#<field> -->` in hand-written docs; use `| src` filter in Jinja templates.
 
 ## CI/CD
 
