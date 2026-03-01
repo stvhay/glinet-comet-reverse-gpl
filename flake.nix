@@ -28,9 +28,22 @@
               xxd
               hexdump
 
+              # Core POSIX utilities (explicit for minimal container images)
+              coreutils
+              findutils
+              gnugrep
+              gnused
+              gawk
+              diffutils
+              gzip
+
               # General utilities
               curl
               jq
+
+              # Version control and GitHub
+              git
+              gh
 
               # Device extraction
               sshpass
@@ -38,6 +51,7 @@
 
               # Development
               shellcheck
+              uv
 
               # Python interpreter only — packages managed by uv (pyproject.toml + uv.lock)
               # Run Python commands via: uv run python3 scripts/...
