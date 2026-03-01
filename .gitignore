@@ -61,3 +61,6 @@ htmlcov/
 
 # Working scratchpad (session-local, synced to gist separately)
 .scratchpad.md
+
+# Session memory (local-only, not for version control)
+MEMORY.md
