@@ -140,22 +140,23 @@ def analyze_dtb_file(dtb_path: Path, extract_dir: Path) -> DeviceTree:
     # Parse DTS content
     parsed = parse_dts_content(dts_content)
 
+    # Extract and narrow types for DeviceTree constructor
+    model = parsed.get("model")
+    compatible = parsed.get("compatible")
+    fit_description = parsed.get("fit_description")
+    serial_config = parsed.get("serial_config")
+    hw_components = parsed.get("hardware_components")
+
     return DeviceTree(
         filename=dtb_path.name,
         size=dtb_size,
         offset=offset_dir,
         dtb_type=str(parsed.get("type", "Device Tree")),
-        model=parsed.get("model") if isinstance(parsed.get("model"), str) else None,
-        compatible=parsed.get("compatible") if isinstance(parsed.get("compatible"), str) else None,
-        fit_description=parsed.get("fit_description")
-        if isinstance(parsed.get("fit_description"), str)
-        else None,
-        serial_config=parsed.get("serial_config")
-        if isinstance(parsed.get("serial_config"), str)
-        else None,
-        hardware_components=parsed.get("hardware_components", [])  # type: ignore[arg-type]
-        if isinstance(parsed.get("hardware_components"), list)
-        else [],
+        model=model if isinstance(model, str) else None,
+        compatible=compatible if isinstance(compatible, str) else None,
+        fit_description=fit_description if isinstance(fit_description, str) else None,
+        serial_config=serial_config if isinstance(serial_config, str) else None,
+        hardware_components=hw_components if isinstance(hw_components, list) else [],
     )
 
 
