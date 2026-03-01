@@ -16,6 +16,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 import pytest
 import tomlkit
@@ -40,7 +41,7 @@ from render_template import FootnoteRegistry, render_template
 class TestTrackedValue:
     """Test TrackedValue class."""
 
-    def test_tracked_value_creation(self):
+    def test_tracked_value_creation(self) -> None:
         """Test creating a TrackedValue."""
         tv = TrackedValue("0x2000", "kernel", "binwalk firmware.img | grep kernel")
 
@@ -48,19 +49,19 @@ class TestTrackedValue:
         assert tv.source == "kernel"
         assert tv.method == "binwalk firmware.img | grep kernel"
 
-    def test_tracked_value_str(self):
+    def test_tracked_value_str(self) -> None:
         """Test string representation returns the value."""
         tv = TrackedValue(42, "test", "echo 42")
         assert str(tv) == "42"
 
-    def test_tracked_value_repr(self):
+    def test_tracked_value_repr(self) -> None:
         """Test repr shows all details."""
         tv = TrackedValue(42, "test", "echo 42")
         assert "TrackedValue" in repr(tv)
         assert "42" in repr(tv)
         assert "test" in repr(tv)
 
-    def test_tracked_value_equality(self):
+    def test_tracked_value_equality(self) -> None:
         """Test equality comparison."""
         tv1 = TrackedValue(42, "test", "method1")
         tv2 = TrackedValue(42, "test", "method2")
@@ -74,17 +75,17 @@ class TestTrackedValue:
         assert tv1 == 42
         assert tv1 != 43
 
-    def test_tracked_value_int_conversion(self):
+    def test_tracked_value_int_conversion(self) -> None:
         """Test conversion to int."""
         tv = TrackedValue("42", "test", "method")
         assert int(tv) == 42
 
-    def test_tracked_value_float_conversion(self):
+    def test_tracked_value_float_conversion(self) -> None:
         """Test conversion to float."""
         tv = TrackedValue("3.14", "test", "method")
         assert float(tv) == 3.14
 
-    def test_tracked_value_no_method(self):
+    def test_tracked_value_no_method(self) -> None:
         """Test TrackedValue without method."""
         tv = TrackedValue("test", "source")
         assert tv.value == "test"
@@ -95,13 +96,13 @@ class TestTrackedValue:
 class TestFootnoteRegistry:
     """Test FootnoteRegistry class."""
 
-    def test_registry_creation(self):
+    def test_registry_creation(self) -> None:
         """Test creating a FootnoteRegistry."""
         registry = FootnoteRegistry()
         assert registry.footnotes == []
         assert registry.footnote_map == {}
 
-    def test_add_footnote(self):
+    def test_add_footnote(self) -> None:
         """Test adding footnotes."""
         registry = FootnoteRegistry()
 
@@ -121,7 +122,7 @@ class TestFootnoteRegistry:
         num3 = registry.add(tv3)
         assert num3 == 2
 
-    def test_add_same_footnote_twice(self):
+    def test_add_same_footnote_twice(self) -> None:
         """Test adding the same footnote returns same number."""
         registry = FootnoteRegistry()
         tv1 = TrackedValue("value1", "test", "method")
@@ -133,7 +134,7 @@ class TestFootnoteRegistry:
         assert num1 == num2 == 1
         assert len(registry.footnotes) == 1
 
-    def test_render_footnotes(self):
+    def test_render_footnotes(self) -> None:
         """Test rendering footnotes as markdown."""
         registry = FootnoteRegistry()
 
@@ -153,13 +154,13 @@ class TestFootnoteRegistry:
         assert "binwalk -e" in rendered
         assert "ls -la" in rendered
 
-    def test_render_empty_footnotes(self):
+    def test_render_empty_footnotes(self) -> None:
         """Test rendering with no footnotes."""
         registry = FootnoteRegistry()
         rendered = registry.render()
         assert rendered == ""
 
-    def test_render_footnote_without_method(self):
+    def test_render_footnote_without_method(self) -> None:
         """Test rendering footnote without method."""
         registry = FootnoteRegistry()
         tv = TrackedValue("value", "test", None)
@@ -176,7 +177,7 @@ class TestFootnoteRegistry:
 class TestConvertToTrackedValues:
     """Test convert_to_tracked_values function."""
 
-    def test_convert_with_source_metadata(self):
+    def test_convert_with_source_metadata(self) -> None:
         """Test converting dict with source metadata."""
         result = {
             "offset": "0x2000",
@@ -196,7 +197,7 @@ class TestConvertToTrackedValues:
         assert tracked["size"] == 1024
         assert not isinstance(tracked["size"], TrackedValue)
 
-    def test_convert_filters_metadata_keys(self):
+    def test_convert_filters_metadata_keys(self) -> None:
         """Test that metadata keys are filtered out."""
         result = {
             "offset": "0x2000",
@@ -210,7 +211,7 @@ class TestConvertToTrackedValues:
         assert "offset_source" not in tracked
         assert "offset_method" not in tracked
 
-    def test_convert_uses_analysis_type_as_default_source(self):
+    def test_convert_uses_analysis_type_as_default_source(self) -> None:
         """Test that analysis_type is used as default source."""
         result = {
             "value": 42,
@@ -222,9 +223,9 @@ class TestConvertToTrackedValues:
         assert isinstance(tracked["value"], TrackedValue)
         assert tracked["value"].source == "test"
 
-    def test_convert_empty_dict(self):
+    def test_convert_empty_dict(self) -> None:
         """Test converting empty dict."""
-        result = {}
+        result: dict[str, Any] = {}
         tracked = convert_to_tracked_values(result, "test")
         assert tracked == {}
 
@@ -232,7 +233,7 @@ class TestConvertToTrackedValues:
 class TestHashFile:
     """Test hash_file function."""
 
-    def test_hash_file(self, tmp_path):
+    def test_hash_file(self, tmp_path: Path) -> None:
         """Test hashing a file."""
         test_file = tmp_path / "test.txt"
         test_file.write_text("Hello, World!")
@@ -243,7 +244,7 @@ class TestHashFile:
         assert len(hash1) == 16
         assert all(c in "0123456789abcdef" for c in hash1)
 
-    def test_hash_same_file_same_hash(self, tmp_path):
+    def test_hash_same_file_same_hash(self, tmp_path: Path) -> None:
         """Test that same file produces same hash."""
         test_file = tmp_path / "test.txt"
         test_file.write_text("Hello, World!")
@@ -253,7 +254,7 @@ class TestHashFile:
 
         assert hash1 == hash2
 
-    def test_hash_different_content_different_hash(self, tmp_path):
+    def test_hash_different_content_different_hash(self, tmp_path: Path) -> None:
         """Test that different content produces different hash."""
         file1 = tmp_path / "file1.txt"
         file2 = tmp_path / "file2.txt"
@@ -269,7 +270,7 @@ class TestHashFile:
 class TestAtomicWrite:
     """Test atomic_write context manager."""
 
-    def test_atomic_write_creates_file(self, tmp_path):
+    def test_atomic_write_creates_file(self, tmp_path: Path) -> None:
         """Test that atomic_write creates a file."""
         test_file = tmp_path / "test.txt"
 
@@ -279,7 +280,7 @@ class TestAtomicWrite:
         assert test_file.exists()
         assert test_file.read_text() == "Test content"
 
-    def test_atomic_write_creates_parent_dirs(self, tmp_path):
+    def test_atomic_write_creates_parent_dirs(self, tmp_path: Path) -> None:
         """Test that atomic_write creates parent directories."""
         test_file = tmp_path / "subdir" / "test.txt"
 
@@ -288,7 +289,7 @@ class TestAtomicWrite:
 
         assert test_file.exists()
 
-    def test_atomic_write_cleans_up_on_error(self, tmp_path):
+    def test_atomic_write_cleans_up_on_error(self, tmp_path: Path) -> None:
         """Test that temp file is cleaned up on error."""
         test_file = tmp_path / "test.txt"
 
@@ -303,7 +304,7 @@ class TestAtomicWrite:
         tmp_files = list(tmp_path.glob("*.tmp"))
         assert len(tmp_files) == 0
 
-    def test_atomic_write_overwrites_existing(self, tmp_path):
+    def test_atomic_write_overwrites_existing(self, tmp_path: Path) -> None:
         """Test that atomic_write overwrites existing file."""
         test_file = tmp_path / "test.txt"
         test_file.write_text("Old content")
@@ -317,7 +318,9 @@ class TestAtomicWrite:
 class TestManifestFunctions:
     """Test manifest-related functions."""
 
-    def test_update_manifest_creates_new(self, tmp_path, monkeypatch):
+    def test_update_manifest_creates_new(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test creating a new manifest file."""
         # Change to temp directory
         monkeypatch.chdir(tmp_path)
@@ -347,7 +350,9 @@ class TestManifestFunctions:
         assert "script_hash" in manifest["test"]
         assert "last_updated" in manifest["test"]
 
-    def test_update_manifest_updates_existing(self, tmp_path, monkeypatch):
+    def test_update_manifest_updates_existing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test updating an existing manifest."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -378,7 +383,9 @@ class TestManifestFunctions:
 class TestCacheValidation:
     """Test cache validation logic."""
 
-    def test_cache_invalid_if_no_results_file(self, tmp_path, monkeypatch):
+    def test_cache_invalid_if_no_results_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test cache is invalid if results file doesn't exist."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -393,7 +400,9 @@ class TestCacheValidation:
 
         assert not is_cache_valid("test", manifest_file)
 
-    def test_cache_invalid_if_no_manifest(self, tmp_path, monkeypatch):
+    def test_cache_invalid_if_no_manifest(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test cache is invalid if manifest doesn't exist."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -406,7 +415,9 @@ class TestCacheValidation:
 
         assert not is_cache_valid("test", manifest_file)
 
-    def test_cache_invalid_if_not_in_manifest(self, tmp_path, monkeypatch):
+    def test_cache_invalid_if_not_in_manifest(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test cache is invalid if analysis type not in manifest."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -424,7 +435,9 @@ class TestCacheValidation:
 
         assert not is_cache_valid("test", manifest_file)
 
-    def test_cache_valid_if_hashes_match(self, tmp_path, monkeypatch):
+    def test_cache_valid_if_hashes_match(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test cache is valid if all hashes match."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -461,7 +474,9 @@ class TestCacheValidation:
 
         assert is_cache_valid("test", manifest_file)
 
-    def test_cache_invalid_if_firmware_changed(self, tmp_path, monkeypatch):
+    def test_cache_invalid_if_firmware_changed(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test cache is invalid if firmware hash changed."""
         monkeypatch.chdir(tmp_path)
         results_dir = tmp_path / "results"
@@ -502,7 +517,7 @@ class TestCacheValidation:
 class TestTemplateRendering:
     """Test end-to-end template rendering."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test environment."""
         self.test_dir = Path(tempfile.mkdtemp())
         self.orig_cwd = Path.cwd()
@@ -529,12 +544,12 @@ EOF
         )
         test_script.chmod(0o755)
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Clean up test environment."""
         os.chdir(self.orig_cwd)
         shutil.rmtree(self.test_dir)
 
-    def test_render_simple_template(self):
+    def test_render_simple_template(self) -> None:
         """Test rendering a simple template."""
         template_file = self.test_dir / "templates" / "simple.md.j2"
         template_file.write_text("# Test\n\nHello, World!")
@@ -543,7 +558,7 @@ EOF
 
         assert result == "# Test\n\nHello, World!"
 
-    def test_render_template_to_file(self):
+    def test_render_template_to_file(self) -> None:
         """Test rendering template to output file."""
         template_path = self.test_dir / "templates" / "test.md.j2"
         template_path.write_text("# Test\nSimple template")
@@ -557,7 +572,7 @@ EOF
         assert output_path.exists()
         assert "# Test" in output_path.read_text()
 
-    def test_render_with_tracked_values(self):
+    def test_render_with_tracked_values(self) -> None:
         """Test rendering a template with tracked values."""
         # Create test template
         template_path = self.test_dir / "templates" / "test.md.j2"
@@ -580,7 +595,7 @@ Offset: {{ data.offset | src }}
         assert "scripts/analyze_render_test.sh" in rendered
         assert "binwalk firmware.img" in rendered
 
-    def test_render_with_src_filter(self):
+    def test_render_with_src_filter(self) -> None:
         """Test template with |src filter for footnotes."""
         # Create dummy script first
         script_file = self.test_dir / "scripts" / "analyze_srctest.sh"
@@ -622,7 +637,9 @@ Offset: {{ data.offset | src }}
 class TestAnalyzeFunction:
     """Test analyze() function."""
 
-    def test_analyze_runs_bash_script(self, tmp_path, monkeypatch):
+    def test_analyze_runs_bash_script(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that analyze() runs bash script if it exists."""
         monkeypatch.chdir(tmp_path)
 
@@ -646,7 +663,7 @@ class TestAnalyzeFunction:
 
         assert result["value"] == 42
 
-    def test_analyze_caches_results(self, tmp_path, monkeypatch):
+    def test_analyze_caches_results(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that analyze() caches results to TOML file."""
         monkeypatch.chdir(tmp_path)
 
@@ -673,7 +690,9 @@ class TestAnalyzeFunction:
         manifest_file = results_dir / ".manifest.toml"
         assert manifest_file.exists()
 
-    def test_analyze_raises_on_missing_script(self, tmp_path, monkeypatch):
+    def test_analyze_raises_on_missing_script(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that analyze() raises error if script doesn't exist."""
         monkeypatch.chdir(tmp_path)
 
@@ -690,7 +709,9 @@ class TestAnalyzeFunction:
 
         assert "nonexistent" in str(excinfo.value)
 
-    def test_analyze_uses_cached_results(self, tmp_path, monkeypatch):
+    def test_analyze_uses_cached_results(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that analyze() uses cached results when valid."""
         monkeypatch.chdir(tmp_path)
 
@@ -732,7 +753,7 @@ class TestAnalyzeFunction:
 class TestIntegrationWithRealTemplates:
     """Integration tests with realistic templates and data."""
 
-    def test_full_workflow(self, tmp_path, monkeypatch):
+    def test_full_workflow(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test complete workflow: script -> results -> template -> output."""
         monkeypatch.chdir(tmp_path)
 
@@ -789,7 +810,9 @@ Compression: {{ k.compression }}
         assert "[^1]:" in content
         assert "scripts/analyze_kernel.sh" in content
 
-    def test_multiple_footnotes_same_source(self, tmp_path, monkeypatch):
+    def test_multiple_footnotes_same_source(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that multiple values from same source share one footnote."""
         monkeypatch.chdir(tmp_path)
 
@@ -855,7 +878,9 @@ Value 3: {{ d.val3 | src }}
 class TestErrorHandling:
     """Test error handling in various scenarios."""
 
-    def test_script_returns_invalid_json(self, tmp_path, monkeypatch):
+    def test_script_returns_invalid_json(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test error when script returns invalid JSON."""
         monkeypatch.chdir(tmp_path)
 
@@ -880,7 +905,7 @@ class TestErrorHandling:
 class TestHashFirmware:
     """Test hash_firmware function."""
 
-    def test_hash_firmware_no_file(self, tmp_path, monkeypatch):
+    def test_hash_firmware_no_file(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test hash_firmware when firmware doesn't exist."""
         monkeypatch.chdir(tmp_path)
 
@@ -889,7 +914,7 @@ class TestHashFirmware:
 
         assert result == "no-firmware-yet"
 
-    def test_hash_firmware_with_file(self, tmp_path, monkeypatch):
+    def test_hash_firmware_with_file(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test hash_firmware when firmware exists."""
         monkeypatch.chdir(tmp_path)
 
@@ -908,7 +933,7 @@ class TestHashFirmware:
 class TestHashAnalysisScript:
     """Test hash_analysis_script function."""
 
-    def test_hash_script_bash(self, tmp_path, monkeypatch):
+    def test_hash_script_bash(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test hashing a bash script."""
         monkeypatch.chdir(tmp_path)
 
@@ -922,7 +947,7 @@ class TestHashAnalysisScript:
         assert len(result) == 16
         assert result != "unknown"
 
-    def test_hash_script_python(self, tmp_path, monkeypatch):
+    def test_hash_script_python(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test hashing a python script."""
         monkeypatch.chdir(tmp_path)
 
@@ -936,7 +961,7 @@ class TestHashAnalysisScript:
         assert len(result) == 16
         assert result != "unknown"
 
-    def test_hash_script_not_found(self, tmp_path, monkeypatch):
+    def test_hash_script_not_found(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test when no script exists."""
         monkeypatch.chdir(tmp_path)
 

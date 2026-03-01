@@ -27,7 +27,7 @@ from lib.output import output_toml
 class TestHardwareComponent:
     """Test HardwareComponent dataclass."""
 
-    def test_component_creation(self):
+    def test_component_creation(self) -> None:
         """Test creating a HardwareComponent."""
         comp = HardwareComponent(
             type="gpio",
@@ -39,7 +39,7 @@ class TestHardwareComponent:
         assert comp.node == "gpio0"
         assert comp.description == "GPIO controller at 0xfdd60000"
 
-    def test_component_is_frozen(self):
+    def test_component_is_frozen(self) -> None:
         """Test that HardwareComponent is immutable (frozen)."""
         comp = HardwareComponent(
             type="gpio",
@@ -50,7 +50,7 @@ class TestHardwareComponent:
         with pytest.raises(AttributeError):
             comp.type = "usb"  # type: ignore
 
-    def test_component_has_slots(self):
+    def test_component_has_slots(self) -> None:
         """Test that HardwareComponent uses __slots__ for efficiency."""
         comp = HardwareComponent(
             type="gpio",
@@ -67,7 +67,7 @@ class TestHardwareComponent:
 class TestDeviceTree:
     """Test DeviceTree dataclass."""
 
-    def test_device_tree_creation_minimal(self):
+    def test_device_tree_creation_minimal(self) -> None:
         """Test creating a DeviceTree with minimal fields."""
         dt = DeviceTree(
             filename="system.dtb",
@@ -86,7 +86,7 @@ class TestDeviceTree:
         assert dt.serial_config is None
         assert dt.hardware_components == []
 
-    def test_device_tree_creation_full(self):
+    def test_device_tree_creation_full(self) -> None:
         """Test creating a DeviceTree with all fields."""
         hardware = [
             HardwareComponent(
@@ -116,7 +116,7 @@ class TestDeviceTree:
         assert len(dt.hardware_components) == 1
         assert dt.hardware_components[0].type == "gpio"
 
-    def test_device_tree_is_frozen(self):
+    def test_device_tree_is_frozen(self) -> None:
         """Test that DeviceTree is immutable (frozen)."""
         dt = DeviceTree(
             filename="system.dtb",
@@ -128,7 +128,7 @@ class TestDeviceTree:
         with pytest.raises(AttributeError):
             dt.filename = "other.dtb"  # type: ignore
 
-    def test_device_tree_has_slots(self):
+    def test_device_tree_has_slots(self) -> None:
         """Test that DeviceTree uses __slots__ for efficiency."""
         dt = DeviceTree(
             filename="system.dtb",
@@ -146,7 +146,7 @@ class TestDeviceTree:
 class TestDeviceTreeAnalysis:
     """Test DeviceTreeAnalysis dataclass."""
 
-    def test_analysis_creation(self):
+    def test_analysis_creation(self) -> None:
         """Test creating a DeviceTreeAnalysis."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -160,7 +160,7 @@ class TestDeviceTreeAnalysis:
         assert analysis._source == {}
         assert analysis._method == {}
 
-    def test_analysis_is_mutable(self):
+    def test_analysis_is_mutable(self) -> None:
         """Test that DeviceTreeAnalysis is mutable (not frozen)."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -171,7 +171,7 @@ class TestDeviceTreeAnalysis:
         analysis.dtb_count = 2
         assert analysis.dtb_count == 2
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -187,7 +187,7 @@ class TestDeviceTreeAnalysis:
         assert analysis._source["firmware_size"] == "firmware"
         assert analysis._method["firmware_size"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -204,7 +204,7 @@ class TestDeviceTreeAnalysis:
         assert "_source" not in result
         assert "_method" not in result
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -222,7 +222,7 @@ class TestDeviceTreeAnalysis:
         assert result["firmware_size_source"] == "firmware"
         assert result["firmware_size_method"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_converts_device_trees(self):
+    def test_to_dict_converts_device_trees(self) -> None:
         """Test to_dict converts DeviceTree objects to dicts."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -245,7 +245,7 @@ class TestDeviceTreeAnalysis:
         assert result["device_trees"][0]["offset"] == "0x8F1B4"
         assert result["device_trees"][0]["type"] == "Device Tree"
 
-    def test_to_dict_filters_none_in_device_trees(self):
+    def test_to_dict_filters_none_in_device_trees(self) -> None:
         """Test to_dict filters out None values in device trees."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -267,7 +267,7 @@ class TestDeviceTreeAnalysis:
         assert "model" not in result["device_trees"][0]
         assert "compatible" not in result["device_trees"][0]
 
-    def test_to_dict_includes_hardware_components(self):
+    def test_to_dict_includes_hardware_components(self) -> None:
         """Test to_dict includes hardware components."""
         hardware = [
             HardwareComponent(
@@ -298,7 +298,7 @@ class TestDeviceTreeAnalysis:
         assert result["device_trees"][0]["hardware_components"][0]["type"] == "gpio"
         assert result["device_trees"][0]["hardware_components"][0]["node"] == "gpio0"
 
-    def test_to_dict_excludes_empty_hardware_components(self):
+    def test_to_dict_excludes_empty_hardware_components(self) -> None:
         """Test to_dict excludes empty hardware components list."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -320,7 +320,7 @@ class TestDeviceTreeAnalysis:
 
     """Test parse_dts_content function."""
 
-    def test_parse_dts_content_device_tree_type(self):
+    def test_parse_dts_content_device_tree_type(self) -> None:
         """Test parsing DTS content and detecting Device Tree type."""
         dts_content = """
         / {
@@ -333,7 +333,7 @@ class TestDeviceTreeAnalysis:
 
         assert result["type"] == "Device Tree"
 
-    def test_parse_dts_content_fit_image_type(self):
+    def test_parse_dts_content_fit_image_type(self) -> None:
         """Test parsing DTS content and detecting FIT Image type."""
         dts_content = """
         / {
@@ -346,7 +346,7 @@ class TestDeviceTreeAnalysis:
 
         assert result["type"] == "FIT Image (Flattened Image Tree)"
 
-    def test_parse_dts_content_uboot_type(self):
+    def test_parse_dts_content_uboot_type(self) -> None:
         """Test parsing DTS content and detecting U-Boot type."""
         dts_content = """
         / {
@@ -359,7 +359,7 @@ class TestDeviceTreeAnalysis:
 
         assert result["type"] == "U-Boot Device Tree"
 
-    def test_parse_dts_content_extract_model(self):
+    def test_parse_dts_content_extract_model(self) -> None:
         """Test parsing DTS content and extracting model."""
         dts_content = """
         / {
@@ -372,7 +372,7 @@ class TestDeviceTreeAnalysis:
 
         assert result["model"] == "GL.iNet Comet (RM1)"
 
-    def test_parse_dts_content_extract_compatible(self):
+    def test_parse_dts_content_extract_compatible(self) -> None:
         """Test parsing DTS content and extracting compatible string."""
         dts_content = """
         / {
@@ -385,7 +385,7 @@ class TestDeviceTreeAnalysis:
 
         assert result["compatible"] == "glinet,comet"
 
-    def test_parse_dts_content_extract_all_fields(self):
+    def test_parse_dts_content_extract_all_fields(self) -> None:
         """Test parsing DTS content and extracting all fields."""
         dts_content = """
         / {
@@ -408,7 +408,7 @@ class TestDeviceTreeAnalysis:
         assert "serial_config" in result
         assert "hardware_components" in result
 
-    def test_parse_dts_content_missing_fields(self):
+    def test_parse_dts_content_missing_fields(self) -> None:
         """Test parsing DTS content with missing optional fields."""
         dts_content = """
         / {
@@ -429,7 +429,7 @@ class TestDeviceTreeAnalysis:
 class TestFindDtbFiles:
     """Test find_dtb_files function."""
 
-    def test_find_dtb_files_found(self, tmp_path: Path):
+    def test_find_dtb_files_found(self, tmp_path: Path) -> None:
         """Test finding DTB files in extraction directory."""
         # Create mock extraction directory structure
         extract_dir = tmp_path / "firmware.img.extracted"
@@ -444,7 +444,7 @@ class TestFindDtbFiles:
         assert len(result) == 2
         assert all(dtb.name == "system.dtb" for dtb in result)
 
-    def test_find_dtb_files_none_found(self, tmp_path: Path):
+    def test_find_dtb_files_none_found(self, tmp_path: Path) -> None:
         """Test finding DTB files when none exist."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -453,7 +453,7 @@ class TestFindDtbFiles:
 
         assert result == []
 
-    def test_find_dtb_files_nested(self, tmp_path: Path):
+    def test_find_dtb_files_nested(self, tmp_path: Path) -> None:
         """Test finding DTB files in nested directories."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -466,7 +466,7 @@ class TestFindDtbFiles:
         assert len(result) == 1
         assert result[0].name == "system.dtb"
 
-    def test_find_dtb_files_sorted(self, tmp_path: Path):
+    def test_find_dtb_files_sorted(self, tmp_path: Path) -> None:
         """Test that DTB files are returned sorted."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -487,7 +487,7 @@ class TestFindDtbFiles:
 class TestAnalyzeDtbFile:
     """Test analyze_dtb_file function."""
 
-    def test_analyze_dtb_file_basic(self, tmp_path: Path):
+    def test_analyze_dtb_file_basic(self, tmp_path: Path) -> None:
         """Test analyzing a basic DTB file."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -512,7 +512,7 @@ class TestAnalyzeDtbFile:
         assert result.model == "GL.iNet Comet (RM1)"
         assert result.compatible == "glinet,comet"
 
-    def test_analyze_dtb_file_with_hardware(self, tmp_path: Path):
+    def test_analyze_dtb_file_with_hardware(self, tmp_path: Path) -> None:
         """Test analyzing a DTB file with hardware components."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -535,7 +535,7 @@ class TestAnalyzeDtbFile:
         assert len(result.hardware_components) == 1
         assert result.hardware_components[0].type == "gpio"
 
-    def test_analyze_dtb_file_read_error(self, tmp_path: Path):
+    def test_analyze_dtb_file_read_error(self, tmp_path: Path) -> None:
         """Test analyzing a DTB file with read error."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -553,7 +553,7 @@ class TestAnalyzeDtbFile:
         assert result.filename == "system.dtb"
         assert result.offset == "8F1B4"
 
-    def test_analyze_dtb_file_offset_extraction(self, tmp_path: Path):
+    def test_analyze_dtb_file_offset_extraction(self, tmp_path: Path) -> None:
         """Test that offset is correctly extracted from directory structure."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -568,7 +568,7 @@ class TestAnalyzeDtbFile:
 
         assert result.offset == "901B4"
 
-    def test_analyze_dtb_file_large_file_truncation(self, tmp_path: Path):
+    def test_analyze_dtb_file_large_file_truncation(self, tmp_path: Path) -> None:
         """Test that large files are truncated to first 200 lines."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir()
@@ -590,7 +590,7 @@ class TestAnalyzeDtbFile:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -612,7 +612,7 @@ class TestOutputToml:
         assert parsed["firmware_size"] == 1024
         assert parsed["dtb_count"] == 1
 
-    def test_toml_includes_header_comment(self):
+    def test_toml_includes_header_comment(self) -> None:
         """Test that TOML includes header comment."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -629,7 +629,7 @@ class TestOutputToml:
         assert "# Device tree analysis" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_includes_source_comments(self):
+    def test_toml_includes_source_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -651,7 +651,7 @@ class TestOutputToml:
         assert "# Source: firmware" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -671,7 +671,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_metadata_fields(self):
+    def test_toml_excludes_metadata_fields(self) -> None:
         """Test that _source and _method fields are excluded."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -693,7 +693,7 @@ class TestOutputToml:
         assert "firmware_size_source" not in parsed
         assert "firmware_size_method" not in parsed
 
-    def test_toml_includes_device_trees(self):
+    def test_toml_includes_device_trees(self) -> None:
         """Test that device trees are included in TOML."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -721,7 +721,7 @@ class TestOutputToml:
         assert parsed["device_trees"][0]["filename"] == "system.dtb"
         assert parsed["device_trees"][0]["model"] == "GL.iNet Comet"
 
-    def test_toml_validation(self):
+    def test_toml_validation(self) -> None:
         """Test that generated TOML is validated."""
         analysis = DeviceTreeAnalysis(
             firmware_file="test.img",
@@ -744,7 +744,7 @@ class TestOutputToml:
 class TestIntegration:
     """Integration tests with realistic DTS content."""
 
-    def test_realistic_dts_parsing(self):
+    def test_realistic_dts_parsing(self) -> None:
         """Test parsing realistic DTS content."""
         dts_content = """
 /dts-v1/;
@@ -808,12 +808,12 @@ class TestIntegration:
         assert len(hardware_components) == 4  # 2 gpio, 1 usb, 1 spi
 
         # Verify component types
-        types = {comp.type for comp in hardware_components}  # type: ignore
+        types = {comp.type for comp in hardware_components}
         assert "gpio" in types
         assert "usb" in types
         assert "spi" in types
 
-    def test_end_to_end_analysis_to_toml(self, tmp_path: Path):
+    def test_end_to_end_analysis_to_toml(self, tmp_path: Path) -> None:
         """Test end-to-end analysis and TOML generation."""
         # Create mock firmware structure
         extract_dir = tmp_path / "firmware.img.extracted"

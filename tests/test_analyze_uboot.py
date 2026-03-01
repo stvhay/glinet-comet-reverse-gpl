@@ -24,7 +24,7 @@ from lib.output import TOML_COMMENT_TRUNCATE_LENGTH, TOML_MAX_COMMENT_LENGTH, ou
 class TestUBootAnalysis:
     """Test UBootAnalysis dataclass."""
 
-    def test_analysis_creation(self):
+    def test_analysis_creation(self) -> None:
         """Test creating a UBootAnalysis."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -43,7 +43,7 @@ class TestUBootAnalysis:
         assert analysis.third_party_urls == []
         assert analysis.recovery_modes == []
 
-    def test_analysis_with_optional_fields(self):
+    def test_analysis_with_optional_fields(self) -> None:
         """Test creating a UBootAnalysis with all optional fields."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -67,7 +67,7 @@ class TestUBootAnalysis:
         assert analysis.extraction_method == "gzip_decompression"
         assert analysis.extraction_offset == "0x901B4"
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -76,7 +76,7 @@ class TestUBootAnalysis:
         assert analysis._source["firmware_size"] == "filesystem"
         assert analysis._method["firmware_size"] == "Path.stat().st_size"
 
-    def test_add_metadata_multiple_fields(self):
+    def test_add_metadata_multiple_fields(self) -> None:
         """Test adding metadata for multiple fields."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -92,7 +92,7 @@ class TestUBootAnalysis:
         assert analysis._source["version"] == "strings"
         assert analysis._method["version"] == "strings | grep 'U-Boot'"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -103,7 +103,7 @@ class TestUBootAnalysis:
         assert "version" not in result  # Should be excluded (None)
         assert "build_date" not in result  # Should be excluded (None)
 
-    def test_to_dict_excludes_empty_lists(self):
+    def test_to_dict_excludes_empty_lists(self) -> None:
         """Test to_dict excludes empty lists."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -114,7 +114,7 @@ class TestUBootAnalysis:
         assert "supported_commands" not in result  # Empty list
         assert "copyright_license" not in result  # Empty list
 
-    def test_to_dict_includes_non_empty_lists(self):
+    def test_to_dict_includes_non_empty_lists(self) -> None:
         """Test to_dict includes non-empty lists."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -127,7 +127,7 @@ class TestUBootAnalysis:
         assert "boot_commands" in result
         assert result["boot_commands"] == ["bootcmd=run distro_bootcmd"]
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
@@ -138,7 +138,7 @@ class TestUBootAnalysis:
         assert result["firmware_size_source"] == "filesystem"
         assert result["firmware_size_method"] == "Path.stat().st_size"
 
-    def test_to_dict_excludes_private_fields(self):
+    def test_to_dict_excludes_private_fields(self) -> None:
         """Test to_dict excludes private fields (_source, _method)."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
@@ -148,7 +148,7 @@ class TestUBootAnalysis:
         assert "_source" not in result
         assert "_method" not in result
 
-    def test_dataclass_has_slots(self):
+    def test_dataclass_has_slots(self) -> None:
         """Test that UBootAnalysis uses slots for memory efficiency."""
         # Verify it has slots defined
         assert hasattr(UBootAnalysis, "__slots__")
@@ -207,7 +207,7 @@ class TestHttpdDetection:
         """Apply the recovery mode regex."""
         return sorted({s for s in strings if re.match(r"boot mode: recovery", s)})
 
-    def test_httpd_detection_finds_server_strings(self):
+    def test_httpd_detection_finds_server_strings(self) -> None:
         """Test that HTTPD pattern matches server-related strings."""
         results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
         assert "HTTP server is starting at IP: %ld.%ld.%ld.%ld" in results
@@ -215,31 +215,31 @@ class TestHttpdDetection:
         assert "start web server for firmware recovery" in results
         assert "httpd" in results
 
-    def test_httpd_detection_finds_http_responses(self):
+    def test_httpd_detection_finds_http_responses(self) -> None:
         """Test that HTTPD pattern matches HTTP response codes."""
         results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
         assert "HTTP/1.0 200 OK" in results
         assert "HTTP/1.0 404 File not found" in results
 
-    def test_httpd_detection_excludes_unrelated(self):
+    def test_httpd_detection_excludes_unrelated(self) -> None:
         """Test that HTTPD pattern doesn't match unrelated strings."""
         results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
         assert "baudrate=1500000" not in results
         assert "board=evb_rv1126" not in results
         assert "rv1126_gpll_set_clk" not in results
 
-    def test_url_extraction_finds_pepe2k(self):
+    def test_url_extraction_finds_pepe2k(self) -> None:
         """Test that URL extraction finds pepe2k/u-boot_mod from HTML."""
         results = self._run_url_pattern(self.SAMPLE_STRINGS)
         assert "https://github.com/pepe2k/u-boot_mod" in results
 
-    def test_url_extraction_no_false_positives(self):
+    def test_url_extraction_no_false_positives(self) -> None:
         """Test that URL extraction doesn't produce false positives."""
         strings_without_urls = [s for s in self.SAMPLE_STRINGS if "github.com" not in s]
         results = self._run_url_pattern(strings_without_urls)
         assert results == []
 
-    def test_recovery_modes_detected(self):
+    def test_recovery_modes_detected(self) -> None:
         """Test that all recovery boot modes are found."""
         results = self._run_recovery_pattern(self.SAMPLE_STRINGS)
         assert len(results) == 5
@@ -249,13 +249,13 @@ class TestHttpdDetection:
         assert "boot mode: recovery (misc)" in results
         assert "boot mode: recovery (cmd)" in results
 
-    def test_recovery_excludes_non_boot_mode(self):
+    def test_recovery_excludes_non_boot_mode(self) -> None:
         """Test that recovery pattern doesn't match non-boot-mode strings."""
         results = self._run_recovery_pattern(self.SAMPLE_STRINGS)
         # "start web server for firmware recovery" should NOT match
         assert all(s.startswith("boot mode: recovery") for s in results)
 
-    def test_gpl_regex_no_gpll_false_positive(self):
+    def test_gpl_regex_no_gpll_false_positive(self) -> None:
         """Test that GPL regex with word boundary doesn't match gpll."""
         pattern = r"copyright|license|\bGPL\b"
         assert not re.search(pattern, "rv1126_gpll_set_clk", re.IGNORECASE)
@@ -263,7 +263,7 @@ class TestHttpdDetection:
         assert re.search(pattern, "License GPLv2+", re.IGNORECASE)
         assert re.search(pattern, "GPL", re.IGNORECASE)
 
-    def test_new_fields_in_toml_output(self):
+    def test_new_fields_in_toml_output(self) -> None:
         """Test that new fields appear correctly in TOML output."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -282,7 +282,7 @@ class TestHttpdDetection:
         assert parsed["third_party_urls"] == ["https://github.com/pepe2k/u-boot_mod"]
         assert parsed["recovery_modes"] == ["boot mode: recovery (key)"]
 
-    def test_empty_new_fields_excluded_from_toml(self):
+    def test_empty_new_fields_excluded_from_toml(self) -> None:
         """Test that empty new fields are excluded from TOML output."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -298,13 +298,13 @@ class TestHttpdDetection:
 class TestExtractStrings:
     """Test extract_strings function."""
 
-    def test_extract_empty_data(self):
+    def test_extract_empty_data(self) -> None:
         """Test extracting strings from empty data."""
         data = b""
         result = extract_strings(data)
         assert result == []
 
-    def test_extract_single_string(self):
+    def test_extract_single_string(self) -> None:
         """Test extracting a single string."""
         data = b"U-Boot 2023.07\x00"
         result = extract_strings(data)
@@ -312,7 +312,7 @@ class TestExtractStrings:
         assert len(result) == 1
         assert result[0] == "U-Boot 2023.07"
 
-    def test_extract_multiple_strings(self):
+    def test_extract_multiple_strings(self) -> None:
         """Test extracting multiple strings."""
         data = b"U-Boot\x00version\x00test\x00"
         result = extract_strings(data)
@@ -322,7 +322,7 @@ class TestExtractStrings:
         assert "version" in result
         assert "test" in result
 
-    def test_extract_minimum_length(self):
+    def test_extract_minimum_length(self) -> None:
         """Test that strings below minimum length are excluded."""
         # Default MIN_STRING_LENGTH is 4
         data = b"abc\x00abcd\x00ab\x00"
@@ -331,7 +331,7 @@ class TestExtractStrings:
         # Only "abcd" should be included (length >= 4)
         assert result == ["abcd"]
 
-    def test_extract_printable_ascii_only(self):
+    def test_extract_printable_ascii_only(self) -> None:
         """Test that only printable ASCII characters are extracted."""
         # Include non-printable characters (0x01, 0x1F)
         data = b"\x01\x1fU-Boot\x00"
@@ -339,7 +339,7 @@ class TestExtractStrings:
 
         assert result == ["U-Boot"]
 
-    def test_extract_with_mixed_content(self):
+    def test_extract_with_mixed_content(self) -> None:
         """Test extracting strings from mixed binary/text data."""
         data = b"\xff\xfe\x00\x01U-Boot 2023.07\x00\x80\x81build date\x00\xff"
         result = extract_strings(data)
@@ -347,14 +347,14 @@ class TestExtractStrings:
         assert "U-Boot 2023.07" in result
         assert "build date" in result
 
-    def test_extract_last_string_without_terminator(self):
+    def test_extract_last_string_without_terminator(self) -> None:
         """Test that the last string is captured even without null terminator."""
         data = b"U-Boot 2023.07"  # No null terminator
         result = extract_strings(data)
 
         assert result == ["U-Boot 2023.07"]
 
-    def test_extract_long_string(self):
+    def test_extract_long_string(self) -> None:
         """Test extracting a long string."""
         long_text = "A" * 1000
         data = long_text.encode("ascii")
@@ -367,7 +367,7 @@ class TestExtractStrings:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -386,7 +386,7 @@ class TestOutputToml:
         assert parsed["firmware_size"] == 1024
         assert parsed["version"] == "U-Boot 2023.07"
 
-    def test_toml_includes_header(self):
+    def test_toml_includes_header(self) -> None:
         """Test that TOML includes header comments."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -397,7 +397,7 @@ class TestOutputToml:
         assert "# U-Boot bootloader analysis" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_includes_source_comments(self):
+    def test_toml_includes_source_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
@@ -409,7 +409,7 @@ class TestOutputToml:
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path.stat().st_size" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         long_method = "x" * (TOML_MAX_COMMENT_LENGTH + 50)  # Much longer than max
@@ -425,7 +425,7 @@ class TestOutputToml:
         # Check that truncation happens at the right length
         assert f"# Method: {'x' * TOML_COMMENT_TRUNCATE_LENGTH}..." in toml_str
 
-    def test_toml_excludes_none_values(self):
+    def test_toml_excludes_none_values(self) -> None:
         """Test that None values are excluded from TOML output."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         # version is None by default
@@ -437,7 +437,7 @@ class TestOutputToml:
         assert "version" not in toml_str
         assert "build_date" not in toml_str
 
-    def test_toml_excludes_empty_lists(self):
+    def test_toml_excludes_empty_lists(self) -> None:
         """Test that empty lists are excluded from TOML output."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -450,7 +450,7 @@ class TestOutputToml:
         assert "supported_commands" not in toml_str
         assert "copyright_license" not in toml_str
 
-    def test_toml_includes_lists(self):
+    def test_toml_includes_lists(self) -> None:
         """Test that non-empty lists are included in TOML output."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -470,7 +470,7 @@ class TestOutputToml:
         assert len(parsed["environment_variables"]) == 1
         assert parsed["environment_variables"][0] == "baudrate=115200"
 
-    def test_toml_excludes_metadata_fields(self):
+    def test_toml_excludes_metadata_fields(self) -> None:
         """Test that _source and _method suffix fields are not in final TOML."""
         analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "filesystem", "Path.stat().st_size")
@@ -484,7 +484,7 @@ class TestOutputToml:
         assert "firmware_size_source" not in parsed
         assert "firmware_size_method" not in parsed
 
-    def test_toml_validates_output(self):
+    def test_toml_validates_output(self) -> None:
         """Test that output_toml validates generated TOML by parsing it."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -502,7 +502,7 @@ class TestOutputToml:
         parsed = tomlkit.loads(toml_str)
         assert parsed["firmware_file"] == "test.img"
 
-    def test_toml_spacing(self):
+    def test_toml_spacing(self) -> None:
         """Test that TOML output includes proper spacing between fields."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
@@ -530,7 +530,7 @@ class TestOutputToml:
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    def test_realistic_uboot_analysis(self):
+    def test_realistic_uboot_analysis(self) -> None:
         """Test creating a realistic UBootAnalysis object."""
         analysis = UBootAnalysis(
             firmware_file="glkvm-RM1-1.7.2-1128-1764344791.img",
@@ -592,7 +592,7 @@ class TestIntegration:
         assert result["version_source"] == "gzip_extraction"
         assert "gunzip" in result["version_method"]
 
-    def test_realistic_toml_output(self):
+    def test_realistic_toml_output(self) -> None:
         """Test generating realistic TOML output."""
         analysis = UBootAnalysis(
             firmware_file="glkvm-RM1-1.7.2-1128-1764344791.img",
@@ -652,7 +652,7 @@ class TestIntegration:
         assert "# Source: gzip_extraction" in toml_str
         assert "# Source: binwalk" in toml_str
 
-    def test_minimal_uboot_analysis(self):
+    def test_minimal_uboot_analysis(self) -> None:
         """Test UBootAnalysis with minimal data (version not found)."""
         analysis = UBootAnalysis(
             firmware_file="test.img",
