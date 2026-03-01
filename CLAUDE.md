@@ -92,9 +92,9 @@ EOF
 - Scripts must output their reasoning and trace all values
 - `uv run pytest` runs all tests, linting, formatting, shellcheck, and coverage
 
-### Issue Templates
+### Issue Workflow
 
-Use GitHub issue templates (`.github/ISSUE_TEMPLATE/`) for: Analysis Task, Infrastructure, Bug Report, Documentation, Chore.
+Create issues before starting non-trivial work. Use templates, label consistently, branch for multi-file changes, PR for review. See [`docs/ISSUE-WORKFLOW.md`](docs/ISSUE-WORKFLOW.md).
 
 ### Authorized Commands
 
