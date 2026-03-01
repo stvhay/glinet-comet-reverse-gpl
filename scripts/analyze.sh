@@ -68,6 +68,7 @@ list_versions() {
 # Parse arguments
 MODULES="all"
 VERBOSE=""
+export VERBOSE
 FORCE=""
 
 while [[ $# -gt 0 ]]; do
@@ -186,47 +187,14 @@ run_python_module() {
     fi
 }
 
-# Run a legacy bash script that outputs markdown
-run_bash_module() {
-    local name="$1"
-    local script="$SCRIPT_DIR/analyze-$name.sh"
-
-    if [[ ! -x "$script" ]]; then
-        warn "Module not found: $script"
-        FAILED_MODULES+=("$name")
-        return 1
-    fi
-
-    section "Running: $name (bash)"
-    if [[ -n "$VERBOSE" ]]; then
-        if "$script" "$FIRMWARE"; then
-            return 0
-        else
-            error "Failed: $name"
-            FAILED_MODULES+=("$name")
-            return 1
-        fi
-    else
-        if "$script" "$FIRMWARE" 2>&1 | grep -E "^\[|Wrote" || true; then
-            return 0
-        else
-            error "Failed: $name"
-            FAILED_MODULES+=("$name")
-            return 1
-        fi
-    fi
-}
-
 # ==============================================================================
 # Run analysis modules
 # ==============================================================================
 
-# Python modules (output TOML to results/)
 should_run "binwalk" && run_python_module "binwalk"
 should_run "device-trees" && run_python_module "device-trees"
 should_run "uboot" && run_python_module "uboot"
 should_run "rootfs" && run_python_module "rootfs"
-
 should_run "boot-process" && run_python_module "boot-process"
 should_run "network-services" && run_python_module "network-services"
 should_run "proprietary-blobs" && run_python_module "proprietary-blobs"
@@ -275,16 +243,19 @@ Each module can be run individually for specific analysis:
 |--------|--------|
 EOF
 
-    # Generate module table dynamically from script headers
-    for script in "$SCRIPT_DIR"/analyze-*.sh; do
+    # Generate module table from Python analysis scripts
+    for script in "$SCRIPT_DIR"/analyze_*.py; do
         [[ -f "$script" ]] || continue
         name=$(basename "$script")
-        # Extract output file from "# Outputs:" line in header
-        output=$(grep -m1 "^# Outputs:" "$script" 2>/dev/null | sed 's/^# Outputs: *//' || echo "-")
-        [[ -z "$output" ]] && output="-"
-        # Clean up output path to just filename
-        output=$(basename "$output" 2>/dev/null || echo "$output")
-        echo "| \`$name\` | $output |"
+        # Extract module description from docstring first line
+        desc=$(python3 -c "
+import ast, sys
+with open('$script') as f:
+    tree = ast.parse(f.read())
+doc = ast.get_docstring(tree)
+print(doc.split(chr(10))[0] if doc else '-')
+" 2>/dev/null || echo "-")
+        echo "| \`$name\` | $desc |"
     done
 
     cat << 'EOF'
@@ -348,7 +319,7 @@ if [[ $result_count -gt 0 ]]; then
         echo "  - $(basename "$f")"
     done
 else
-    echo "  (none yet - modules will be migrated incrementally)"
+    echo "  (none yet)"
 fi
 
 echo ""
@@ -377,5 +348,5 @@ fi
 echo ""
 echo "Tips:"
 echo "  - Re-run with --force to ignore cached results"
-echo "  - Run individual modules: ./scripts/analyze-<module>.py"
+echo "  - Run individual modules: ./scripts/analyze_<module>.py"
 echo "  - Create Jinja templates in templates/wiki/ to auto-generate docs"
