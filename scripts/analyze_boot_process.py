@@ -616,7 +616,88 @@ def analyze_boot_config(dts_file: Path, analysis: BootProcessAnalysis) -> None:
         pass
 
 
-def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:  # noqa: PLR0912, PLR0915
+def _write_hardware_table(f: Any, hardware_properties: list[HardwareProperty]) -> None:
+    """Write hardware platform table to markdown."""
+    f.write("## Hardware Platform\n")
+    f.write("\n")
+    f.write("| Property | Value | Source |\n")
+    f.write("|----------|-------|--------|\n")
+    for prop in hardware_properties:
+        f.write(f"| {prop.property} | {prop.value} | {prop.source} |\n")
+    f.write("\n")
+
+
+def _write_partitions_table(f: Any, partitions: list[Partition]) -> None:
+    """Write partition layout table to markdown."""
+    f.write("## Partition Layout\n")
+    f.write("\n")
+    f.write("Derived from firmware offsets in `binwalk-offsets.sh`:\n")
+    f.write("\n")
+    f.write("| Region | Offset | Size | Type | Content |\n")
+    f.write("|--------|--------|------|------|---------||\n")
+    for partition in partitions:
+        f.write(
+            f"| {partition.region} | `{partition.offset}` | ~{partition.size_mb} MB | "
+            f"{partition.type} | {partition.content} |\n"
+        )
+    f.write("\n")
+    f.write("*Note: Sizes calculated from offset differences. ")
+    f.write("Actual partition table may differ.*\n")
+    f.write("\n")
+
+
+def _write_fit_section(f: Any, title: str, fit_info: str | None) -> None:
+    """Write a FIT image section to markdown."""
+    if fit_info:
+        f.write(f"### {title}\n")
+        f.write("\n")
+        f.write("```\n")
+        if "configurations" in fit_info:
+            lines = fit_info.split("\n")
+            in_config = False
+            line_count = 0
+            for line in lines:
+                if "configurations" in line:
+                    in_config = True
+                if in_config:
+                    f.write(line + "\n")
+                    line_count += 1
+                    if line_count >= FIT_INFO_LINE_LIMIT:
+                        break
+        else:
+            f.write("Could not parse\n")
+        f.write("```\n")
+    else:
+        f.write(f"*{title} DTS not available*\n")
+    f.write("\n")
+
+
+def _write_boot_config(
+    f: Any, kernel_cmdline: str | None, console_configs: list[ConsoleConfig]
+) -> None:
+    """Write boot configuration section to markdown."""
+    f.write("## Boot Configuration\n")
+    f.write("\n")
+
+    if kernel_cmdline:
+        f.write("### Kernel Command Line\n")
+        f.write("\n")
+        f.write("```\n")
+        f.write(kernel_cmdline)
+        f.write("\n```\n")
+        f.write("\n")
+
+    if console_configs:
+        f.write("### Console Configuration\n")
+        f.write("\n")
+        f.write("| Parameter | Value | Source |\n")
+        f.write("|-----------|-------|--------|\n")
+        for config in console_configs:
+            f.write(f"| {config.parameter} | {config.value} | {config.source} |\n")
+        f.write("\n")
+
+
+def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
     """Generate markdown report for backward compatibility."""
     timestamp = datetime.now(UTC).isoformat()
 
@@ -633,13 +714,7 @@ def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
 
         # Hardware Platform
         if analysis.hardware_properties:
-            f.write("## Hardware Platform\n")
-            f.write("\n")
-            f.write("| Property | Value | Source |\n")
-            f.write("|----------|-------|--------|\n")
-            for prop in analysis.hardware_properties:
-                f.write(f"| {prop.property} | {prop.value} | {prop.source} |\n")
-            f.write("\n")
+            _write_hardware_table(f, analysis.hardware_properties)
 
         # Boot Chain
         f.write("## Boot Chain\n")
@@ -669,73 +744,14 @@ def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
 
         # Partition Layout
         if analysis.partitions:
-            f.write("## Partition Layout\n")
-            f.write("\n")
-            f.write("Derived from firmware offsets in `binwalk-offsets.sh`:\n")
-            f.write("\n")
-            f.write("| Region | Offset | Size | Type | Content |\n")
-            f.write("|--------|--------|------|------|---------||\n")
-            for partition in analysis.partitions:
-                f.write(
-                    f"| {partition.region} | `{partition.offset}` | ~{partition.size_mb} MB | "
-                    f"{partition.type} | {partition.content} |\n"
-                )
-            f.write("\n")
-            f.write("*Note: Sizes calculated from offset differences. ")
-            f.write("Actual partition table may differ.*\n")
-            f.write("\n")
+            _write_partitions_table(f, analysis.partitions)
 
         # FIT Image Structure
         f.write("## FIT Image Structure\n")
         f.write("\n")
 
-        if analysis.bootloader_fit_info:
-            f.write("### Bootloader FIT\n")
-            f.write("\n")
-            f.write("```\n")
-            # Extract configurations section
-            if "configurations" in analysis.bootloader_fit_info:
-                lines = analysis.bootloader_fit_info.split("\n")
-                in_config = False
-                line_count = 0
-                for line in lines:
-                    if "configurations" in line:
-                        in_config = True
-                    if in_config:
-                        f.write(line + "\n")
-                        line_count += 1
-                        if line_count >= FIT_INFO_LINE_LIMIT:
-                            break
-            else:
-                f.write("Could not parse\n")
-            f.write("```\n")
-        else:
-            f.write("*Bootloader FIT DTS not available*\n")
-        f.write("\n")
-
-        if analysis.kernel_fit_info:
-            f.write("### Kernel FIT\n")
-            f.write("\n")
-            f.write("```\n")
-            # Extract configurations section
-            if "configurations" in analysis.kernel_fit_info:
-                lines = analysis.kernel_fit_info.split("\n")
-                in_config = False
-                line_count = 0
-                for line in lines:
-                    if "configurations" in line:
-                        in_config = True
-                    if in_config:
-                        f.write(line + "\n")
-                        line_count += 1
-                        if line_count >= FIT_INFO_LINE_LIMIT:
-                            break
-            else:
-                f.write("Could not parse\n")
-            f.write("```\n")
-        else:
-            f.write("*Kernel FIT DTS not available*\n")
-        f.write("\n")
+        _write_fit_section(f, "Bootloader FIT", analysis.bootloader_fit_info)
+        _write_fit_section(f, "Kernel FIT", analysis.kernel_fit_info)
 
         # A/B Partition Scheme
         f.write("## A/B Partition Scheme\n")
@@ -749,25 +765,7 @@ def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
         f.write("\n")
 
         # Boot Configuration
-        f.write("## Boot Configuration\n")
-        f.write("\n")
-
-        if analysis.kernel_cmdline:
-            f.write("### Kernel Command Line\n")
-            f.write("\n")
-            f.write("```\n")
-            f.write(analysis.kernel_cmdline)
-            f.write("\n```\n")
-            f.write("\n")
-
-        if analysis.console_configs:
-            f.write("### Console Configuration\n")
-            f.write("\n")
-            f.write("| Parameter | Value | Source |\n")
-            f.write("|-----------|-------|--------|\n")
-            for config in analysis.console_configs:
-                f.write(f"| {config.parameter} | {config.value} | {config.source} |\n")
-            f.write("\n")
+        _write_boot_config(f, analysis.kernel_cmdline, analysis.console_configs)
 
     success("Wrote boot-process.md")
 
