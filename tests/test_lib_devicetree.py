@@ -13,18 +13,18 @@ from lib.devicetree import DeviceTreeParser, HardwareComponent
 class TestHardwareComponent:
     """Test HardwareComponent dataclass."""
 
-    def test_hardware_component_creation(self):
+    def test_hardware_component_creation(self) -> None:
         """Test creating HardwareComponent."""
         comp = HardwareComponent(type="gpio", node="gpio0", description="GPIO controller at 0x1234")
         assert comp.type == "gpio"
         assert comp.node == "gpio0"
         assert comp.description == "GPIO controller at 0x1234"
 
-    def test_hardware_component_immutable(self):
+    def test_hardware_component_immutable(self) -> None:
         """Test that HardwareComponent is frozen (immutable)."""
         comp = HardwareComponent(type="usb", node="usb0", description="USB controller")
         try:
-            comp.type = "spi"  # Should raise FrozenInstanceError
+            comp.type = "spi"  # type: ignore[misc]  # Should raise FrozenInstanceError
             raise AssertionError("Should not be able to modify frozen dataclass")
         except Exception:
             pass  # Expected
@@ -33,19 +33,19 @@ class TestHardwareComponent:
 class TestDeviceTreeParserExtractModel:
     """Test extract_model method."""
 
-    def test_extract_model_simple(self):
+    def test_extract_model_simple(self) -> None:
         """Test extracting simple model string."""
         dts = 'model = "Rockchip RK3588 Test Board";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_model() == "Rockchip RK3588 Test Board"
 
-    def test_extract_model_with_whitespace(self):
+    def test_extract_model_with_whitespace(self) -> None:
         """Test model extraction with various whitespace."""
         dts = '  model  =  "Test Model"  ;'
         parser = DeviceTreeParser(dts)
         assert parser.extract_model() == "Test Model"
 
-    def test_extract_model_multiline(self):
+    def test_extract_model_multiline(self) -> None:
         """Test model extraction from multiline DTS."""
         dts = """
         / {
@@ -56,13 +56,13 @@ class TestDeviceTreeParserExtractModel:
         parser = DeviceTreeParser(dts)
         assert parser.extract_model() == "GL.iNet Comet RM1"
 
-    def test_extract_model_missing(self):
+    def test_extract_model_missing(self) -> None:
         """Test when model is missing."""
         dts = 'compatible = "test\ndevice";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_model() is None
 
-    def test_extract_model_empty_string(self):
+    def test_extract_model_empty_string(self) -> None:
         """Test with empty DTS content."""
         parser = DeviceTreeParser("")
         assert parser.extract_model() is None
@@ -71,13 +71,13 @@ class TestDeviceTreeParserExtractModel:
 class TestDeviceTreeParserExtractCompatible:
     """Test extract_compatible method."""
 
-    def test_extract_compatible_simple(self):
+    def test_extract_compatible_simple(self) -> None:
         """Test extracting simple compatible string."""
         dts = 'compatible = "glinet,comet-rm1";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_compatible() == "glinet,comet-rm1"
 
-    def test_extract_compatible_multiline(self):
+    def test_extract_compatible_multiline(self) -> None:
         """Test compatible extraction from multiline DTS."""
         dts = """
         / {
@@ -88,7 +88,7 @@ class TestDeviceTreeParserExtractCompatible:
         parser = DeviceTreeParser(dts)
         assert parser.extract_compatible() == "rockchip,rk3588"
 
-    def test_extract_compatible_missing(self):
+    def test_extract_compatible_missing(self) -> None:
         """Test when compatible is missing."""
         dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
@@ -98,7 +98,7 @@ class TestDeviceTreeParserExtractCompatible:
 class TestDeviceTreeParserExtractFitDescription:
     """Test extract_fit_description method."""
 
-    def test_extract_fit_description_simple(self):
+    def test_extract_fit_description_simple(self) -> None:
         """Test extracting FIT description."""
         dts = """
         FIT Image
@@ -113,7 +113,7 @@ class TestDeviceTreeParserExtractFitDescription:
         assert "type" in result
         assert "arch" in result
 
-    def test_extract_fit_description_multiple_properties(self):
+    def test_extract_fit_description_multiple_properties(self) -> None:
         """Test FIT with multiple properties."""
         dts = """
         FIT Image
@@ -132,13 +132,13 @@ class TestDeviceTreeParserExtractFitDescription:
         assert "compression" in result
         assert "algo" in result
 
-    def test_extract_fit_description_not_fit(self):
+    def test_extract_fit_description_not_fit(self) -> None:
         """Test when DTS is not a FIT image."""
         dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
         assert parser.extract_fit_description() is None
 
-    def test_extract_fit_description_max_lines(self):
+    def test_extract_fit_description_max_lines(self) -> None:
         """Test that FIT extraction respects line limit."""
         # Create DTS with 40 FIT properties (exceeds max)
         lines = ["FIT Image description"]
@@ -155,7 +155,7 @@ class TestDeviceTreeParserExtractFitDescription:
 class TestDeviceTreeParserExtractSerialConfig:
     """Test extract_serial_config method."""
 
-    def test_extract_serial_config_fiq_debugger(self):
+    def test_extract_serial_config_fiq_debugger(self) -> None:
         """Test extracting serial config with fiq-debugger."""
         dts = """
         fiq-debugger {
@@ -168,7 +168,7 @@ class TestDeviceTreeParserExtractSerialConfig:
         assert result is not None
         assert "fiq-debugger" in result
 
-    def test_extract_serial_config_serial_node(self):
+    def test_extract_serial_config_serial_node(self) -> None:
         """Test extracting serial config with serial@ node."""
         dts = """
         baudrate = <1500000>;
@@ -182,7 +182,7 @@ class TestDeviceTreeParserExtractSerialConfig:
         assert result is not None
         assert "serial@" in result
 
-    def test_extract_serial_config_baudrate(self):
+    def test_extract_serial_config_baudrate(self) -> None:
         """Test extracting serial config with baudrate."""
         dts = """
         fiq-debugger {
@@ -194,7 +194,7 @@ class TestDeviceTreeParserExtractSerialConfig:
         assert result is not None
         assert "baudrate" in result
 
-    def test_extract_serial_config_missing(self):
+    def test_extract_serial_config_missing(self) -> None:
         """Test when serial config is missing."""
         dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
@@ -204,7 +204,7 @@ class TestDeviceTreeParserExtractSerialConfig:
 class TestDeviceTreeParserExtractHardwareComponents:
     """Test extract_hardware_components method."""
 
-    def test_extract_gpio_components(self):
+    def test_extract_gpio_components(self) -> None:
         """Test extracting GPIO components."""
         dts = """
         gpio0: gpio@fd8a0000 {
@@ -222,7 +222,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         assert components[0].node == "gpio0"
         assert "fd8a0000" in components[0].description
 
-    def test_extract_usb_components(self):
+    def test_extract_usb_components(self) -> None:
         """Test extracting USB components."""
         dts = """
         usb0: usb@fc000000 {
@@ -237,7 +237,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         assert components[0].node == "usb0"
         assert "fc000000" in components[0].description
 
-    def test_extract_spi_components(self):
+    def test_extract_spi_components(self) -> None:
         """Test extracting SPI components."""
         dts = 'spi0: spi@feb10000 { compatible = "rockchip,spi"; };'
         parser = DeviceTreeParser(dts)
@@ -246,7 +246,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         assert len(components) == 1
         assert components[0].type == "spi"
 
-    def test_extract_i2c_components(self):
+    def test_extract_i2c_components(self) -> None:
         """Test extracting I2C components."""
         dts = 'i2c0: i2c@fd880000 { compatible = "rockchip,i2c"; };'
         parser = DeviceTreeParser(dts)
@@ -255,7 +255,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         assert len(components) == 1
         assert components[0].type == "i2c"
 
-    def test_extract_uart_components(self):
+    def test_extract_uart_components(self) -> None:
         """Test extracting UART components."""
         dts = """
         serial0: serial@fd890000 { };
@@ -267,7 +267,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         assert len(components) == 2
         assert all(c.type == "uart" for c in components)
 
-    def test_extract_mixed_components(self):
+    def test_extract_mixed_components(self) -> None:
         """Test extracting multiple component types."""
         dts = """
         gpio0: gpio@fd8a0000 { };
@@ -283,7 +283,7 @@ class TestDeviceTreeParserExtractHardwareComponents:
         types = {c.type for c in components}
         assert types == {"gpio", "usb", "spi", "i2c", "uart"}
 
-    def test_extract_hardware_components_empty(self):
+    def test_extract_hardware_components_empty(self) -> None:
         """Test when no hardware components found."""
         dts = 'model = "Test Board";'
         parser = DeviceTreeParser(dts)
@@ -295,19 +295,19 @@ class TestDeviceTreeParserExtractHardwareComponents:
 class TestDeviceTreeParserIsFitImage:
     """Test is_fit_image method."""
 
-    def test_is_fit_image_true_with_fit_text(self):
+    def test_is_fit_image_true_with_fit_text(self) -> None:
         """Test FIT image detection with 'FIT Image' text."""
         dts = "FIT Image description"
         parser = DeviceTreeParser(dts)
         assert parser.is_fit_image() is True
 
-    def test_is_fit_image_true_with_fit_source(self):
+    def test_is_fit_image_true_with_fit_source(self) -> None:
         """Test FIT image detection with 'fit source' pattern."""
         dts = "fit source kernel image"
         parser = DeviceTreeParser(dts)
         assert parser.is_fit_image() is True
 
-    def test_is_fit_image_false(self):
+    def test_is_fit_image_false(self) -> None:
         """Test non-FIT DTS."""
         dts = 'model = "Regular Device Tree";'
         parser = DeviceTreeParser(dts)
@@ -317,19 +317,19 @@ class TestDeviceTreeParserIsFitImage:
 class TestDeviceTreeParserGetType:
     """Test get_type method."""
 
-    def test_get_type_fit_image(self):
+    def test_get_type_fit_image(self) -> None:
         """Test type detection for FIT image."""
         dts = "FIT Image description"
         parser = DeviceTreeParser(dts)
         assert parser.get_type() == "FIT Image (Flattened Image Tree)"
 
-    def test_get_type_uboot(self):
+    def test_get_type_uboot(self) -> None:
         """Test type detection for U-Boot device tree."""
         dts = "U-Boot device tree source"
         parser = DeviceTreeParser(dts)
         assert parser.get_type() == "U-Boot Device Tree"
 
-    def test_get_type_regular(self):
+    def test_get_type_regular(self) -> None:
         """Test type detection for regular device tree."""
         dts = 'model = "Regular Board";'
         parser = DeviceTreeParser(dts)
@@ -339,7 +339,7 @@ class TestDeviceTreeParserGetType:
 class TestDeviceTreeParserParse:
     """Test parse method (integration test)."""
 
-    def test_parse_complete_dts(self):
+    def test_parse_complete_dts(self) -> None:
         """Test parsing complete DTS with all features."""
         dts = """
         / {
@@ -364,7 +364,7 @@ class TestDeviceTreeParserParse:
         assert "hardware_components" in result
         assert len(result["hardware_components"]) == 2
 
-    def test_parse_fit_image(self):
+    def test_parse_fit_image(self) -> None:
         """Test parsing FIT image DTS."""
         dts = """
         FIT Image
@@ -381,7 +381,7 @@ class TestDeviceTreeParserParse:
         assert "fit_description" in result
         assert "hardware_components" in result
 
-    def test_parse_minimal_dts(self):
+    def test_parse_minimal_dts(self) -> None:
         """Test parsing minimal DTS."""
         dts = 'model = "Minimal Board";'
         parser = DeviceTreeParser(dts)
@@ -394,7 +394,7 @@ class TestDeviceTreeParserParse:
         assert "serial_config" not in result
         assert "hardware_components" not in result  # Empty list not included
 
-    def test_parse_empty_dts(self):
+    def test_parse_empty_dts(self) -> None:
         """Test parsing empty DTS."""
         parser = DeviceTreeParser("")
         result = parser.parse()
@@ -406,7 +406,7 @@ class TestDeviceTreeParserParse:
 class TestIntegration:
     """Integration tests with realistic DTS content."""
 
-    def test_realistic_rockchip_dts(self):
+    def test_realistic_rockchip_dts(self) -> None:
         """Test with realistic Rockchip DTS snippet."""
         dts = """
         /dts-v1/;
@@ -439,10 +439,10 @@ class TestIntegration:
         assert result["compatible"] == "rockchip,rk3588"
         components = result["hardware_components"]
         assert len(components) == 3
-        types = {c.type for c in components}
+        types = {c.type for c in components}  # type: ignore[union-attr]
         assert types == {"gpio", "usb", "uart"}
 
-    def test_realistic_fit_image(self):
+    def test_realistic_fit_image(self) -> None:
         """Test with realistic FIT image DTS."""
         dts = """
         /dts-v1/;

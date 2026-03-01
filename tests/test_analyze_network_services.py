@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -24,33 +25,33 @@ from analyze_network_services import (
     find_init_scripts,
     find_network_services,
     find_sensitive_files,
-    find_squashfs_rootfs,
     find_ssh_server,
     find_systemd_services,
     find_web_frameworks,
     find_web_servers,
 )
+from lib.firmware import find_squashfs_rootfs
 from lib.output import output_toml
 
 
 class TestInitScript:
     """Test InitScript dataclass."""
 
-    def test_init_script_creation(self):
+    def test_init_script_creation(self) -> None:
         """Test creating an InitScript."""
         script = InitScript(name="network", size=4096)
 
         assert script.name == "network"
         assert script.size == 4096
 
-    def test_init_script_is_frozen(self):
+    def test_init_script_is_frozen(self) -> None:
         """Test that InitScript is immutable (frozen)."""
         script = InitScript(name="network", size=4096)
 
         with pytest.raises(AttributeError):
             script.name = "firewall"  # type: ignore
 
-    def test_init_script_has_slots(self):
+    def test_init_script_has_slots(self) -> None:
         """Test that InitScript uses __slots__ for efficiency."""
         script = InitScript(name="network", size=4096)
 
@@ -63,7 +64,7 @@ class TestInitScript:
 class TestServiceBinary:
     """Test ServiceBinary dataclass."""
 
-    def test_service_binary_creation(self):
+    def test_service_binary_creation(self) -> None:
         """Test creating a ServiceBinary."""
         service = ServiceBinary(
             name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
@@ -73,7 +74,7 @@ class TestServiceBinary:
         assert service.path == "/usr/sbin/nginx"
         assert service.description == "Nginx web server"
 
-    def test_service_binary_is_frozen(self):
+    def test_service_binary_is_frozen(self) -> None:
         """Test that ServiceBinary is immutable (frozen)."""
         service = ServiceBinary(
             name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
@@ -82,7 +83,7 @@ class TestServiceBinary:
         with pytest.raises(AttributeError):
             service.name = "apache"  # type: ignore
 
-    def test_service_binary_has_slots(self):
+    def test_service_binary_has_slots(self) -> None:
         """Test that ServiceBinary uses __slots__ for efficiency."""
         service = ServiceBinary(
             name="nginx", path="/usr/sbin/nginx", description="Nginx web server"
@@ -94,7 +95,7 @@ class TestServiceBinary:
 class TestPasswordEntry:
     """Test PasswordEntry dataclass."""
 
-    def test_password_entry_creation(self):
+    def test_password_entry_creation(self) -> None:
         """Test creating a PasswordEntry."""
         entry = PasswordEntry(
             username="root", hash_type="sha512", description="SHA-512 hash (strong)"
@@ -104,7 +105,7 @@ class TestPasswordEntry:
         assert entry.hash_type == "sha512"
         assert entry.description == "SHA-512 hash (strong)"
 
-    def test_password_entry_is_frozen(self):
+    def test_password_entry_is_frozen(self) -> None:
         """Test that PasswordEntry is immutable (frozen)."""
         entry = PasswordEntry(
             username="root", hash_type="sha512", description="SHA-512 hash (strong)"
@@ -113,7 +114,7 @@ class TestPasswordEntry:
         with pytest.raises(AttributeError):
             entry.username = "admin"  # type: ignore
 
-    def test_password_entry_has_slots(self):
+    def test_password_entry_has_slots(self) -> None:
         """Test that PasswordEntry uses __slots__ for efficiency."""
         entry = PasswordEntry(
             username="root", hash_type="sha512", description="SHA-512 hash (strong)"
@@ -125,7 +126,7 @@ class TestPasswordEntry:
 class TestNetworkServicesAnalysis:
     """Test NetworkServicesAnalysis dataclass."""
 
-    def test_analysis_creation(self):
+    def test_analysis_creation(self) -> None:
         """Test creating a NetworkServicesAnalysis."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -147,7 +148,7 @@ class TestNetworkServicesAnalysis:
         assert analysis.web_server_count == 0
         assert analysis.ssh_server_count == 0
 
-    def test_analysis_is_mutable(self):
+    def test_analysis_is_mutable(self) -> None:
         """Test that NetworkServicesAnalysis is mutable (not frozen)."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -159,7 +160,7 @@ class TestNetworkServicesAnalysis:
         analysis.web_server_count = 2
         assert analysis.web_server_count == 2
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -172,7 +173,7 @@ class TestNetworkServicesAnalysis:
         assert analysis._source["firmware_size"] == "filesystem"
         assert analysis._method["firmware_size"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -186,7 +187,7 @@ class TestNetworkServicesAnalysis:
         assert "firmware_size" in result
         assert "rootfs_path" in result
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -201,7 +202,7 @@ class TestNetworkServicesAnalysis:
         assert result["firmware_size_source"] == "filesystem"
         assert result["firmware_size_method"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_converts_init_scripts(self):
+    def test_to_dict_converts_init_scripts(self) -> None:
         """Test to_dict converts InitScript objects to dicts."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -216,7 +217,7 @@ class TestNetworkServicesAnalysis:
         assert result["init_scripts"][0]["name"] == "network"
         assert result["init_scripts"][0]["size"] == 4096
 
-    def test_to_dict_converts_service_binaries(self):
+    def test_to_dict_converts_service_binaries(self) -> None:
         """Test to_dict converts ServiceBinary objects to dicts."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -234,7 +235,7 @@ class TestNetworkServicesAnalysis:
         assert result["web_servers"][0]["path"] == "/usr/sbin/nginx"
         assert result["web_servers"][0]["description"] == "Nginx web server"
 
-    def test_to_dict_converts_ssh_server(self):
+    def test_to_dict_converts_ssh_server(self) -> None:
         """Test to_dict converts ssh_server ServiceBinary to dict."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -251,7 +252,7 @@ class TestNetworkServicesAnalysis:
         assert result["ssh_server"]["path"] == "/usr/sbin/sshd"
         assert result["ssh_server"]["description"] == "OpenSSH server"
 
-    def test_to_dict_converts_password_entries(self):
+    def test_to_dict_converts_password_entries(self) -> None:
         """Test to_dict converts PasswordEntry objects to dicts."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -269,7 +270,7 @@ class TestNetworkServicesAnalysis:
         assert result["password_entries"][0]["hash_type"] == "sha512"
         assert result["password_entries"][0]["description"] == "SHA-512 hash (strong)"
 
-    def test_to_dict_excludes_internal_fields(self):
+    def test_to_dict_excludes_internal_fields(self) -> None:
         """Test to_dict excludes internal fields (starting with _)."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -287,35 +288,35 @@ class TestNetworkServicesAnalysis:
 class TestClassifyPasswordHash:
     """Test _classify_password_hash function."""
 
-    def test_classify_empty_hash(self):
+    def test_classify_empty_hash(self) -> None:
         """Test classifying empty password hash."""
         hash_type, description = _classify_password_hash("")
 
         assert hash_type == "locked"
         assert description == "No password / locked"
 
-    def test_classify_asterisk_hash(self):
+    def test_classify_asterisk_hash(self) -> None:
         """Test classifying asterisk password hash."""
         hash_type, description = _classify_password_hash("*")
 
         assert hash_type == "locked"
         assert description == "No password / locked"
 
-    def test_classify_exclamation_hash(self):
+    def test_classify_exclamation_hash(self) -> None:
         """Test classifying exclamation mark password hash."""
         hash_type, description = _classify_password_hash("!")
 
         assert hash_type == "locked"
         assert description == "No password / locked"
 
-    def test_classify_x_hash(self):
+    def test_classify_x_hash(self) -> None:
         """Test classifying 'x' password hash."""
         hash_type, description = _classify_password_hash("x")
 
         assert hash_type == "shadow"
         assert description == "Password in shadow file"
 
-    def test_classify_short_hash(self):
+    def test_classify_short_hash(self) -> None:
         """Test classifying short password hash."""
         # Less than MIN_HASH_LENGTH (13)
         hash_type, description = _classify_password_hash("short")
@@ -323,35 +324,35 @@ class TestClassifyPasswordHash:
         assert hash_type == "weak"
         assert description == "Weak/short hash (potential issue)"
 
-    def test_classify_md5_hash(self):
+    def test_classify_md5_hash(self) -> None:
         """Test classifying MD5 password hash."""
         hash_type, description = _classify_password_hash("$1$salt$hashhashhashhashhashhash")
 
         assert hash_type == "md5"
         assert description == "MD5 hash (weak)"
 
-    def test_classify_sha256_hash(self):
+    def test_classify_sha256_hash(self) -> None:
         """Test classifying SHA-256 password hash."""
         hash_type, description = _classify_password_hash("$5$salt$hashhashhashhashhashhash")
 
         assert hash_type == "sha256"
         assert description == "SHA-256 hash"
 
-    def test_classify_sha512_hash(self):
+    def test_classify_sha512_hash(self) -> None:
         """Test classifying SHA-512 password hash."""
         hash_type, description = _classify_password_hash("$6$salt$hashhashhashhashhashhash")
 
         assert hash_type == "sha512"
         assert description == "SHA-512 hash (strong)"
 
-    def test_classify_yescrypt_hash(self):
+    def test_classify_yescrypt_hash(self) -> None:
         """Test classifying yescrypt password hash."""
         hash_type, description = _classify_password_hash("$y$salt$hashhashhashhashhashhash")
 
         assert hash_type == "yescrypt"
         assert description == "yescrypt hash (strong)"
 
-    def test_classify_unknown_hash(self):
+    def test_classify_unknown_hash(self) -> None:
         """Test classifying unknown password hash."""
         hash_type, description = _classify_password_hash("$9$salt$hashhashhashhashhashhash")
 
@@ -362,7 +363,7 @@ class TestClassifyPasswordHash:
 class TestFindSquashfsRootfs:
     """Test find_squashfs_rootfs function."""
 
-    def test_find_squashfs_rootfs_success(self, tmp_path):
+    def test_find_squashfs_rootfs_success(self, tmp_path: Path) -> None:
         """Test finding squashfs-root directory."""
         extract_dir = tmp_path / "firmware.img.extracted"
         squashfs_root = extract_dir / "squashfs-root"
@@ -372,7 +373,7 @@ class TestFindSquashfsRootfs:
 
         assert result == squashfs_root
 
-    def test_find_squashfs_rootfs_nested(self, tmp_path):
+    def test_find_squashfs_rootfs_nested(self, tmp_path: Path) -> None:
         """Test finding squashfs-root in nested directory."""
         extract_dir = tmp_path / "firmware.img.extracted"
         nested = extract_dir / "1234" / "5678"
@@ -383,7 +384,7 @@ class TestFindSquashfsRootfs:
 
         assert result == squashfs_root
 
-    def test_find_squashfs_rootfs_not_found(self, tmp_path):
+    def test_find_squashfs_rootfs_not_found(self, tmp_path: Path) -> None:
         """Test that missing squashfs-root causes exit."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir(parents=True)
@@ -397,7 +398,7 @@ class TestFindSquashfsRootfs:
 class TestFindInitScripts:
     """Test find_init_scripts function."""
 
-    def test_find_init_scripts_success(self, tmp_path):
+    def test_find_init_scripts_success(self, tmp_path: Path) -> None:
         """Test finding init scripts in /etc/init.d."""
         rootfs = tmp_path / "rootfs"
         init_d = rootfs / "etc" / "init.d"
@@ -415,7 +416,7 @@ class TestFindInitScripts:
         assert result[1].name == "network"
         assert result[1].size == 4096
 
-    def test_find_init_scripts_empty(self, tmp_path):
+    def test_find_init_scripts_empty(self, tmp_path: Path) -> None:
         """Test finding init scripts when directory is empty."""
         rootfs = tmp_path / "rootfs"
         init_d = rootfs / "etc" / "init.d"
@@ -425,7 +426,7 @@ class TestFindInitScripts:
 
         assert result == []
 
-    def test_find_init_scripts_not_found(self, tmp_path):
+    def test_find_init_scripts_not_found(self, tmp_path: Path) -> None:
         """Test finding init scripts when directory doesn't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -438,7 +439,7 @@ class TestFindInitScripts:
 class TestFindSystemdServices:
     """Test find_systemd_services function."""
 
-    def test_find_systemd_services_success(self, tmp_path):
+    def test_find_systemd_services_success(self, tmp_path: Path) -> None:
         """Test finding systemd service files."""
         rootfs = tmp_path / "rootfs"
         systemd_dir = rootfs / "etc" / "systemd" / "system"
@@ -454,7 +455,7 @@ class TestFindSystemdServices:
         assert any("firewall.service" in s for s in result)
         assert any("network.service" in s for s in result)
 
-    def test_find_systemd_services_multiple_locations(self, tmp_path):
+    def test_find_systemd_services_multiple_locations(self, tmp_path: Path) -> None:
         """Test finding systemd service files in multiple locations."""
         rootfs = tmp_path / "rootfs"
 
@@ -472,7 +473,7 @@ class TestFindSystemdServices:
 
         assert len(result) >= 2
 
-    def test_find_systemd_services_not_found(self, tmp_path):
+    def test_find_systemd_services_not_found(self, tmp_path: Path) -> None:
         """Test finding systemd services when directories don't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -485,7 +486,7 @@ class TestFindSystemdServices:
 class TestFindWebServers:
     """Test find_web_servers function."""
 
-    def test_find_nginx(self, tmp_path):
+    def test_find_nginx(self, tmp_path: Path) -> None:
         """Test finding Nginx web server."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -499,7 +500,7 @@ class TestFindWebServers:
         assert "nginx" in result[0].path
         assert "Nginx" in result[0].description
 
-    def test_find_lighttpd(self, tmp_path):
+    def test_find_lighttpd(self, tmp_path: Path) -> None:
         """Test finding Lighttpd web server."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -512,7 +513,7 @@ class TestFindWebServers:
         assert result[0].name == "lighttpd"
         assert "Lighttpd" in result[0].description
 
-    def test_find_multiple_web_servers(self, tmp_path):
+    def test_find_multiple_web_servers(self, tmp_path: Path) -> None:
         """Test finding multiple web servers."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -527,7 +528,7 @@ class TestFindWebServers:
         assert "nginx" in server_names
         assert "lighttpd" in server_names
 
-    def test_find_web_servers_empty(self, tmp_path):
+    def test_find_web_servers_empty(self, tmp_path: Path) -> None:
         """Test finding web servers when none exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -540,7 +541,7 @@ class TestFindWebServers:
 class TestFindWebFrameworks:
     """Test find_web_frameworks function."""
 
-    def test_find_aiohttp(self, tmp_path):
+    def test_find_aiohttp(self, tmp_path: Path) -> None:
         """Test finding aiohttp framework."""
         rootfs = tmp_path / "rootfs"
         site_packages = rootfs / "usr" / "lib" / "python3.10" / "site-packages"
@@ -553,7 +554,7 @@ class TestFindWebFrameworks:
         assert result[0].name == "aiohttp"
         assert result[0].description == "Async HTTP framework"
 
-    def test_find_uvicorn(self, tmp_path):
+    def test_find_uvicorn(self, tmp_path: Path) -> None:
         """Test finding uvicorn framework."""
         rootfs = tmp_path / "rootfs"
         site_packages = rootfs / "usr" / "lib" / "python3.10" / "site-packages"
@@ -566,7 +567,7 @@ class TestFindWebFrameworks:
         assert result[0].name == "uvicorn"
         assert result[0].description == "ASGI server"
 
-    def test_find_web_frameworks_empty(self, tmp_path):
+    def test_find_web_frameworks_empty(self, tmp_path: Path) -> None:
         """Test finding web frameworks when none exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -579,7 +580,7 @@ class TestFindWebFrameworks:
 class TestFindSshServer:
     """Test find_ssh_server function."""
 
-    def test_find_openssh_sshd(self, tmp_path):
+    def test_find_openssh_sshd(self, tmp_path: Path) -> None:
         """Test finding OpenSSH sshd."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -592,7 +593,7 @@ class TestFindSshServer:
         assert result.name == "sshd"
         assert "OpenSSH" in result.description
 
-    def test_find_dropbear(self, tmp_path):
+    def test_find_dropbear(self, tmp_path: Path) -> None:
         """Test finding Dropbear SSH server."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -605,7 +606,7 @@ class TestFindSshServer:
         assert result.name == "dropbear"
         assert "Dropbear" in result.description
 
-    def test_find_ssh_server_not_found(self, tmp_path):
+    def test_find_ssh_server_not_found(self, tmp_path: Path) -> None:
         """Test finding SSH server when none exists."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -618,7 +619,7 @@ class TestFindSshServer:
 class TestFindNetworkServices:
     """Test find_network_services function."""
 
-    def test_find_dnsmasq(self, tmp_path):
+    def test_find_dnsmasq(self, tmp_path: Path) -> None:
         """Test finding dnsmasq service."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -631,7 +632,7 @@ class TestFindNetworkServices:
         assert result[0].name == "dnsmasq"
         assert "DNS/DHCP" in result[0].description
 
-    def test_find_mosquitto(self, tmp_path):
+    def test_find_mosquitto(self, tmp_path: Path) -> None:
         """Test finding mosquitto MQTT broker."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -644,7 +645,7 @@ class TestFindNetworkServices:
         assert result[0].name == "mosquitto"
         assert "MQTT" in result[0].description
 
-    def test_find_multiple_network_services(self, tmp_path):
+    def test_find_multiple_network_services(self, tmp_path: Path) -> None:
         """Test finding multiple network services."""
         rootfs = tmp_path / "rootfs"
         sbin = rootfs / "usr" / "sbin"
@@ -661,7 +662,7 @@ class TestFindNetworkServices:
         assert "hostapd" in service_names
         assert "mosquitto" in service_names
 
-    def test_find_network_services_empty(self, tmp_path):
+    def test_find_network_services_empty(self, tmp_path: Path) -> None:
         """Test finding network services when none exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -674,7 +675,7 @@ class TestFindNetworkServices:
 class TestAnalyzeShadowFile:
     """Test analyze_shadow_file function."""
 
-    def test_analyze_shadow_file_success(self, tmp_path):
+    def test_analyze_shadow_file_success(self, tmp_path: Path) -> None:
         """Test analyzing /etc/shadow file."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -696,7 +697,7 @@ locked:*:19002:0:99999:7:::
         assert result[2].username == "locked"
         assert result[2].hash_type == "locked"
 
-    def test_analyze_shadow_file_not_found(self, tmp_path):
+    def test_analyze_shadow_file_not_found(self, tmp_path: Path) -> None:
         """Test analyzing when /etc/shadow doesn't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -705,7 +706,7 @@ locked:*:19002:0:99999:7:::
 
         assert result == []
 
-    def test_analyze_shadow_file_invalid_lines(self, tmp_path):
+    def test_analyze_shadow_file_invalid_lines(self, tmp_path: Path) -> None:
         """Test analyzing /etc/shadow with invalid lines."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -729,7 +730,7 @@ class TestFindSensitiveFiles:
     """Test find_sensitive_files function."""
 
     @patch("subprocess.run")
-    def test_find_sensitive_files_success(self, mock_run, tmp_path):
+    def test_find_sensitive_files_success(self, mock_run: Any, tmp_path: Path) -> None:
         """Test finding sensitive files with grep."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -751,7 +752,7 @@ class TestFindSensitiveFiles:
         assert "etc/config2" in result
 
     @patch("subprocess.run")
-    def test_find_sensitive_files_limits_output(self, mock_run, tmp_path):
+    def test_find_sensitive_files_limits_output(self, mock_run: Any, tmp_path: Path) -> None:
         """Test that sensitive files are limited to 20."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -766,7 +767,7 @@ class TestFindSensitiveFiles:
         # Limited to 20
         assert len(result) <= 20
 
-    def test_find_sensitive_files_no_etc(self, tmp_path):
+    def test_find_sensitive_files_no_etc(self, tmp_path: Path) -> None:
         """Test finding sensitive files when /etc doesn't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -779,7 +780,7 @@ class TestFindSensitiveFiles:
 class TestFindFirewallRules:
     """Test find_firewall_rules function."""
 
-    def test_find_firewall_rules_iptables(self, tmp_path):
+    def test_find_firewall_rules_iptables(self, tmp_path: Path) -> None:
         """Test finding iptables rules files."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -792,7 +793,7 @@ class TestFindFirewallRules:
         assert len(result) >= 1
         assert any("iptables.rules" in r for r in result)
 
-    def test_find_firewall_rules_firewall_config(self, tmp_path):
+    def test_find_firewall_rules_firewall_config(self, tmp_path: Path) -> None:
         """Test finding firewall config files."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc" / "config"
@@ -805,7 +806,7 @@ class TestFindFirewallRules:
         assert len(result) >= 1
         assert any("firewall" in r for r in result)
 
-    def test_find_firewall_rules_empty(self, tmp_path):
+    def test_find_firewall_rules_empty(self, tmp_path: Path) -> None:
         """Test finding firewall rules when none exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -814,7 +815,7 @@ class TestFindFirewallRules:
 
         assert result == []
 
-    def test_find_firewall_rules_limits_output(self, tmp_path):
+    def test_find_firewall_rules_limits_output(self, tmp_path: Path) -> None:
         """Test that firewall rules are limited to 5."""
         rootfs = tmp_path / "rootfs"
         etc = rootfs / "etc"
@@ -833,7 +834,7 @@ class TestFindFirewallRules:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -864,7 +865,7 @@ class TestOutputToml:
         assert parsed["web_server_count"] == 2
         assert parsed["ssh_server_count"] == 1
 
-    def test_toml_includes_header_comment(self):
+    def test_toml_includes_header_comment(self) -> None:
         """Test that TOML includes header comment."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -882,7 +883,7 @@ class TestOutputToml:
         assert "# Test network services" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_includes_source_comments(self):
+    def test_toml_includes_source_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -901,7 +902,7 @@ class TestOutputToml:
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -922,7 +923,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_metadata_fields(self):
+    def test_toml_excludes_metadata_fields(self) -> None:
         """Test that _source and _method fields are excluded."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -945,7 +946,7 @@ class TestOutputToml:
         assert "firmware_size_source" not in parsed
         assert "firmware_size_method" not in parsed
 
-    def test_toml_includes_arrays(self):
+    def test_toml_includes_arrays(self) -> None:
         """Test that arrays are included in TOML."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -970,7 +971,7 @@ class TestOutputToml:
         assert len(parsed["web_servers"]) == 1
         assert parsed["web_servers"][0]["name"] == "nginx"
 
-    def test_toml_validation(self):
+    def test_toml_validation(self) -> None:
         """Test that generated TOML is validated."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -995,7 +996,9 @@ class TestIntegration:
     """Integration tests with realistic data."""
 
     @patch("subprocess.run")
-    def test_realistic_network_services_analysis(self, mock_run, tmp_path):  # noqa: PLR0915
+    def test_realistic_network_services_analysis(  # noqa: PLR0915
+        self, mock_run: Any, tmp_path: Path
+    ) -> None:
         """Test complete analysis workflow with realistic filesystem."""
         # Create realistic filesystem structure
         rootfs = tmp_path / "squashfs-root"
@@ -1102,7 +1105,7 @@ user:!:19001:0:99999:7:::
         assert parsed["passwd_file_exists"] is True
         assert parsed["shadow_file_exists"] is True
 
-    def test_to_dict_json_output(self):
+    def test_to_dict_json_output(self) -> None:
         """Test that to_dict works for JSON output."""
         analysis = NetworkServicesAnalysis(
             firmware_file="test.img",
@@ -1143,7 +1146,11 @@ class TestMainFunction:
 
     @patch("analyze_network_services.analyze_firmware")
     @patch("sys.argv", ["analyze_network_services.py"])
-    def test_main_default_format(self, mock_analyze, capsys):  # noqa: ARG002
+    def test_main_default_format(
+        self,
+        mock_analyze: Any,
+        capsys: pytest.CaptureFixture[str],  # noqa: ARG002
+    ) -> None:
         """Test main() with default TOML format."""
         # Create a simple analysis result
         analysis = NetworkServicesAnalysis(
@@ -1168,7 +1175,7 @@ class TestMainFunction:
         assert parsed["web_server_count"] == 1
 
     @patch("analyze_network_services.analyze_firmware")
-    def test_main_json_format(self, mock_analyze):
+    def test_main_json_format(self, mock_analyze: Any) -> None:
         """Test main() with JSON format."""
         # Create a simple analysis result
         analysis = NetworkServicesAnalysis(

@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -26,16 +27,16 @@ from analyze_rootfs import (
     analyze_shared_libraries,
     detect_library_licenses,
     extract_kernel_version,
-    find_squashfs_rootfs,
     parse_os_release,
 )
+from lib.firmware import find_squashfs_rootfs
 from lib.output import output_toml
 
 
 class TestKernelModule:
     """Test KernelModule dataclass."""
 
-    def test_kernel_module_creation(self):
+    def test_kernel_module_creation(self) -> None:
         """Test creating a KernelModule."""
         module = KernelModule(
             name="rockchip_vpu.ko",
@@ -47,14 +48,14 @@ class TestKernelModule:
         assert module.path == "/lib/modules/5.10.110/rockchip_vpu.ko"
         assert module.size == 102400
 
-    def test_kernel_module_is_frozen(self):
+    def test_kernel_module_is_frozen(self) -> None:
         """Test that KernelModule is immutable (frozen)."""
         module = KernelModule(name="test.ko", path="/test.ko", size=1024)
 
         with pytest.raises(AttributeError):
             module.name = "other.ko"  # type: ignore
 
-    def test_kernel_module_uses_slots(self):
+    def test_kernel_module_uses_slots(self) -> None:
         """Test that KernelModule uses __slots__ for memory efficiency."""
         module = KernelModule(name="test.ko", path="/test.ko", size=1024)
 
@@ -67,7 +68,7 @@ class TestKernelModule:
 class TestSharedLibrary:
     """Test SharedLibrary dataclass."""
 
-    def test_shared_library_creation(self):
+    def test_shared_library_creation(self) -> None:
         """Test creating a SharedLibrary."""
         lib = SharedLibrary(
             name="libc.so.6",
@@ -79,14 +80,14 @@ class TestSharedLibrary:
         assert lib.path == "/lib/libc.so.6"
         assert lib.size == 2048000
 
-    def test_shared_library_is_frozen(self):
+    def test_shared_library_is_frozen(self) -> None:
         """Test that SharedLibrary is immutable (frozen)."""
         lib = SharedLibrary(name="libc.so.6", path="/lib/libc.so.6", size=2048000)
 
         with pytest.raises(AttributeError):
             lib.size = 999999  # type: ignore
 
-    def test_shared_library_uses_slots(self):
+    def test_shared_library_uses_slots(self) -> None:
         """Test that SharedLibrary uses __slots__ for memory efficiency."""
         lib = SharedLibrary(name="libc.so.6", path="/lib/libc.so.6", size=2048000)
 
@@ -99,7 +100,7 @@ class TestSharedLibrary:
 class TestGplBinary:
     """Test GplBinary dataclass."""
 
-    def test_gpl_binary_creation(self):
+    def test_gpl_binary_creation(self) -> None:
         """Test creating a GplBinary."""
         binary = GplBinary(
             name="busybox",
@@ -113,7 +114,7 @@ class TestGplBinary:
         assert binary.license == "GPL-2.0"
         assert binary.version == "BusyBox v1.36.1"
 
-    def test_gpl_binary_without_version(self):
+    def test_gpl_binary_without_version(self) -> None:
         """Test creating a GplBinary without version (optional field)."""
         binary = GplBinary(
             name="bash",
@@ -124,7 +125,7 @@ class TestGplBinary:
         assert binary.name == "bash"
         assert binary.version is None
 
-    def test_gpl_binary_is_frozen(self):
+    def test_gpl_binary_is_frozen(self) -> None:
         """Test that GplBinary is immutable (frozen)."""
         binary = GplBinary(name="bash", path="/bin/bash", license="GPL-3.0+")
 
@@ -135,7 +136,7 @@ class TestGplBinary:
 class TestLicenseFile:
     """Test LicenseFile dataclass."""
 
-    def test_license_file_creation(self):
+    def test_license_file_creation(self) -> None:
         """Test creating a LicenseFile."""
         license_file = LicenseFile(
             path="/usr/share/licenses/busybox/LICENSE",
@@ -145,7 +146,7 @@ class TestLicenseFile:
         assert license_file.path == "/usr/share/licenses/busybox/LICENSE"
         assert "GNU GENERAL PUBLIC LICENSE" in license_file.content_preview
 
-    def test_license_file_is_frozen(self):
+    def test_license_file_is_frozen(self) -> None:
         """Test that LicenseFile is immutable (frozen)."""
         license_file = LicenseFile(path="/LICENSE", content_preview="MIT License")
 
@@ -156,7 +157,7 @@ class TestLicenseFile:
 class TestDetectedLicense:
     """Test DetectedLicense dataclass."""
 
-    def test_detected_license_creation(self):
+    def test_detected_license_creation(self) -> None:
         """Test creating a DetectedLicense."""
         detected = DetectedLicense(
             component="libc.so",
@@ -168,7 +169,7 @@ class TestDetectedLicense:
         assert detected.license == "LGPL-2.1"
         assert detected.detection_method == "Known library name matching"
 
-    def test_detected_license_is_frozen(self):
+    def test_detected_license_is_frozen(self) -> None:
         """Test that DetectedLicense is immutable (frozen)."""
         detected = DetectedLicense(component="libc.so", license="LGPL-2.1", detection_method="test")
 
@@ -179,7 +180,7 @@ class TestDetectedLicense:
 class TestRootfsAnalysis:
     """Test RootfsAnalysis dataclass."""
 
-    def test_rootfs_analysis_creation(self):
+    def test_rootfs_analysis_creation(self) -> None:
         """Test creating a RootfsAnalysis."""
         analysis = RootfsAnalysis(
             firmware_file="test.img",
@@ -191,7 +192,7 @@ class TestRootfsAnalysis:
         assert analysis.kernel_modules_count == 0
         assert analysis.busybox_found is False
 
-    def test_rootfs_analysis_with_optional_fields(self):
+    def test_rootfs_analysis_with_optional_fields(self) -> None:
         """Test creating a RootfsAnalysis with optional fields."""
         analysis = RootfsAnalysis(
             firmware_file="test.img",
@@ -205,7 +206,7 @@ class TestRootfsAnalysis:
         assert analysis.os_version == "23.05.0"
         assert analysis.kernel_version == "5.10.110"
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
@@ -214,7 +215,7 @@ class TestRootfsAnalysis:
         assert analysis._source["os_name"] == "/etc/os-release"
         assert analysis._method["os_name"] == "NAME field"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
@@ -225,7 +226,7 @@ class TestRootfsAnalysis:
         assert "os_name" not in result  # Should be excluded (None)
         assert "kernel_version" not in result  # Should be excluded (None)
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.add_metadata("firmware_file", "filesystem", "basename(firmware_path)")
@@ -236,7 +237,7 @@ class TestRootfsAnalysis:
         assert result["firmware_file_source"] == "filesystem"
         assert result["firmware_file_method"] == "basename(firmware_path)"
 
-    def test_to_dict_converts_kernel_modules(self):
+    def test_to_dict_converts_kernel_modules(self) -> None:
         """Test to_dict converts KernelModule objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.kernel_modules = [
@@ -250,7 +251,7 @@ class TestRootfsAnalysis:
         assert result["kernel_modules"][0]["path"] == "/lib/modules/test.ko"
         assert result["kernel_modules"][0]["size"] == 1024
 
-    def test_to_dict_converts_shared_libraries(self):
+    def test_to_dict_converts_shared_libraries(self) -> None:
         """Test to_dict converts SharedLibrary objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.shared_libraries = [
@@ -264,7 +265,7 @@ class TestRootfsAnalysis:
         assert result["shared_libraries"][0]["path"] == "/lib/libc.so.6"
         assert result["shared_libraries"][0]["size"] == 2048000
 
-    def test_to_dict_converts_gpl_binaries(self):
+    def test_to_dict_converts_gpl_binaries(self) -> None:
         """Test to_dict converts GplBinary objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.gpl_binaries = [
@@ -278,7 +279,7 @@ class TestRootfsAnalysis:
         assert result["gpl_binaries"][0]["license"] == "GPL-2.0"
         assert result["gpl_binaries"][0]["version"] == "1.36.1"
 
-    def test_to_dict_converts_license_files(self):
+    def test_to_dict_converts_license_files(self) -> None:
         """Test to_dict converts LicenseFile objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.license_files = [LicenseFile(path="/LICENSE", content_preview="MIT License")]
@@ -289,7 +290,7 @@ class TestRootfsAnalysis:
         assert result["license_files"][0]["path"] == "/LICENSE"
         assert result["license_files"][0]["content_preview"] == "MIT License"
 
-    def test_to_dict_converts_detected_licenses(self):
+    def test_to_dict_converts_detected_licenses(self) -> None:
         """Test to_dict converts DetectedLicense objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.detected_licenses = [
@@ -305,7 +306,7 @@ class TestRootfsAnalysis:
         assert result["detected_licenses"][0]["license"] == "LGPL-2.1"
         assert result["detected_licenses"][0]["detection_method"] == "name matching"
 
-    def test_to_dict_excludes_internal_fields(self):
+    def test_to_dict_excludes_internal_fields(self) -> None:
         """Test to_dict excludes internal fields (starting with _)."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.add_metadata("firmware_file", "test", "test method")
@@ -319,7 +320,7 @@ class TestRootfsAnalysis:
 class TestFindSquashfsRootfs:
     """Test find_squashfs_rootfs function."""
 
-    def test_find_squashfs_rootfs_success(self, tmp_path):
+    def test_find_squashfs_rootfs_success(self, tmp_path: Path) -> None:
         """Test finding squashfs-root directory."""
         # Create a fake extraction directory structure
         extract_dir = tmp_path / "firmware.img.extracted"
@@ -330,7 +331,7 @@ class TestFindSquashfsRootfs:
 
         assert result == squashfs_root
 
-    def test_find_squashfs_rootfs_nested(self, tmp_path):
+    def test_find_squashfs_rootfs_nested(self, tmp_path: Path) -> None:
         """Test finding squashfs-root in nested directory."""
         # Create nested structure
         extract_dir = tmp_path / "firmware.img.extracted"
@@ -342,7 +343,7 @@ class TestFindSquashfsRootfs:
 
         assert result == squashfs_root
 
-    def test_find_squashfs_rootfs_not_found(self, tmp_path):
+    def test_find_squashfs_rootfs_not_found(self, tmp_path: Path) -> None:
         """Test that missing squashfs-root causes exit."""
         extract_dir = tmp_path / "firmware.img.extracted"
         extract_dir.mkdir(parents=True)
@@ -356,7 +357,7 @@ class TestFindSquashfsRootfs:
 class TestParseOsRelease:
     """Test parse_os_release function."""
 
-    def test_parse_os_release_success(self, tmp_path):
+    def test_parse_os_release_success(self, tmp_path: Path) -> None:
         """Test parsing /etc/os-release file."""
         rootfs = tmp_path / "rootfs"
         etc_dir = rootfs / "etc"
@@ -376,7 +377,7 @@ class TestParseOsRelease:
         assert analysis._source["os_name"] == "/etc/os-release"
         assert analysis._method["os_name"] == "NAME field"
 
-    def test_parse_os_release_missing_file(self, tmp_path):
+    def test_parse_os_release_missing_file(self, tmp_path: Path) -> None:
         """Test parsing when /etc/os-release doesn't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -388,7 +389,7 @@ class TestParseOsRelease:
         assert analysis.os_name is None
         assert analysis.os_version is None
 
-    def test_parse_os_release_partial_data(self, tmp_path):
+    def test_parse_os_release_partial_data(self, tmp_path: Path) -> None:
         """Test parsing /etc/os-release with partial data."""
         rootfs = tmp_path / "rootfs"
         etc_dir = rootfs / "etc"
@@ -408,7 +409,7 @@ class TestExtractKernelVersion:
     """Test extract_kernel_version function."""
 
     @patch("subprocess.run")
-    def test_extract_kernel_version_success(self, mock_run, tmp_path):
+    def test_extract_kernel_version_success(self, mock_run: Any, tmp_path: Path) -> None:
         """Test extracting kernel version from module."""
         rootfs = tmp_path / "rootfs"
         lib_modules = rootfs / "lib/modules/5.10.110"
@@ -425,11 +426,12 @@ class TestExtractKernelVersion:
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
         extract_kernel_version(rootfs, analysis)
 
+        assert analysis.kernel_version is not None
         assert "vermagic=5.10.110" in analysis.kernel_version
         assert analysis._source["kernel_version"] == "kernel module"
         assert "strings" in analysis._method["kernel_version"]
 
-    def test_extract_kernel_version_no_modules(self, tmp_path):
+    def test_extract_kernel_version_no_modules(self, tmp_path: Path) -> None:
         """Test extracting kernel version when no modules exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -444,7 +446,7 @@ class TestExtractKernelVersion:
 class TestAnalyzeKernelModules:
     """Test analyze_kernel_modules function."""
 
-    def test_analyze_kernel_modules_success(self, tmp_path):
+    def test_analyze_kernel_modules_success(self, tmp_path: Path) -> None:
         """Test analyzing kernel modules."""
         rootfs = tmp_path / "rootfs"
         lib_modules = rootfs / "lib/modules/5.10.110"
@@ -468,7 +470,7 @@ class TestAnalyzeKernelModules:
         assert analysis.kernel_modules[0].size == 1024
         assert analysis.kernel_modules[0].path.startswith("/lib/modules")
 
-    def test_analyze_kernel_modules_empty(self, tmp_path):
+    def test_analyze_kernel_modules_empty(self, tmp_path: Path) -> None:
         """Test analyzing when no kernel modules exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -483,7 +485,7 @@ class TestAnalyzeKernelModules:
 class TestAnalyzeSharedLibraries:
     """Test analyze_shared_libraries function."""
 
-    def test_analyze_shared_libraries_success(self, tmp_path):
+    def test_analyze_shared_libraries_success(self, tmp_path: Path) -> None:
         """Test analyzing shared libraries."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -506,7 +508,7 @@ class TestAnalyzeSharedLibraries:
         assert analysis.shared_libraries[0].name == "libc.so.6"
         assert analysis.shared_libraries[0].size == 2048000
 
-    def test_analyze_shared_libraries_limits_output(self, tmp_path):
+    def test_analyze_shared_libraries_limits_output(self, tmp_path: Path) -> None:
         """Test that output is limited to 100 libraries."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -523,7 +525,7 @@ class TestAnalyzeSharedLibraries:
         assert analysis.shared_libraries_count == 150
         assert len(analysis.shared_libraries) == 100  # Limited to 100
 
-    def test_analyze_shared_libraries_versioned_names(self, tmp_path):
+    def test_analyze_shared_libraries_versioned_names(self, tmp_path: Path) -> None:
         """Test analyzing libraries with version suffixes like .so.1.2.3."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -544,7 +546,7 @@ class TestAnalyzeBusybox:
     """Test analyze_busybox function."""
 
     @patch("subprocess.run")
-    def test_analyze_busybox_found(self, mock_run, tmp_path):
+    def test_analyze_busybox_found(self, mock_run: Any, tmp_path: Path) -> None:
         """Test analyzing BusyBox when it exists."""
         rootfs = tmp_path / "rootfs"
         bin_dir = rootfs / "bin"
@@ -560,12 +562,13 @@ class TestAnalyzeBusybox:
         analyze_busybox(rootfs, analysis)
 
         assert analysis.busybox_found is True
+        assert analysis.busybox_version is not None
         assert "BusyBox v1.36.1" in analysis.busybox_version
         assert len(analysis.gpl_binaries) == 1
         assert analysis.gpl_binaries[0].name == "busybox"
         assert analysis.gpl_binaries[0].license == "GPL-2.0"
 
-    def test_analyze_busybox_not_found(self, tmp_path):
+    def test_analyze_busybox_not_found(self, tmp_path: Path) -> None:
         """Test analyzing when BusyBox doesn't exist."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -580,7 +583,7 @@ class TestAnalyzeBusybox:
 class TestAnalyzeGplBinaries:
     """Test analyze_gpl_binaries function."""
 
-    def test_analyze_gpl_binaries_found(self, tmp_path):
+    def test_analyze_gpl_binaries_found(self, tmp_path: Path) -> None:
         """Test identifying GPL binaries."""
         rootfs = tmp_path / "rootfs"
         bin_dir = rootfs / "bin"
@@ -599,7 +602,7 @@ class TestAnalyzeGplBinaries:
         assert "grep" in binary_names
         assert "tar" in binary_names
 
-    def test_analyze_gpl_binaries_symlink_to_busybox(self, tmp_path):
+    def test_analyze_gpl_binaries_symlink_to_busybox(self, tmp_path: Path) -> None:
         """Test identifying symlinks to BusyBox."""
         rootfs = tmp_path / "rootfs"
         bin_dir = rootfs / "bin"
@@ -619,7 +622,7 @@ class TestAnalyzeGplBinaries:
         ls_binary = next(b for b in analysis.gpl_binaries if b.name == "ls")
         assert ls_binary.license == "BusyBox (GPL-2.0)"
 
-    def test_analyze_gpl_binaries_multiple_locations(self, tmp_path):
+    def test_analyze_gpl_binaries_multiple_locations(self, tmp_path: Path) -> None:
         """Test finding binaries in different locations (bin, usr/bin, etc.)."""
         rootfs = tmp_path / "rootfs"
 
@@ -643,7 +646,7 @@ class TestAnalyzeGplBinaries:
 class TestAnalyzeLicenseFiles:
     """Test analyze_license_files function."""
 
-    def test_analyze_license_files_found(self, tmp_path):
+    def test_analyze_license_files_found(self, tmp_path: Path) -> None:
         """Test finding license files."""
         rootfs = tmp_path / "rootfs"
         licenses_dir = rootfs / "usr/share/licenses/busybox"
@@ -660,7 +663,7 @@ class TestAnalyzeLicenseFiles:
         assert "/usr/share/licenses/busybox/LICENSE" in analysis.license_files[0].path
         assert "GNU GENERAL PUBLIC LICENSE" in analysis.license_files[0].content_preview
 
-    def test_analyze_license_files_preview_truncated(self, tmp_path):
+    def test_analyze_license_files_preview_truncated(self, tmp_path: Path) -> None:
         """Test that license file preview is truncated to 50 lines."""
         rootfs = tmp_path / "rootfs"
         license_dir = rootfs / "licenses"
@@ -678,7 +681,7 @@ class TestAnalyzeLicenseFiles:
         preview_lines = analysis.license_files[0].content_preview.splitlines()
         assert len(preview_lines) == 50  # Truncated to 50 lines
 
-    def test_analyze_license_files_skips_large_files(self, tmp_path):
+    def test_analyze_license_files_skips_large_files(self, tmp_path: Path) -> None:
         """Test that very large license files are skipped."""
         rootfs = tmp_path / "rootfs"
         license_dir = rootfs / "licenses"
@@ -694,7 +697,7 @@ class TestAnalyzeLicenseFiles:
         # Large file should be skipped
         assert len(analysis.license_files) == 0
 
-    def test_analyze_license_files_case_insensitive(self, tmp_path):
+    def test_analyze_license_files_case_insensitive(self, tmp_path: Path) -> None:
         """Test finding license files with different case patterns."""
         rootfs = tmp_path / "rootfs"
         rootfs.mkdir(parents=True)
@@ -715,7 +718,7 @@ class TestAnalyzeLicenseFiles:
 class TestDetectLibraryLicenses:
     """Test detect_library_licenses function."""
 
-    def test_detect_library_licenses_known_libraries(self, tmp_path):
+    def test_detect_library_licenses_known_libraries(self, tmp_path: Path) -> None:
         """Test detecting licenses from known library names."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -736,7 +739,7 @@ class TestDetectLibraryLicenses:
         assert "libssl" in detected_components
         assert "libz.so" in detected_components
 
-    def test_detect_library_licenses_correct_licenses(self, tmp_path):
+    def test_detect_library_licenses_correct_licenses(self, tmp_path: Path) -> None:
         """Test that correct licenses are assigned to known libraries."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -754,7 +757,7 @@ class TestDetectLibraryLicenses:
         libssl_license = next(d for d in analysis.detected_licenses if d.component == "libssl")
         assert libssl_license.license == "OpenSSL"
 
-    def test_detect_library_licenses_sorted_output(self, tmp_path):
+    def test_detect_library_licenses_sorted_output(self, tmp_path: Path) -> None:
         """Test that detected licenses are sorted by component name."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "lib"
@@ -776,7 +779,7 @@ class TestDetectLibraryLicenses:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = RootfsAnalysis(
             firmware_file="test.img",
@@ -794,7 +797,7 @@ class TestOutputToml:
         assert parsed["kernel_modules_count"] == 5
         assert parsed["shared_libraries_count"] == 42
 
-    def test_toml_includes_comments(self):
+    def test_toml_includes_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.add_metadata("firmware_file", "filesystem", "basename(firmware_path)")
@@ -804,7 +807,7 @@ class TestOutputToml:
         assert "# Source: filesystem" in toml_str
         assert "# Method: basename(firmware_path)" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         long_method = "x" * 100  # 100 characters
@@ -816,7 +819,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_none_values(self):
+    def test_toml_excludes_none_values(self) -> None:
         """Test that None values are excluded from TOML output."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         # os_name, kernel_version, etc. are None by default
@@ -827,7 +830,7 @@ class TestOutputToml:
         assert "kernel_version" not in toml_str
         assert "busybox_version" not in toml_str
 
-    def test_toml_includes_arrays(self):
+    def test_toml_includes_arrays(self) -> None:
         """Test that arrays (kernel_modules, etc.) are included."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
         analysis.kernel_modules = [
@@ -847,7 +850,7 @@ class TestOutputToml:
         assert parsed["gpl_binaries"][0]["name"] == "busybox"
         assert parsed["gpl_binaries"][0]["version"] == "1.36.1"
 
-    def test_toml_includes_header_comment(self):
+    def test_toml_includes_header_comment(self) -> None:
         """Test that TOML includes header comment."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
@@ -856,7 +859,7 @@ class TestOutputToml:
         assert "# Root filesystem analysis" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_validates_output(self):
+    def test_toml_validates_output(self) -> None:
         """Test that output_toml validates generated TOML by parsing it."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
 
@@ -872,7 +875,7 @@ class TestIntegration:
     """Integration tests with realistic data."""
 
     @patch("subprocess.run")
-    def test_realistic_rootfs_analysis(self, mock_run, tmp_path):
+    def test_realistic_rootfs_analysis(self, mock_run: Any, tmp_path: Path) -> None:
         """Test complete analysis workflow with realistic filesystem."""
         # Create realistic filesystem structure
         rootfs = tmp_path / "squashfs-root"
@@ -908,7 +911,7 @@ class TestIntegration:
         (license_dir / "LICENSE").write_text("GNU GENERAL PUBLIC LICENSE\nVersion 2\n")
 
         # Mock subprocess for strings commands (kernel version and busybox)
-        def mock_subprocess_side_effect(*args, **_kwargs):
+        def mock_subprocess_side_effect(*args: Any, **_kwargs: Any) -> MagicMock:
             mock_result = MagicMock()
             # Check which file is being processed
             cmd = args[0]

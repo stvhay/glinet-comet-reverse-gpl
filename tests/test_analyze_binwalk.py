@@ -23,7 +23,7 @@ from lib.output import output_toml
 class TestComponent:
     """Test Component dataclass."""
 
-    def test_component_creation(self):
+    def test_component_creation(self) -> None:
         """Test creating a Component."""
         comp = Component(
             offset="0x8F1B4",
@@ -35,7 +35,7 @@ class TestComponent:
         assert comp.type == "Device"
         assert comp.description == "Device tree blob (DTB), version: 17"
 
-    def test_component_is_frozen(self):
+    def test_component_is_frozen(self) -> None:
         """Test that Component is immutable (frozen)."""
         comp = Component(offset="0x8F1B4", type="Device", description="DTB")
 
@@ -46,7 +46,7 @@ class TestComponent:
 class TestBinwalkAnalysis:
     """Test BinwalkAnalysis dataclass."""
 
-    def test_analysis_creation(self):
+    def test_analysis_creation(self) -> None:
         """Test creating a BinwalkAnalysis."""
         analysis = BinwalkAnalysis(
             firmware_file="test.img",
@@ -58,7 +58,7 @@ class TestBinwalkAnalysis:
         assert analysis.squashfs_count == 0
         assert analysis.bootloader_fit_offset is None
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -67,7 +67,7 @@ class TestBinwalkAnalysis:
         assert analysis._source["firmware_size"] == "stat"
         assert analysis._method["firmware_size"] == "stat -f%z test.img"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
 
@@ -77,7 +77,7 @@ class TestBinwalkAnalysis:
         assert "firmware_size" in result
         assert "bootloader_fit_offset" not in result  # Should be excluded (None)
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "stat", "stat -f%z test.img")
@@ -88,7 +88,7 @@ class TestBinwalkAnalysis:
         assert result["firmware_size_source"] == "stat"
         assert result["firmware_size_method"] == "stat -f%z test.img"
 
-    def test_to_dict_converts_components(self):
+    def test_to_dict_converts_components(self) -> None:
         """Test to_dict converts Component objects to dicts."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.identified_components = [
@@ -105,12 +105,12 @@ class TestBinwalkAnalysis:
 class TestParseBinwalkOutput:
     """Test parse_binwalk_output function."""
 
-    def test_parse_empty_output(self):
+    def test_parse_empty_output(self) -> None:
         """Test parsing empty binwalk output."""
         result = parse_binwalk_output("")
         assert result == []
 
-    def test_parse_header_only(self):
+    def test_parse_header_only(self) -> None:
         """Test parsing binwalk output with only headers."""
         output = """
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -119,7 +119,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
         result = parse_binwalk_output(output)
         assert result == []
 
-    def test_parse_single_component(self):
+    def test_parse_single_component(self) -> None:
         """Test parsing single component."""
         output = """
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -133,7 +133,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
         assert result[0].type == "Device"
         assert "Device tree blob" in result[0].description
 
-    def test_parse_multiple_components(self):
+    def test_parse_multiple_components(self) -> None:
         """Test parsing multiple components."""
         output = """
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -149,7 +149,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
         assert result[1].offset == "0x901B4"
         assert result[2].offset == "0xFD5B4"
 
-    def test_parse_ignores_continuation_lines(self):
+    def test_parse_ignores_continuation_lines(self) -> None:
         """Test that continuation lines without hex offset are ignored."""
         output = """
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -163,7 +163,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
         # Should only get 2 components, ignoring the continuation line
         assert len(result) == 2
 
-    def test_parse_extracts_type_correctly(self):
+    def test_parse_extracts_type_correctly(self) -> None:
         """Test that component type (first word) is extracted correctly."""
         output = """
 DECIMAL       HEXADECIMAL     DESCRIPTION
@@ -182,7 +182,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 class TestExtractOffsetFromLines:
     """Test _extract_offset_from_lines helper function."""
 
-    def test_extract_offset_found(self):
+    def test_extract_offset_found(self) -> None:
         """Test extracting offset when search term is found."""
         lines = [
             "DECIMAL       HEXADECIMAL     DESCRIPTION",
@@ -194,7 +194,7 @@ class TestExtractOffsetFromLines:
 
         assert offset == "0x8F1B4"
 
-    def test_extract_offset_not_found(self):
+    def test_extract_offset_not_found(self) -> None:
         """Test extracting offset when search term is not found."""
         lines = [
             "DECIMAL       HEXADECIMAL     DESCRIPTION",
@@ -205,7 +205,7 @@ class TestExtractOffsetFromLines:
 
         assert offset is None
 
-    def test_extract_offset_case_insensitive(self):
+    def test_extract_offset_case_insensitive(self) -> None:
         """Test that search is case-insensitive."""
         lines = ["586164        0x8F1B4         Device Tree Blob (DTB)"]
 
@@ -213,7 +213,7 @@ class TestExtractOffsetFromLines:
 
         assert offset == "0x8F1B4"
 
-    def test_extract_offset_with_additional_term(self):
+    def test_extract_offset_with_additional_term(self) -> None:
         """Test extracting offset with additional search term."""
         lines = [
             "586164        0x8F1B4         Device tree blob (DTB), version: 17, size: 2048",
@@ -225,7 +225,7 @@ class TestExtractOffsetFromLines:
 
         assert offset == "0x901B4"
 
-    def test_extract_offset_returns_first_match(self):
+    def test_extract_offset_returns_first_match(self) -> None:
         """Test that only the first match is returned."""
         lines = [
             "586164        0x8F1B4         gzip compressed data",
@@ -240,7 +240,7 @@ class TestExtractOffsetFromLines:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = BinwalkAnalysis(
             firmware_file="test.img",
@@ -261,7 +261,7 @@ class TestOutputToml:
         assert parsed["firmware_file"] == "test.img"
         assert parsed["firmware_size"] == 1024
 
-    def test_toml_includes_comments(self):
+    def test_toml_includes_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.add_metadata("firmware_size", "stat", "stat -f%z test.img")
@@ -276,7 +276,7 @@ class TestOutputToml:
         assert "# Source: stat" in toml_str
         assert "# Method: stat -f%z test.img" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         long_method = "x" * 100  # 100 characters
@@ -293,7 +293,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_none_values(self):
+    def test_toml_excludes_none_values(self) -> None:
         """Test that None values are excluded from TOML output."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         # bootloader_fit_offset is None by default
@@ -307,7 +307,7 @@ class TestOutputToml:
 
         assert "bootloader_fit_offset" not in toml_str
 
-    def test_toml_includes_arrays(self):
+    def test_toml_includes_arrays(self) -> None:
         """Test that arrays (identified_components) are included."""
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         analysis.identified_components = [
@@ -330,7 +330,7 @@ class TestOutputToml:
 class TestIntegration:
     """Integration tests with realistic binwalk output."""
 
-    def test_realistic_binwalk_output(self):
+    def test_realistic_binwalk_output(self) -> None:
         """Test parsing realistic binwalk output."""
         # fmt: off
         output = """

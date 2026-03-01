@@ -6,6 +6,7 @@ import json
 import sys
 from contextlib import redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -33,7 +34,7 @@ from lib.output import output_toml
 class TestFITSignature:
     """Test FITSignature dataclass."""
 
-    def test_signature_creation(self):
+    def test_signature_creation(self) -> None:
         """Test creating a FITSignature."""
         sig = FITSignature(
             image_type="bootloader",
@@ -47,7 +48,7 @@ class TestFITSignature:
         assert sig.key_name == "dev-key"
         assert sig.signed_components == "firmware,fdt"
 
-    def test_signature_is_frozen(self):
+    def test_signature_is_frozen(self) -> None:
         """Test that FITSignature is immutable (frozen)."""
         sig = FITSignature(
             image_type="bootloader",
@@ -59,7 +60,7 @@ class TestFITSignature:
         with pytest.raises(AttributeError):
             sig.algorithm = "sha512,rsa4096"  # type: ignore
 
-    def test_signature_has_slots(self):
+    def test_signature_has_slots(self) -> None:
         """Test that FITSignature uses __slots__ for efficiency."""
         sig = FITSignature(
             image_type="kernel",
@@ -71,7 +72,7 @@ class TestFITSignature:
         # Frozen dataclasses prevent attribute modification
         assert hasattr(sig.__class__, "__slots__")
 
-    def test_signature_kernel_type(self):
+    def test_signature_kernel_type(self) -> None:
         """Test creating a kernel-type FITSignature."""
         sig = FITSignature(
             image_type="kernel",
@@ -87,7 +88,7 @@ class TestFITSignature:
 class TestSecureBootAnalysis:
     """Test SecureBootAnalysis dataclass."""
 
-    def test_analysis_creation_minimal(self):
+    def test_analysis_creation_minimal(self) -> None:
         """Test creating a SecureBootAnalysis with minimal fields."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -108,7 +109,7 @@ class TestSecureBootAnalysis:
         assert analysis.has_otp_node is False
         assert analysis.has_crypto_node is False
 
-    def test_analysis_creation_full(self):
+    def test_analysis_creation_full(self) -> None:
         """Test creating a SecureBootAnalysis with all fields."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -150,7 +151,7 @@ class TestSecureBootAnalysis:
         assert analysis.has_otp_node is True
         assert analysis.has_crypto_node is True
 
-    def test_analysis_is_mutable(self):
+    def test_analysis_is_mutable(self) -> None:
         """Test that SecureBootAnalysis is mutable (not frozen)."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -161,7 +162,7 @@ class TestSecureBootAnalysis:
         analysis.has_otp_node = True
         assert analysis.has_otp_node is True
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -173,7 +174,7 @@ class TestSecureBootAnalysis:
         assert analysis._source["firmware_size"] == "secure_boot"
         assert analysis._method["firmware_size"] == "Path(firmware).stat().st_size"
 
-    def test_add_metadata_multiple_fields(self):
+    def test_add_metadata_multiple_fields(self) -> None:
         """Test adding metadata for multiple fields."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -187,7 +188,7 @@ class TestSecureBootAnalysis:
         assert len(analysis._method) == 2
         assert analysis._source["uboot_offset"] == "binwalk"
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -202,7 +203,7 @@ class TestSecureBootAnalysis:
         assert "kernel_fit_offset" not in result  # None
         assert "bootloader_signature" not in result  # None
 
-    def test_to_dict_includes_bool_false(self):
+    def test_to_dict_includes_bool_false(self) -> None:
         """Test to_dict includes boolean False values."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -218,7 +219,7 @@ class TestSecureBootAnalysis:
         assert "has_crypto_node" in result
         assert result["has_crypto_node"] is False
 
-    def test_to_dict_excludes_empty_lists(self):
+    def test_to_dict_excludes_empty_lists(self) -> None:
         """Test to_dict excludes empty lists."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -231,7 +232,7 @@ class TestSecureBootAnalysis:
         assert "uboot_key_findings" not in result
         assert "optee_secure_boot_strings" not in result
 
-    def test_to_dict_includes_non_empty_lists(self):
+    def test_to_dict_includes_non_empty_lists(self) -> None:
         """Test to_dict includes non-empty lists."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -244,7 +245,7 @@ class TestSecureBootAnalysis:
         assert "uboot_verification_strings" in result
         assert len(result["uboot_verification_strings"]) == 2
 
-    def test_to_dict_converts_signatures(self):
+    def test_to_dict_converts_signatures(self) -> None:
         """Test to_dict converts FITSignature objects to dicts."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -266,7 +267,7 @@ class TestSecureBootAnalysis:
         assert result["bootloader_signature"]["key_name"] == "dev-key"
         assert result["bootloader_signature"]["signed_components"] == "firmware,fdt"
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -280,7 +281,7 @@ class TestSecureBootAnalysis:
         assert result["firmware_size_source"] == "secure_boot"
         assert result["firmware_size_method"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_excludes_private_fields(self):
+    def test_to_dict_excludes_private_fields(self) -> None:
         """Test to_dict excludes private fields (_source, _method)."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -293,7 +294,7 @@ class TestSecureBootAnalysis:
         assert "_source" not in result
         assert "_method" not in result
 
-    def test_dataclass_has_slots(self):
+    def test_dataclass_has_slots(self) -> None:
         """Test that SecureBootAnalysis uses slots for memory efficiency."""
         # Verify it has slots defined
         assert hasattr(SecureBootAnalysis, "__slots__")
@@ -302,7 +303,7 @@ class TestSecureBootAnalysis:
 class TestFindDtbFile:
     """Test find_dtb_file function."""
 
-    def test_find_dtb_file_uppercase_offset(self, tmp_path):
+    def test_find_dtb_file_uppercase_offset(self, tmp_path: Path) -> None:
         """Test finding DTB file with uppercase offset directory."""
         extract_dir = tmp_path / "firmware.extracted"
         dtb_dir = extract_dir / "8F1B4"
@@ -314,7 +315,7 @@ class TestFindDtbFile:
 
         assert result == dtb_file
 
-    def test_find_dtb_file_lowercase_offset(self, tmp_path):
+    def test_find_dtb_file_lowercase_offset(self, tmp_path: Path) -> None:
         """Test finding DTB file with lowercase offset."""
         extract_dir = tmp_path / "firmware.extracted"
         dtb_dir = extract_dir / "8F1B4"
@@ -326,7 +327,7 @@ class TestFindDtbFile:
 
         assert result == dtb_file
 
-    def test_find_dtb_file_with_0x_prefix_dir(self, tmp_path):
+    def test_find_dtb_file_with_0x_prefix_dir(self, tmp_path: Path) -> None:
         """Test finding DTB file when directory has 0x prefix."""
         extract_dir = tmp_path / "firmware.extracted"
         dtb_dir = extract_dir / "0X8F1B4"
@@ -338,7 +339,7 @@ class TestFindDtbFile:
 
         assert result == dtb_file
 
-    def test_find_dtb_file_not_found(self, tmp_path):
+    def test_find_dtb_file_not_found(self, tmp_path: Path) -> None:
         """Test finding DTB file when it doesn't exist."""
         extract_dir = tmp_path / "firmware.extracted"
         extract_dir.mkdir()
@@ -351,7 +352,7 @@ class TestFindDtbFile:
 class TestFindLargestDtb:
     """Test find_largest_dtb function."""
 
-    def test_find_largest_dtb_single(self, tmp_path):
+    def test_find_largest_dtb_single(self, tmp_path: Path) -> None:
         """Test finding largest DTB with single file."""
         extract_dir = tmp_path / "firmware.extracted"
         dtb_dir = extract_dir / "8F1B4"
@@ -364,7 +365,7 @@ class TestFindLargestDtb:
         assert result == dtb_file
         assert result.stat().st_size == 2048
 
-    def test_find_largest_dtb_multiple(self, tmp_path):
+    def test_find_largest_dtb_multiple(self, tmp_path: Path) -> None:
         """Test finding largest DTB with multiple files."""
         extract_dir = tmp_path / "firmware.extracted"
 
@@ -389,7 +390,7 @@ class TestFindLargestDtb:
         assert result == dtb_file2
         assert result.stat().st_size == 8192
 
-    def test_find_largest_dtb_not_found(self, tmp_path):
+    def test_find_largest_dtb_not_found(self, tmp_path: Path) -> None:
         """Test finding largest DTB when no DTB files exist."""
         extract_dir = tmp_path / "firmware.extracted"
         extract_dir.mkdir()
@@ -402,7 +403,7 @@ class TestFindLargestDtb:
 class TestExtractFitSignature:
     """Test extract_fit_signature function."""
 
-    def test_extract_fit_signature_complete(self, tmp_path):
+    def test_extract_fit_signature_complete(self, tmp_path: Path) -> None:
         """Test extracting complete FIT signature information."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -424,7 +425,7 @@ class TestExtractFitSignature:
         assert result.key_name == "dev-key"
         assert result.signed_components == "firmware,fdt"
 
-    def test_extract_fit_signature_partial(self, tmp_path):
+    def test_extract_fit_signature_partial(self, tmp_path: Path) -> None:
         """Test extracting partial FIT signature information."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -445,7 +446,7 @@ class TestExtractFitSignature:
         assert result.key_name == "kernel-key"
         assert result.signed_components == "unknown"
 
-    def test_extract_fit_signature_not_found(self, tmp_path):
+    def test_extract_fit_signature_not_found(self, tmp_path: Path) -> None:
         """Test extracting FIT signature when no signature present."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -460,7 +461,7 @@ class TestExtractFitSignature:
 
         assert result is None
 
-    def test_extract_fit_signature_file_not_exist(self, tmp_path):
+    def test_extract_fit_signature_file_not_exist(self, tmp_path: Path) -> None:
         """Test extracting FIT signature when file doesn't exist."""
         dtb_file = tmp_path / "nonexistent.dtb"
 
@@ -468,7 +469,7 @@ class TestExtractFitSignature:
 
         assert result is None
 
-    def test_extract_fit_signature_case_insensitive(self, tmp_path):
+    def test_extract_fit_signature_case_insensitive(self, tmp_path: Path) -> None:
         """Test extracting FIT signature with case variations."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -490,7 +491,7 @@ class TestExtractFitSignature:
 class TestExtractGzipStrings:
     """Test extract_gzip_strings function."""
 
-    def test_extract_gzip_strings_simple(self, tmp_path):
+    def test_extract_gzip_strings_simple(self, tmp_path: Path) -> None:
         """Test extracting strings from gzip-compressed data."""
         firmware = tmp_path / "firmware.img"
 
@@ -509,7 +510,7 @@ class TestExtractGzipStrings:
         assert "verified signature" in result
         assert "test string" in result
 
-    def test_extract_gzip_strings_min_length(self, tmp_path):
+    def test_extract_gzip_strings_min_length(self, tmp_path: Path) -> None:
         """Test that strings below minimum length are excluded."""
         firmware = tmp_path / "firmware.img"
 
@@ -528,7 +529,7 @@ class TestExtractGzipStrings:
         assert "abc" not in result
         assert "ab" not in result
 
-    def test_extract_gzip_strings_printable_only(self, tmp_path):
+    def test_extract_gzip_strings_printable_only(self, tmp_path: Path) -> None:
         """Test that only printable ASCII characters are extracted."""
         firmware = tmp_path / "firmware.img"
 
@@ -544,7 +545,7 @@ class TestExtractGzipStrings:
         assert "U-Boot" in result
         assert "test" in result
 
-    def test_extract_gzip_strings_invalid_gzip(self, tmp_path):
+    def test_extract_gzip_strings_invalid_gzip(self, tmp_path: Path) -> None:
         """Test extracting strings from invalid gzip data."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"not gzip data" * 100)
@@ -555,7 +556,7 @@ class TestExtractGzipStrings:
 
         assert result == []
 
-    def test_extract_gzip_strings_empty(self, tmp_path):
+    def test_extract_gzip_strings_empty(self, tmp_path: Path) -> None:
         """Test extracting strings from empty gzip data."""
         firmware = tmp_path / "firmware.img"
         compressed_data = gzip.compress(b"")
@@ -567,7 +568,7 @@ class TestExtractGzipStrings:
 
         assert result == []
 
-    def test_extract_gzip_strings_max_bytes(self, tmp_path):
+    def test_extract_gzip_strings_max_bytes(self, tmp_path: Path) -> None:
         """Test that max_bytes limits the read size."""
         firmware = tmp_path / "firmware.img"
 
@@ -588,7 +589,7 @@ class TestExtractGzipStrings:
 class TestFilterStrings:
     """Test filter_strings function."""
 
-    def test_filter_strings_single_pattern(self):
+    def test_filter_strings_single_pattern(self) -> None:
         """Test filtering strings with single pattern."""
         strings = [
             "verified boot",
@@ -602,7 +603,7 @@ class TestFilterStrings:
 
         assert result == ["verified boot"]
 
-    def test_filter_strings_multiple_patterns(self):
+    def test_filter_strings_multiple_patterns(self) -> None:
         """Test filtering strings with multiple patterns."""
         strings = [
             "verified boot",
@@ -619,7 +620,7 @@ class TestFilterStrings:
         assert "secure boot enabled" in result
         assert "test string" not in result
 
-    def test_filter_strings_case_insensitive(self):
+    def test_filter_strings_case_insensitive(self) -> None:
         """Test that filtering is case-insensitive."""
         strings = [
             "VERIFIED BOOT",
@@ -633,7 +634,7 @@ class TestFilterStrings:
         assert "VERIFIED BOOT" in result
         assert "Signature Check" in result
 
-    def test_filter_strings_regex_patterns(self):
+    def test_filter_strings_regex_patterns(self) -> None:
         """Test filtering with regex patterns."""
         strings = [
             "bootcmd=run distro_bootcmd",
@@ -648,16 +649,16 @@ class TestFilterStrings:
         assert len(result) == 3
         assert "test=value" not in result
 
-    def test_filter_strings_empty_patterns(self):
+    def test_filter_strings_empty_patterns(self) -> None:
         """Test filtering with empty pattern list."""
         strings = ["test1", "test2", "test3"]
-        patterns = []
+        patterns: list[str] = []
 
         result = filter_strings(strings, regex_patterns=patterns)
 
         assert result == []
 
-    def test_filter_strings_no_matches(self):
+    def test_filter_strings_no_matches(self) -> None:
         """Test filtering when no strings match."""
         strings = ["test1", "test2", "test3"]
         patterns = [r"notfound"]
@@ -666,7 +667,7 @@ class TestFilterStrings:
 
         assert result == []
 
-    def test_filter_strings_deduplicates(self):
+    def test_filter_strings_deduplicates(self) -> None:
         """Test that filtering removes duplicates."""
         strings = ["verified", "signature", "verified", "signature"]
         patterns = [r"verified", r"signature"]
@@ -677,7 +678,7 @@ class TestFilterStrings:
         assert "verified" in result
         assert "signature" in result
 
-    def test_filter_strings_sorted(self):
+    def test_filter_strings_sorted(self) -> None:
         """Test that results are sorted."""
         strings = ["zzz", "aaa", "mmm"]
         patterns = [r".*"]
@@ -690,7 +691,7 @@ class TestFilterStrings:
 class TestExtractDeviceTreeNode:
     """Test extract_device_tree_node function."""
 
-    def test_extract_device_tree_node_found(self, tmp_path):
+    def test_extract_device_tree_node_found(self, tmp_path: Path) -> None:
         """Test extracting device tree node content."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -713,7 +714,7 @@ class TestExtractDeviceTreeNode:
         assert "compatible" in result
         assert "rockchip,rk3568-otp" in result
 
-    def test_extract_device_tree_node_lines_limit(self, tmp_path):
+    def test_extract_device_tree_node_lines_limit(self, tmp_path: Path) -> None:
         """Test that extraction respects lines_after parameter."""
         dtb_file = tmp_path / "system.dtb"
         lines = ["otp@fe388000 {"] + [f"    line{i} = value{i};" for i in range(20)] + ["};"]
@@ -727,7 +728,7 @@ class TestExtractDeviceTreeNode:
         # Should have at most 6 lines (match line + 5 after)
         assert len(result_lines) <= 6
 
-    def test_extract_device_tree_node_not_found(self, tmp_path):
+    def test_extract_device_tree_node_not_found(self, tmp_path: Path) -> None:
         """Test extracting node that doesn't exist."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -741,7 +742,7 @@ class TestExtractDeviceTreeNode:
 
         assert result is None
 
-    def test_extract_device_tree_node_file_not_exist(self, tmp_path):
+    def test_extract_device_tree_node_file_not_exist(self, tmp_path: Path) -> None:
         """Test extracting node when file doesn't exist."""
         dtb_file = tmp_path / "nonexistent.dtb"
 
@@ -749,7 +750,7 @@ class TestExtractDeviceTreeNode:
 
         assert result is None
 
-    def test_extract_device_tree_node_crypto(self, tmp_path):
+    def test_extract_device_tree_node_crypto(self, tmp_path: Path) -> None:
         """Test extracting crypto node."""
         dtb_file = tmp_path / "system.dtb"
         dtb_content = """
@@ -773,7 +774,7 @@ class TestExtractDeviceTreeNode:
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -797,7 +798,7 @@ class TestOutputToml:
         assert parsed["has_otp_node"] is True
         assert parsed["has_crypto_node"] is False
 
-    def test_toml_includes_header(self):
+    def test_toml_includes_header(self) -> None:
         """Test that TOML includes header comments."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -814,7 +815,7 @@ class TestOutputToml:
         assert "# Secure Boot Analysis" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_includes_source_comments(self):
+    def test_toml_includes_source_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -836,7 +837,7 @@ class TestOutputToml:
         assert "# Source: secure_boot" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -856,7 +857,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_none_values(self):
+    def test_toml_excludes_none_values(self) -> None:
         """Test that None values are excluded from TOML output."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -874,7 +875,7 @@ class TestOutputToml:
         assert "kernel_fit_offset" not in toml_str
         assert "bootloader_signature" not in toml_str
 
-    def test_toml_includes_signatures(self):
+    def test_toml_includes_signatures(self) -> None:
         """Test that FIT signatures are included in TOML."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -901,7 +902,7 @@ class TestOutputToml:
         assert parsed["bootloader_signature"]["algorithm"] == "sha256,rsa2048"
         assert parsed["bootloader_signature"]["key_name"] == "dev-key"
 
-    def test_toml_includes_string_lists(self):
+    def test_toml_includes_string_lists(self) -> None:
         """Test that string lists are included in TOML."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -922,7 +923,7 @@ class TestOutputToml:
         assert "verified" in parsed["uboot_verification_strings"]
         assert len(parsed["uboot_key_findings"]) == 1
 
-    def test_toml_excludes_metadata_fields(self):
+    def test_toml_excludes_metadata_fields(self) -> None:
         """Test that _source and _method suffix fields are not in final TOML."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -942,7 +943,7 @@ class TestOutputToml:
         assert "firmware_size_source" not in parsed
         assert "firmware_size_method" not in parsed
 
-    def test_toml_validates_output(self):
+    def test_toml_validates_output(self) -> None:
         """Test that output_toml validates generated TOML by parsing it."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",
@@ -970,8 +971,8 @@ class TestMainFunction:
     @patch("analyze_secure_boot.analyze_secure_boot")
     @patch("lib.base_script.get_firmware_path")
     def test_main_with_firmware_arg_toml(
-        self, mock_get_firmware, mock_analyze, mock_load_offsets, tmp_path
-    ):
+        self, mock_get_firmware: Any, mock_analyze: Any, mock_load_offsets: Any, tmp_path: Path
+    ) -> None:
         """Test main() with firmware argument and TOML output."""
         # Create temporary firmware file
         test_firmware = tmp_path / "test.img"
@@ -1007,8 +1008,8 @@ class TestMainFunction:
     @patch("analyze_secure_boot.analyze_secure_boot")
     @patch("lib.base_script.get_firmware_path")
     def test_main_with_firmware_arg_json(
-        self, mock_get_firmware, mock_analyze, mock_load_offsets, tmp_path
-    ):
+        self, mock_get_firmware: Any, mock_analyze: Any, mock_load_offsets: Any, tmp_path: Path
+    ) -> None:
         """Test main() with firmware argument and JSON output."""
         # Create temporary firmware file
         test_firmware = tmp_path / "test.img"
@@ -1041,7 +1042,7 @@ class TestMainFunction:
             assert parsed["firmware_file"] == "test.img"
             assert parsed["has_otp_node"] is True
 
-    def test_extract_firmware(self, tmp_path):
+    def test_extract_firmware(self, tmp_path: Path) -> None:
         """Test extract_firmware function."""
         # Create fake firmware file
         firmware = tmp_path / "firmware.img"
@@ -1065,7 +1066,7 @@ class TestMainFunction:
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    def test_realistic_secure_boot_analysis(self, tmp_path):  # noqa: ARG002
+    def test_realistic_secure_boot_analysis(self, tmp_path: Path) -> None:  # noqa: ARG002
         """Test creating a realistic SecureBootAnalysis object."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -1146,7 +1147,7 @@ class TestIntegration:
         assert result["firmware_file_source"] == "secure_boot"
         assert result["has_otp_node_source"] == "device_tree"
 
-    def test_realistic_toml_output(self):
+    def test_realistic_toml_output(self) -> None:
         """Test generating realistic TOML output."""
         bootloader_sig = FITSignature(
             image_type="bootloader",
@@ -1201,7 +1202,7 @@ class TestIntegration:
         assert "# Source: secure_boot" in toml_str
         assert "# Source: device_tree" in toml_str
 
-    def test_minimal_secure_boot_analysis(self):
+    def test_minimal_secure_boot_analysis(self) -> None:
         """Test SecureBootAnalysis with minimal data (no secure boot found)."""
         analysis = SecureBootAnalysis(
             firmware_file="test.img",

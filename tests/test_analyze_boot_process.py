@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -38,7 +39,7 @@ from lib.output import output_toml
 class TestComponentVersion:
     """Test ComponentVersion dataclass."""
 
-    def test_component_version_creation(self):
+    def test_component_version_creation(self) -> None:
         """Test creating a ComponentVersion."""
         version = ComponentVersion(
             component="U-Boot",
@@ -50,7 +51,7 @@ class TestComponentVersion:
         assert version.version == "U-Boot 2023.07"
         assert version.source == "Binary strings"
 
-    def test_component_version_is_frozen(self):
+    def test_component_version_is_frozen(self) -> None:
         """Test that ComponentVersion is immutable (frozen)."""
         version = ComponentVersion(
             component="U-Boot",
@@ -61,7 +62,7 @@ class TestComponentVersion:
         with pytest.raises(AttributeError):
             version.version = "Different version"  # type: ignore
 
-    def test_component_version_has_slots(self):
+    def test_component_version_has_slots(self) -> None:
         """Test that ComponentVersion uses __slots__ for efficiency."""
         version = ComponentVersion(
             component="U-Boot",
@@ -76,7 +77,7 @@ class TestComponentVersion:
 class TestHardwareProperty:
     """Test HardwareProperty dataclass."""
 
-    def test_hardware_property_creation(self):
+    def test_hardware_property_creation(self) -> None:
         """Test creating a HardwareProperty."""
         prop = HardwareProperty(
             property="SoC",
@@ -88,7 +89,7 @@ class TestHardwareProperty:
         assert prop.value == "Rockchip RV1126"
         assert prop.source == "DTS compatible"
 
-    def test_hardware_property_is_frozen(self):
+    def test_hardware_property_is_frozen(self) -> None:
         """Test that HardwareProperty is immutable (frozen)."""
         prop = HardwareProperty(
             property="SoC",
@@ -99,7 +100,7 @@ class TestHardwareProperty:
         with pytest.raises(AttributeError):
             prop.value = "Different SoC"  # type: ignore
 
-    def test_hardware_property_has_slots(self):
+    def test_hardware_property_has_slots(self) -> None:
         """Test that HardwareProperty uses __slots__ for efficiency."""
         prop = HardwareProperty(
             property="SoC",
@@ -113,7 +114,7 @@ class TestHardwareProperty:
 class TestBootComponent:
     """Test BootComponent dataclass."""
 
-    def test_boot_component_creation(self):
+    def test_boot_component_creation(self) -> None:
         """Test creating a BootComponent."""
         component = BootComponent(
             stage="U-Boot",
@@ -125,7 +126,7 @@ class TestBootComponent:
         assert component.found is True
         assert component.evidence == "u-boot binary found in extraction"
 
-    def test_boot_component_not_found(self):
+    def test_boot_component_not_found(self) -> None:
         """Test creating a BootComponent for missing component."""
         component = BootComponent(
             stage="Secure Boot",
@@ -137,7 +138,7 @@ class TestBootComponent:
         assert component.found is False
         assert component.evidence == "No secure boot signatures detected"
 
-    def test_boot_component_is_frozen(self):
+    def test_boot_component_is_frozen(self) -> None:
         """Test that BootComponent is immutable (frozen)."""
         component = BootComponent(
             stage="U-Boot",
@@ -148,7 +149,7 @@ class TestBootComponent:
         with pytest.raises(AttributeError):
             component.found = False  # type: ignore
 
-    def test_boot_component_has_slots(self):
+    def test_boot_component_has_slots(self) -> None:
         """Test that BootComponent uses __slots__ for efficiency."""
         component = BootComponent(
             stage="U-Boot",
@@ -162,7 +163,7 @@ class TestBootComponent:
 class TestPartition:
     """Test Partition dataclass."""
 
-    def test_partition_creation(self):
+    def test_partition_creation(self) -> None:
         """Test creating a Partition."""
         partition = Partition(
             region="Bootloader",
@@ -178,7 +179,7 @@ class TestPartition:
         assert partition.type == "FIT"
         assert partition.content == "U-Boot + OP-TEE"
 
-    def test_partition_is_frozen(self):
+    def test_partition_is_frozen(self) -> None:
         """Test that Partition is immutable (frozen)."""
         partition = Partition(
             region="Bootloader",
@@ -191,7 +192,7 @@ class TestPartition:
         with pytest.raises(AttributeError):
             partition.size_mb = 32  # type: ignore
 
-    def test_partition_has_slots(self):
+    def test_partition_has_slots(self) -> None:
         """Test that Partition uses __slots__ for efficiency."""
         partition = Partition(
             region="Bootloader",
@@ -207,7 +208,7 @@ class TestPartition:
 class TestConsoleConfig:
     """Test ConsoleConfig dataclass."""
 
-    def test_console_config_creation(self):
+    def test_console_config_creation(self) -> None:
         """Test creating a ConsoleConfig."""
         config = ConsoleConfig(
             parameter="Baud Rate",
@@ -219,7 +220,7 @@ class TestConsoleConfig:
         assert config.value == "1500000"
         assert config.source == "DTS rockchip,baudrate"
 
-    def test_console_config_is_frozen(self):
+    def test_console_config_is_frozen(self) -> None:
         """Test that ConsoleConfig is immutable (frozen)."""
         config = ConsoleConfig(
             parameter="Baud Rate",
@@ -230,7 +231,7 @@ class TestConsoleConfig:
         with pytest.raises(AttributeError):
             config.value = "115200"  # type: ignore
 
-    def test_console_config_has_slots(self):
+    def test_console_config_has_slots(self) -> None:
         """Test that ConsoleConfig uses __slots__ for efficiency."""
         config = ConsoleConfig(
             parameter="Baud Rate",
@@ -244,7 +245,7 @@ class TestConsoleConfig:
 class TestBootProcessAnalysis:
     """Test BootProcessAnalysis dataclass."""
 
-    def test_boot_process_analysis_creation(self):
+    def test_boot_process_analysis_creation(self) -> None:
         """Test creating a BootProcessAnalysis."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -266,7 +267,7 @@ class TestBootProcessAnalysis:
         assert analysis._source == {}
         assert analysis._method == {}
 
-    def test_boot_process_analysis_with_data(self):
+    def test_boot_process_analysis_with_data(self) -> None:
         """Test creating a BootProcessAnalysis with data."""
         hardware_props = [
             HardwareProperty(
@@ -298,7 +299,7 @@ class TestBootProcessAnalysis:
         assert analysis.ab_redundancy is True
         assert analysis.kernel_cmdline == "console=ttyS0,115200"
 
-    def test_add_metadata(self):
+    def test_add_metadata(self) -> None:
         """Test adding source metadata."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -314,7 +315,7 @@ class TestBootProcessAnalysis:
         assert analysis._source["firmware_size"] == "filesystem"
         assert analysis._method["firmware_size"] == "Path(firmware).stat().st_size"
 
-    def test_add_metadata_multiple_fields(self):
+    def test_add_metadata_multiple_fields(self) -> None:
         """Test adding metadata for multiple fields."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -327,7 +328,7 @@ class TestBootProcessAnalysis:
         assert len(analysis._source) == 2
         assert len(analysis._method) == 2
 
-    def test_to_dict_excludes_none(self):
+    def test_to_dict_excludes_none(self) -> None:
         """Test to_dict excludes None values."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -343,7 +344,7 @@ class TestBootProcessAnalysis:
         assert "ab_evidence" not in result  # Should be excluded (None)
         assert "kernel_cmdline" not in result  # Should be excluded (None)
 
-    def test_to_dict_excludes_empty_lists(self):
+    def test_to_dict_excludes_empty_lists(self) -> None:
         """Test to_dict excludes empty lists."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -357,7 +358,7 @@ class TestBootProcessAnalysis:
         hw_props = result.get("hardware_properties", [])
         assert result.get("hardware_properties", None) is None or len(hw_props) == 0
 
-    def test_to_dict_includes_metadata(self):
+    def test_to_dict_includes_metadata(self) -> None:
         """Test to_dict includes source metadata."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -375,7 +376,7 @@ class TestBootProcessAnalysis:
         assert result["firmware_size_source"] == "filesystem"
         assert result["firmware_size_method"] == "Path(firmware).stat().st_size"
 
-    def test_to_dict_converts_hardware_properties(self):
+    def test_to_dict_converts_hardware_properties(self) -> None:
         """Test to_dict converts HardwareProperty objects to dicts."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -396,7 +397,7 @@ class TestBootProcessAnalysis:
         assert result["hardware_properties"][0]["value"] == "Rockchip RV1126"
         assert result["hardware_properties"][0]["source"] == "DTS compatible"
 
-    def test_to_dict_converts_boot_components(self):
+    def test_to_dict_converts_boot_components(self) -> None:
         """Test to_dict converts BootComponent objects to dicts."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -417,7 +418,7 @@ class TestBootProcessAnalysis:
         assert result["boot_components"][0]["found"] is True
         assert result["boot_components"][0]["evidence"] == "u-boot binary found"
 
-    def test_to_dict_converts_component_versions(self):
+    def test_to_dict_converts_component_versions(self) -> None:
         """Test to_dict converts ComponentVersion objects to dicts."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -438,7 +439,7 @@ class TestBootProcessAnalysis:
         assert result["component_versions"][0]["version"] == "U-Boot 2023.07"
         assert result["component_versions"][0]["source"] == "Binary strings"
 
-    def test_to_dict_converts_partitions(self):
+    def test_to_dict_converts_partitions(self) -> None:
         """Test to_dict converts Partition objects to dicts."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -463,7 +464,7 @@ class TestBootProcessAnalysis:
         assert result["partitions"][0]["type"] == "FIT"
         assert result["partitions"][0]["content"] == "U-Boot + OP-TEE"
 
-    def test_to_dict_converts_console_configs(self):
+    def test_to_dict_converts_console_configs(self) -> None:
         """Test to_dict converts ConsoleConfig objects to dicts."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -484,7 +485,7 @@ class TestBootProcessAnalysis:
         assert result["console_configs"][0]["value"] == "1500000"
         assert result["console_configs"][0]["source"] == "DTS rockchip,baudrate"
 
-    def test_to_dict_excludes_private_fields(self):
+    def test_to_dict_excludes_private_fields(self) -> None:
         """Test to_dict excludes private fields (_source, _method)."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -501,7 +502,7 @@ class TestBootProcessAnalysis:
 class TestGetFitInfo:
     """Test get_fit_info function."""
 
-    def test_get_fit_info_success(self, tmp_path: Path):
+    def test_get_fit_info_success(self, tmp_path: Path) -> None:
         """Test extracting FIT info from DTS file."""
         dts_file = tmp_path / "system.dtb"
         content = """
@@ -519,7 +520,7 @@ class TestGetFitInfo:
         assert "description" in result
         assert "FIT Image" in result
 
-    def test_get_fit_info_missing_file(self, tmp_path: Path):
+    def test_get_fit_info_missing_file(self, tmp_path: Path) -> None:
         """Test extracting FIT info from non-existent file."""
         dts_file = tmp_path / "nonexistent.dtb"
 
@@ -527,7 +528,7 @@ class TestGetFitInfo:
 
         assert result is None
 
-    def test_get_fit_info_read_error(self, tmp_path: Path):
+    def test_get_fit_info_read_error(self, tmp_path: Path) -> None:
         """Test extracting FIT info with read error."""
         dts_file = tmp_path / "system.dtb"
         # Create a binary file that will cause decoding issues
@@ -542,7 +543,7 @@ class TestGetFitInfo:
 class TestFindLargestDts:
     """Test find_largest_dts function."""
 
-    def test_find_largest_dts_single_file(self, tmp_path: Path):
+    def test_find_largest_dts_single_file(self, tmp_path: Path) -> None:
         """Test finding largest DTS when only one exists."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -554,7 +555,7 @@ class TestFindLargestDts:
 
         assert result == dts_file
 
-    def test_find_largest_dts_multiple_files(self, tmp_path: Path):
+    def test_find_largest_dts_multiple_files(self, tmp_path: Path) -> None:
         """Test finding largest DTS among multiple files."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -571,7 +572,7 @@ class TestFindLargestDts:
 
         assert result == large_dts
 
-    def test_find_largest_dts_none_found(self, tmp_path: Path):
+    def test_find_largest_dts_none_found(self, tmp_path: Path) -> None:
         """Test finding largest DTS when no files exist."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -580,7 +581,7 @@ class TestFindLargestDts:
 
         assert result is None
 
-    def test_find_largest_dts_nested(self, tmp_path: Path):
+    def test_find_largest_dts_nested(self, tmp_path: Path) -> None:
         """Test finding largest DTS in nested directories."""
         extract_dir = tmp_path / "extract"
         nested = extract_dir / "subdir" / "8F1B4"
@@ -597,7 +598,7 @@ class TestFindLargestDts:
 class TestLoadFirmwareOffsets:
     """Test load_firmware_offsets function."""
 
-    def test_load_firmware_offsets_success(self, tmp_path: Path):
+    def test_load_firmware_offsets_success(self, tmp_path: Path) -> None:
         """Test loading firmware offsets from file."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -618,7 +619,7 @@ KERNEL_FIT_OFFSET_DEC=590260
         assert result["KERNEL_FIT_OFFSET"] == "0x901B4"
         assert result["KERNEL_FIT_OFFSET_DEC"] == 590260
 
-    def test_load_firmware_offsets_missing_file(self, tmp_path: Path):
+    def test_load_firmware_offsets_missing_file(self, tmp_path: Path) -> None:
         """Test loading firmware offsets when file doesn't exist."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -628,7 +629,7 @@ KERNEL_FIT_OFFSET_DEC=590260
 
         assert exc_info.value.code == 1
 
-    def test_load_firmware_offsets_ignores_comments(self, tmp_path: Path):
+    def test_load_firmware_offsets_ignores_comments(self, tmp_path: Path) -> None:
         """Test that comments are ignored."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -646,7 +647,7 @@ KERNEL_FIT_OFFSET=0x901B4
         assert "BOOTLOADER_FIT_OFFSET" in result
         assert "KERNEL_FIT_OFFSET" in result
 
-    def test_load_firmware_offsets_decimal_values(self, tmp_path: Path):
+    def test_load_firmware_offsets_decimal_values(self, tmp_path: Path) -> None:
         """Test that decimal values are converted to integers."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -664,7 +665,7 @@ KERNEL_FIT_OFFSET_DEC=590260
         assert isinstance(result["KERNEL_FIT_OFFSET_DEC"], int)
         assert result["KERNEL_FIT_OFFSET_DEC"] == 590260
 
-    def test_load_firmware_offsets_with_quotes(self, tmp_path: Path):
+    def test_load_firmware_offsets_with_quotes(self, tmp_path: Path) -> None:
         """Test that quoted values are handled correctly."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -680,7 +681,7 @@ KERNEL_FIT_OFFSET='0x901B4'
         assert result["BOOTLOADER_FIT_OFFSET"] == "0x8000"
         assert result["KERNEL_FIT_OFFSET"] == "0x901B4"
 
-    def test_load_firmware_offsets_caching(self, tmp_path: Path):
+    def test_load_firmware_offsets_caching(self, tmp_path: Path) -> None:
         """Test that load_firmware_offsets uses caching."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
@@ -704,7 +705,7 @@ KERNEL_FIT_OFFSET='0x901B4'
 class TestOutputToml:
     """Test output_toml function."""
 
-    def test_toml_output_valid(self):
+    def test_toml_output_valid(self) -> None:
         """Test that TOML output is valid."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -724,7 +725,7 @@ class TestOutputToml:
         assert parsed["firmware_file"] == "test.img"
         assert parsed["firmware_size"] == 123456789
 
-    def test_toml_includes_header(self):
+    def test_toml_includes_header(self) -> None:
         """Test that TOML includes header comments."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -741,7 +742,7 @@ class TestOutputToml:
         assert "# Boot process and partition layout analysis" in toml_str
         assert "# Generated:" in toml_str
 
-    def test_toml_includes_source_comments(self):
+    def test_toml_includes_source_comments(self) -> None:
         """Test that TOML includes source metadata as comments."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -763,7 +764,7 @@ class TestOutputToml:
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).stat().st_size" in toml_str
 
-    def test_toml_truncates_long_methods(self):
+    def test_toml_truncates_long_methods(self) -> None:
         """Test that long method descriptions are truncated."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -783,7 +784,7 @@ class TestOutputToml:
         assert "..." in toml_str
         assert long_method not in toml_str
 
-    def test_toml_excludes_none_values(self):
+    def test_toml_excludes_none_values(self) -> None:
         """Test that None values are excluded from TOML output."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -802,7 +803,7 @@ class TestOutputToml:
         assert "ab_evidence" not in toml_str
         assert "kernel_cmdline" not in toml_str
 
-    def test_toml_includes_nested_data(self):
+    def test_toml_includes_nested_data(self) -> None:
         """Test that nested data structures are included."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -839,7 +840,7 @@ class TestOutputToml:
         assert len(parsed["partitions"]) == 1
         assert parsed["partitions"][0]["region"] == "Bootloader"
 
-    def test_toml_excludes_metadata_fields(self):
+    def test_toml_excludes_metadata_fields(self) -> None:
         """Test that _source and _method suffix fields are not in final TOML."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -859,7 +860,7 @@ class TestOutputToml:
         assert "firmware_size_source" not in parsed
         assert "firmware_size_method" not in parsed
 
-    def test_toml_validates_output(self):
+    def test_toml_validates_output(self) -> None:
         """Test that output_toml validates generated TOML by parsing it."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",
@@ -884,7 +885,7 @@ class TestOutputToml:
 class TestFindRootfs:
     """Test find_rootfs function."""
 
-    def test_find_rootfs_success(self, tmp_path: Path):
+    def test_find_rootfs_success(self, tmp_path: Path) -> None:
         """Test finding squashfs-root directory."""
         extract_dir = tmp_path / "extract"
         squashfs_root = extract_dir / "squashfs-root"
@@ -894,7 +895,7 @@ class TestFindRootfs:
 
         assert result == squashfs_root
 
-    def test_find_rootfs_nested(self, tmp_path: Path):
+    def test_find_rootfs_nested(self, tmp_path: Path) -> None:
         """Test finding squashfs-root in nested directory."""
         extract_dir = tmp_path / "extract"
         nested = extract_dir / "subdir" / "8F1B4"
@@ -905,7 +906,7 @@ class TestFindRootfs:
 
         assert result == squashfs_root
 
-    def test_find_rootfs_not_found(self, tmp_path: Path):
+    def test_find_rootfs_not_found(self, tmp_path: Path) -> None:
         """Test find_rootfs when directory doesn't exist."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -918,7 +919,7 @@ class TestFindRootfs:
 class TestAnalyzeHardwareProperties:
     """Test analyze_hardware_properties function."""
 
-    def test_analyze_hardware_properties_compatible(self, tmp_path: Path):
+    def test_analyze_hardware_properties_compatible(self, tmp_path: Path) -> None:
         """Test extracting compatible string."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -940,7 +941,7 @@ class TestAnalyzeHardwareProperties:
         )
         assert "rockchip,rv1126-evb" in compatible_prop.value
 
-    def test_analyze_hardware_properties_derives_soc(self, tmp_path: Path):
+    def test_analyze_hardware_properties_derives_soc(self, tmp_path: Path) -> None:
         """Test deriving SoC from compatible string."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -961,7 +962,9 @@ class TestAnalyzeHardwareProperties:
         assert "RV1126" in soc_props[0].value
 
     @patch("subprocess.run")
-    def test_analyze_hardware_properties_derives_architecture(self, mock_run, tmp_path: Path):
+    def test_analyze_hardware_properties_derives_architecture(
+        self, mock_run: Any, tmp_path: Path
+    ) -> None:
         """Test deriving architecture from ELF binaries."""
         dts_file = tmp_path / "system.dtb"
         dts_file.write_text("/ { };")
@@ -986,7 +989,7 @@ class TestAnalyzeHardwareProperties:
         assert len(arch_props) == 1
         assert "ARM" in arch_props[0].value
 
-    def test_analyze_hardware_properties_handles_errors(self, tmp_path: Path):
+    def test_analyze_hardware_properties_handles_errors(self, tmp_path: Path) -> None:
         """Test analyze_hardware_properties handles errors gracefully."""
         dts_file = tmp_path / "nonexistent.dtb"
 
@@ -1005,7 +1008,7 @@ class TestAnalyzeHardwareProperties:
 class TestAnalyzeBootComponents:
     """Test analyze_boot_components function."""
 
-    def test_analyze_boot_components_finds_tee(self, tmp_path: Path):
+    def test_analyze_boot_components_finds_tee(self, tmp_path: Path) -> None:
         """Test detecting OP-TEE component."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1015,7 +1018,7 @@ class TestAnalyzeBootComponents:
         tee_file = extract_dir / "tee.bin"
         tee_file.touch()
 
-        offsets = {}
+        offsets: dict[str, str | int] = {}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1024,7 +1027,7 @@ class TestAnalyzeBootComponents:
         assert tee_comp.found is True
         assert "tee.bin found" in tee_comp.evidence
 
-    def test_analyze_boot_components_finds_uboot_binary(self, tmp_path: Path):
+    def test_analyze_boot_components_finds_uboot_binary(self, tmp_path: Path) -> None:
         """Test detecting U-Boot from binary file."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1034,7 +1037,7 @@ class TestAnalyzeBootComponents:
         uboot_file = extract_dir / "u-boot.bin"
         uboot_file.touch()
 
-        offsets = {}
+        offsets: dict[str, str | int] = {}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1044,7 +1047,9 @@ class TestAnalyzeBootComponents:
         assert "u-boot binary found" in uboot_comp.evidence
 
     @patch("subprocess.run")
-    def test_analyze_boot_components_finds_uboot_strings(self, mock_run, tmp_path: Path):
+    def test_analyze_boot_components_finds_uboot_strings(
+        self, mock_run: Any, tmp_path: Path
+    ) -> None:
         """Test detecting U-Boot from strings in firmware."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1055,7 +1060,7 @@ class TestAnalyzeBootComponents:
         # Mock strings command
         mock_run.return_value = MagicMock(stdout="U-Boot 2023.07\nOther text")
 
-        offsets = {}
+        offsets: dict[str, str | int] = {}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1064,7 +1069,7 @@ class TestAnalyzeBootComponents:
         assert uboot_comp.found is True
         assert "U-Boot strings found" in uboot_comp.evidence
 
-    def test_analyze_boot_components_finds_kernel(self, tmp_path: Path):
+    def test_analyze_boot_components_finds_kernel(self, tmp_path: Path) -> None:
         """Test detecting kernel FIT image."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1072,7 +1077,7 @@ class TestAnalyzeBootComponents:
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
 
-        offsets = {"KERNEL_FIT_OFFSET": "0x1000"}
+        offsets: dict[str, str | int] = {"KERNEL_FIT_OFFSET": "0x1000"}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1081,7 +1086,7 @@ class TestAnalyzeBootComponents:
         assert kernel_comp.found is True
         assert "0x1000" in kernel_comp.evidence
 
-    def test_analyze_boot_components_finds_initramfs(self, tmp_path: Path):
+    def test_analyze_boot_components_finds_initramfs(self, tmp_path: Path) -> None:
         """Test detecting initramfs CPIO."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1089,7 +1094,7 @@ class TestAnalyzeBootComponents:
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
 
-        offsets = {"ROOTFS_CPIO_OFFSET": "0x2000"}
+        offsets: dict[str, str | int] = {"ROOTFS_CPIO_OFFSET": "0x2000"}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1098,7 +1103,7 @@ class TestAnalyzeBootComponents:
         assert cpio_comp.found is True
         assert "0x2000" in cpio_comp.evidence
 
-    def test_analyze_boot_components_finds_squashfs(self, tmp_path: Path):
+    def test_analyze_boot_components_finds_squashfs(self, tmp_path: Path) -> None:
         """Test detecting SquashFS filesystem."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1106,7 +1111,7 @@ class TestAnalyzeBootComponents:
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
 
-        offsets = {"SQUASHFS_OFFSET": "0x3000"}
+        offsets: dict[str, str | int] = {"SQUASHFS_OFFSET": "0x3000"}
         analysis = BootProcessAnalysis("firmware.img", 1024)
 
         analyze_boot_components(firmware, extract_dir, offsets, analysis)
@@ -1120,7 +1125,7 @@ class TestAnalyzeComponentVersions:
     """Test analyze_component_versions function."""
 
     @patch("subprocess.run")
-    def test_analyze_component_versions_uboot(self, mock_run, tmp_path: Path):
+    def test_analyze_component_versions_uboot(self, mock_run: Any, tmp_path: Path) -> None:
         """Test extracting U-Boot version."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1139,7 +1144,7 @@ class TestAnalyzeComponentVersions:
         assert uboot_ver.source == "Binary strings"
 
     @patch("subprocess.run")
-    def test_analyze_component_versions_kernel(self, mock_run, tmp_path: Path):
+    def test_analyze_component_versions_kernel(self, mock_run: Any, tmp_path: Path) -> None:
         """Test extracting kernel version from module."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1154,7 +1159,7 @@ class TestAnalyzeComponentVersions:
 
         # Mock strings command for firmware (first call)
         # Then for kernel module (second call)
-        def mock_subprocess_side_effect(*args, **_kwargs):
+        def mock_subprocess_side_effect(*args: Any, **_kwargs: Any) -> MagicMock:
             cmd = args[0]
             if "firmware.img" in str(cmd):
                 return MagicMock(stdout="U-Boot text")
@@ -1169,7 +1174,7 @@ class TestAnalyzeComponentVersions:
         assert "5.10.110" in kernel_ver.version
         assert kernel_ver.source == "Module vermagic"
 
-    def test_analyze_component_versions_buildroot(self, tmp_path: Path):
+    def test_analyze_component_versions_buildroot(self, tmp_path: Path) -> None:
         """Test extracting Buildroot version."""
         firmware = tmp_path / "firmware.img"
         firmware.write_bytes(b"dummy")
@@ -1198,9 +1203,9 @@ class TestAnalyzeComponentVersions:
 class TestAnalyzePartitions:
     """Test analyze_partitions function."""
 
-    def test_analyze_partitions_bootloader(self):
+    def test_analyze_partitions_bootloader(self) -> None:
         """Test analyzing bootloader partition."""
-        offsets = {
+        offsets: dict[str, str | int] = {
             "BOOTLOADER_FIT_OFFSET": "0x8000",
             "BOOTLOADER_FIT_OFFSET_DEC": 32768,  # Can't be 0 (falsy)
             "KERNEL_FIT_OFFSET": "0xA08000",
@@ -1216,9 +1221,9 @@ class TestAnalyzePartitions:
         assert bootloader_part.type == "FIT"
         assert "U-Boot" in bootloader_part.content
 
-    def test_analyze_partitions_kernel(self):
+    def test_analyze_partitions_kernel(self) -> None:
         """Test analyzing kernel partition."""
-        offsets = {
+        offsets: dict[str, str | int] = {
             "KERNEL_FIT_OFFSET": "0xA00000",
             "KERNEL_FIT_OFFSET_DEC": 10485760,
             "ROOTFS_CPIO_OFFSET_DEC": 20971520,  # +10MB
@@ -1233,9 +1238,9 @@ class TestAnalyzePartitions:
         assert kernel_part.type == "FIT"
         assert "Linux kernel" in kernel_part.content
 
-    def test_analyze_partitions_initramfs(self):
+    def test_analyze_partitions_initramfs(self) -> None:
         """Test analyzing initramfs partition."""
-        offsets = {
+        offsets: dict[str, str | int] = {
             "ROOTFS_CPIO_OFFSET": "0x1400000",
             "ROOTFS_CPIO_OFFSET_DEC": 20971520,
             "SQUASHFS_OFFSET_DEC": 31457280,  # +10MB
@@ -1250,9 +1255,9 @@ class TestAnalyzePartitions:
         assert cpio_part.type == "CPIO"
         assert "Early userspace" in cpio_part.content
 
-    def test_analyze_partitions_rootfs(self):
+    def test_analyze_partitions_rootfs(self) -> None:
         """Test analyzing root filesystem partition."""
-        offsets = {
+        offsets: dict[str, str | int] = {
             "SQUASHFS_OFFSET": "0x2000000",
             "SQUASHFS_SIZE": 52428800,  # 50MB
         }
@@ -1266,9 +1271,9 @@ class TestAnalyzePartitions:
         assert rootfs_part.type == "SquashFS"
         assert "Main filesystem" in rootfs_part.content
 
-    def test_analyze_partitions_missing_offsets(self):
+    def test_analyze_partitions_missing_offsets(self) -> None:
         """Test analyze_partitions with missing offsets."""
-        offsets = {}
+        offsets: dict[str, str | int] = {}
 
         analysis = BootProcessAnalysis("test.img", 1024)
         analyze_partitions(offsets, analysis)
@@ -1280,7 +1285,7 @@ class TestAnalyzePartitions:
 class TestAnalyzeAbRedundancy:
     """Test analyze_ab_redundancy function."""
 
-    def test_analyze_ab_redundancy_detected(self, tmp_path: Path):
+    def test_analyze_ab_redundancy_detected(self, tmp_path: Path) -> None:
         """Test detecting A/B redundancy."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -1298,7 +1303,7 @@ class TestAnalyzeAbRedundancy:
         assert analysis.ab_evidence is not None
         assert "3 FIT image DTBs" in analysis.ab_evidence
 
-    def test_analyze_ab_redundancy_not_detected(self, tmp_path: Path):
+    def test_analyze_ab_redundancy_not_detected(self, tmp_path: Path) -> None:
         """Test when A/B redundancy is not detected."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -1314,7 +1319,7 @@ class TestAnalyzeAbRedundancy:
         assert analysis.ab_redundancy is False
         assert analysis.ab_evidence is None
 
-    def test_analyze_ab_redundancy_threshold(self, tmp_path: Path):
+    def test_analyze_ab_redundancy_threshold(self, tmp_path: Path) -> None:
         """Test A/B redundancy detection threshold."""
         extract_dir = tmp_path / "extract"
         extract_dir.mkdir()
@@ -1334,7 +1339,7 @@ class TestAnalyzeAbRedundancy:
 class TestAnalyzeBootConfig:
     """Test analyze_boot_config function."""
 
-    def test_analyze_boot_config_kernel_cmdline(self, tmp_path: Path):
+    def test_analyze_boot_config_kernel_cmdline(self, tmp_path: Path) -> None:
         """Test extracting kernel command line."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -1351,7 +1356,7 @@ class TestAnalyzeBootConfig:
         assert "console=ttyS0,115200" in analysis.kernel_cmdline
         assert "root=/dev/mmcblk0p2" in analysis.kernel_cmdline
 
-    def test_analyze_boot_config_baudrate(self, tmp_path: Path):
+    def test_analyze_boot_config_baudrate(self, tmp_path: Path) -> None:
         """Test extracting baudrate configuration."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -1368,7 +1373,7 @@ class TestAnalyzeBootConfig:
         assert baudrate_config.value == "1500000"
         assert "rockchip,baudrate" in baudrate_config.source
 
-    def test_analyze_boot_config_console_from_stdout(self, tmp_path: Path):
+    def test_analyze_boot_config_console_from_stdout(self, tmp_path: Path) -> None:
         """Test extracting console from stdout-path."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -1388,7 +1393,7 @@ class TestAnalyzeBootConfig:
         if console_config:
             assert "serial0" in console_config.value
 
-    def test_analyze_boot_config_console_from_bootargs(self, tmp_path: Path):
+    def test_analyze_boot_config_console_from_bootargs(self, tmp_path: Path) -> None:
         """Test extracting console from bootargs."""
         dts_file = tmp_path / "system.dtb"
         dts_content = """
@@ -1408,7 +1413,7 @@ class TestAnalyzeBootConfig:
         if console_config:
             assert "ttyS0" in console_config.value
 
-    def test_analyze_boot_config_handles_errors(self, tmp_path: Path):
+    def test_analyze_boot_config_handles_errors(self, tmp_path: Path) -> None:
         """Test analyze_boot_config handles errors gracefully."""
         dts_file = tmp_path / "nonexistent.dtb"
 
@@ -1425,7 +1430,7 @@ class TestAnalyzeBootProcessFunction:
     """Test the main analyze_boot_process function."""
 
     @patch("subprocess.run")
-    def test_analyze_boot_process_integration(self, mock_run, tmp_path: Path):
+    def test_analyze_boot_process_integration(self, mock_run: Any, tmp_path: Path) -> None:
         """Test complete analyze_boot_process function."""
         # Setup firmware
         firmware = tmp_path / "firmware.img"
@@ -1490,7 +1495,7 @@ SQUASHFS_SIZE=52428800
 """)
 
         # Mock subprocess calls
-        def mock_subprocess_side_effect(*args, **_kwargs):
+        def mock_subprocess_side_effect(*args: Any, **_kwargs: Any) -> MagicMock:
             cmd = args[0]
             if "strings" in cmd and "firmware.img" in str(cmd):
                 return MagicMock(stdout="U-Boot 2023.07.1\nOther text")
@@ -1525,7 +1530,7 @@ SQUASHFS_SIZE=52428800
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    def test_realistic_boot_process_analysis(self):
+    def test_realistic_boot_process_analysis(self) -> None:
         """Test creating a realistic BootProcessAnalysis object."""
         analysis = BootProcessAnalysis(
             firmware_file="glkvm-RM1-1.7.2-1128-1764344791.img",
@@ -1669,7 +1674,7 @@ class TestIntegration:
         assert result["ab_redundancy_source"] == "binwalk-extraction"
         assert "count system.dtb files" in result["ab_redundancy_method"]
 
-    def test_realistic_toml_output(self):
+    def test_realistic_toml_output(self) -> None:
         """Test generating realistic TOML output."""
         analysis = BootProcessAnalysis(
             firmware_file="glkvm-RM1-1.7.2-1128-1764344791.img",
@@ -1752,7 +1757,7 @@ class TestIntegration:
         assert "# Source: filesystem" in toml_str
         assert "# Method: Path(firmware).name" in toml_str
 
-    def test_minimal_boot_process_analysis(self):
+    def test_minimal_boot_process_analysis(self) -> None:
         """Test BootProcessAnalysis with minimal data."""
         analysis = BootProcessAnalysis(
             firmware_file="test.img",

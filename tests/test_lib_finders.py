@@ -31,7 +31,7 @@ class MockObject:
 class TestFindFiles:
     """Test find_files function."""
 
-    def test_find_files_by_pattern(self, tmp_path):
+    def test_find_files_by_pattern(self, tmp_path: Path) -> None:
         """Test finding files by glob pattern."""
         # Create test files
         (tmp_path / "test1.txt").touch()
@@ -42,7 +42,7 @@ class TestFindFiles:
         assert len(results) == 2
         assert all(p.suffix == ".txt" for p in results)
 
-    def test_find_files_multiple_patterns(self, tmp_path):
+    def test_find_files_multiple_patterns(self, tmp_path: Path) -> None:
         """Test finding files with multiple patterns."""
         (tmp_path / "file.txt").touch()
         (tmp_path / "file.md").touch()
@@ -51,7 +51,7 @@ class TestFindFiles:
         results = find_files(tmp_path, ["*.txt", "*.md"])
         assert len(results) == 2
 
-    def test_find_files_with_exclusions(self, tmp_path):
+    def test_find_files_with_exclusions(self, tmp_path: Path) -> None:
         """Test finding files with exclusion patterns."""
         (tmp_path / "test.py").touch()
         (tmp_path / "test.pyc").touch()
@@ -61,7 +61,7 @@ class TestFindFiles:
         assert len(results) == 2
         assert not any(p.suffix == ".pyc" for p in results)
 
-    def test_find_files_type_file(self, tmp_path):
+    def test_find_files_type_file(self, tmp_path: Path) -> None:
         """Test finding only files (not directories)."""
         (tmp_path / "file.txt").touch()
         (tmp_path / "subdir").mkdir()
@@ -70,7 +70,7 @@ class TestFindFiles:
         assert len(results) == 1
         assert results[0].is_file()
 
-    def test_find_files_type_dir(self, tmp_path):
+    def test_find_files_type_dir(self, tmp_path: Path) -> None:
         """Test finding only directories (not files)."""
         (tmp_path / "file.txt").touch()
         (tmp_path / "subdir").mkdir()
@@ -79,7 +79,7 @@ class TestFindFiles:
         assert len(results) == 1
         assert results[0].is_dir()
 
-    def test_find_files_first_match_only(self, tmp_path):
+    def test_find_files_first_match_only(self, tmp_path: Path) -> None:
         """Test returning only first match per pattern."""
         (tmp_path / "test1.txt").touch()
         (tmp_path / "test2.txt").touch()
@@ -88,7 +88,7 @@ class TestFindFiles:
         results = find_files(tmp_path, ["*.txt"], first_match_only=True)
         assert len(results) == 1
 
-    def test_find_files_nested_directories(self, tmp_path):
+    def test_find_files_nested_directories(self, tmp_path: Path) -> None:
         """Test finding files in nested directories."""
         subdir = tmp_path / "level1" / "level2"
         subdir.mkdir(parents=True)
@@ -98,7 +98,7 @@ class TestFindFiles:
         assert len(results) == 1
         assert "level2" in str(results[0])
 
-    def test_find_files_deduplication(self, tmp_path):
+    def test_find_files_deduplication(self, tmp_path: Path) -> None:
         """Test that duplicate matches are removed."""
         (tmp_path / "test.txt").touch()
 
@@ -106,12 +106,12 @@ class TestFindFiles:
         results = find_files(tmp_path, ["*.txt", "test.*"])
         assert len(results) == 1
 
-    def test_find_files_empty_results(self, tmp_path):
+    def test_find_files_empty_results(self, tmp_path: Path) -> None:
         """Test finding with no matches."""
         results = find_files(tmp_path, ["*.nonexistent"])
         assert len(results) == 0
 
-    def test_find_files_sorted_output(self, tmp_path):
+    def test_find_files_sorted_output(self, tmp_path: Path) -> None:
         """Test that results are sorted."""
         (tmp_path / "b.txt").touch()
         (tmp_path / "a.txt").touch()
@@ -125,7 +125,7 @@ class TestFindFiles:
 class TestFindAndCreate:
     """Test find_and_create function."""
 
-    def test_find_and_create_basic(self, tmp_path):
+    def test_find_and_create_basic(self, tmp_path: Path) -> None:
         """Test finding files and creating objects."""
         (tmp_path / "test1.txt").touch()
         (tmp_path / "test2.txt").touch()
@@ -137,7 +137,7 @@ class TestFindAndCreate:
         assert len(results) == 2
         assert all(isinstance(obj, MockObject) for obj in results)
 
-    def test_find_and_create_with_exception(self, tmp_path):
+    def test_find_and_create_with_exception(self, tmp_path: Path) -> None:
         """Test that creator exceptions are handled gracefully."""
         (tmp_path / "test1.txt").touch()
         (tmp_path / "test2.txt").touch()
@@ -154,7 +154,7 @@ class TestFindAndCreate:
         # Should have 1 result (second file succeeded)
         assert len(results) == 1
 
-    def test_find_and_create_with_filters(self, tmp_path):
+    def test_find_and_create_with_filters(self, tmp_path: Path) -> None:
         """Test find_and_create with type and exclusion filters."""
         (tmp_path / "test.py").touch()
         (tmp_path / "test.pyc").touch()
@@ -173,7 +173,7 @@ class TestFindAndCreate:
 class TestFindByNames:
     """Test find_by_names function."""
 
-    def test_find_by_names_exact_match(self, tmp_path):
+    def test_find_by_names_exact_match(self, tmp_path: Path) -> None:
         """Test finding files by exact name."""
         (tmp_path / "nginx").touch()
         (tmp_path / "sshd").touch()
@@ -181,23 +181,23 @@ class TestFindByNames:
         results = find_by_names(tmp_path, {"nginx": "Nginx", "sshd": "SSH"})
         assert results["nginx"] is not None
         assert results["sshd"] is not None
-        assert results["nginx"].name == "nginx"  # type: ignore[union-attr]
+        assert results["nginx"].name == "nginx"
 
-    def test_find_by_names_with_wildcard(self, tmp_path):
+    def test_find_by_names_with_wildcard(self, tmp_path: Path) -> None:
         """Test finding files with wildcard when exact match fails."""
         (tmp_path / "nginx-1.20").touch()
         (tmp_path / "sshd_config").touch()
 
         results = find_by_names(tmp_path, {"nginx": "Nginx", "sshd": "SSH"})
         assert results["nginx"] is not None
-        assert "nginx" in results["nginx"].name  # type: ignore[union-attr]
+        assert "nginx" in results["nginx"].name
 
-    def test_find_by_names_not_found(self, tmp_path):
+    def test_find_by_names_not_found(self, tmp_path: Path) -> None:
         """Test finding files that don't exist."""
         results = find_by_names(tmp_path, {"nonexistent": "Test"})
         assert results["nonexistent"] is None
 
-    def test_find_by_names_type_filter(self, tmp_path):
+    def test_find_by_names_type_filter(self, tmp_path: Path) -> None:
         """Test finding by name with type filter."""
         (tmp_path / "testfile").touch()
         (tmp_path / "testdir").mkdir()
@@ -205,13 +205,13 @@ class TestFindByNames:
         # Looking for directories only
         results = find_by_names(tmp_path, {"testdir": "Test"}, file_type="dir")
         assert results["testdir"] is not None
-        assert results["testdir"].is_dir()  # type: ignore[union-attr]
+        assert results["testdir"].is_dir()
 
 
 class TestFindElfBinaries:
     """Test find_elf_binaries function."""
 
-    def test_find_elf_binaries_standard_locations(self, tmp_path):
+    def test_find_elf_binaries_standard_locations(self, tmp_path: Path) -> None:
         """Test finding binaries in standard locations."""
         bin_dir = tmp_path / "usr" / "bin"
         bin_dir.mkdir(parents=True)
@@ -221,7 +221,7 @@ class TestFindElfBinaries:
         results = find_elf_binaries(tmp_path, ["nginx", "sshd"])
         assert len(results) == 2
 
-    def test_find_elf_binaries_custom_directories(self, tmp_path):
+    def test_find_elf_binaries_custom_directories(self, tmp_path: Path) -> None:
         """Test finding binaries in custom directories."""
         custom_dir = tmp_path / "custom" / "bin"
         custom_dir.mkdir(parents=True)
@@ -231,7 +231,7 @@ class TestFindElfBinaries:
         assert len(results) == 1
         assert results[0].name == "mybinary"
 
-    def test_find_elf_binaries_with_wildcard(self, tmp_path):
+    def test_find_elf_binaries_with_wildcard(self, tmp_path: Path) -> None:
         """Test finding binaries with version suffixes."""
         bin_dir = tmp_path / "usr" / "bin"
         bin_dir.mkdir(parents=True)
@@ -241,12 +241,12 @@ class TestFindElfBinaries:
         assert len(results) == 1
         assert "python" in results[0].name
 
-    def test_find_elf_binaries_missing_directories(self, tmp_path):
+    def test_find_elf_binaries_missing_directories(self, tmp_path: Path) -> None:
         """Test finding binaries when directories don't exist."""
         results = find_elf_binaries(tmp_path, ["nginx"])
         assert len(results) == 0
 
-    def test_find_elf_binaries_stops_after_first_match(self, tmp_path):
+    def test_find_elf_binaries_stops_after_first_match(self, tmp_path: Path) -> None:
         """Test that search stops after first match per binary."""
         # Create same binary in multiple locations
         for directory in ["bin", "usr/bin", "usr/local/bin"]:
@@ -262,7 +262,7 @@ class TestFindElfBinaries:
 class TestFindLibraries:
     """Test find_libraries function."""
 
-    def test_find_libraries_standard_locations(self, tmp_path):
+    def test_find_libraries_standard_locations(self, tmp_path: Path) -> None:
         """Test finding libraries in standard locations."""
         lib_dir = tmp_path / "lib"
         lib_dir.mkdir()
@@ -272,7 +272,7 @@ class TestFindLibraries:
         results = find_libraries(tmp_path, ["libssl", "libcrypto"])
         assert len(results) == 2
 
-    def test_find_libraries_custom_directories(self, tmp_path):
+    def test_find_libraries_custom_directories(self, tmp_path: Path) -> None:
         """Test finding libraries in custom directories."""
         custom_dir = tmp_path / "custom" / "libs"
         custom_dir.mkdir(parents=True)
@@ -281,7 +281,7 @@ class TestFindLibraries:
         results = find_libraries(tmp_path, ["libcustom"], lib_dirs=["custom/libs"])
         assert len(results) == 1
 
-    def test_find_libraries_version_suffixes(self, tmp_path):
+    def test_find_libraries_version_suffixes(self, tmp_path: Path) -> None:
         """Test finding libraries with version numbers."""
         lib_dir = tmp_path / "lib"
         lib_dir.mkdir()
@@ -292,7 +292,7 @@ class TestFindLibraries:
         assert len(results) >= 1
         assert all(".so" in lib.name for lib in results)
 
-    def test_find_libraries_nested_subdirectories(self, tmp_path):
+    def test_find_libraries_nested_subdirectories(self, tmp_path: Path) -> None:
         """Test finding libraries in nested subdirectories."""
         subdir = tmp_path / "lib" / "x86_64-linux-gnu"
         subdir.mkdir(parents=True)
@@ -301,7 +301,7 @@ class TestFindLibraries:
         results = find_libraries(tmp_path, ["libssl"])
         assert len(results) == 1
 
-    def test_find_libraries_deduplication(self, tmp_path):
+    def test_find_libraries_deduplication(self, tmp_path: Path) -> None:
         """Test that duplicate library paths are removed."""
         lib_dir = tmp_path / "lib"
         lib_dir.mkdir()
@@ -311,7 +311,7 @@ class TestFindLibraries:
         results = find_libraries(tmp_path, ["libtest", "libtest"])
         assert len(results) == 1
 
-    def test_find_libraries_sorted_output(self, tmp_path):
+    def test_find_libraries_sorted_output(self, tmp_path: Path) -> None:
         """Test that library results are sorted."""
         lib_dir = tmp_path / "lib"
         lib_dir.mkdir()
@@ -327,7 +327,7 @@ class TestFindLibraries:
 class TestUtilityFunctions:
     """Test utility functions."""
 
-    def test_get_relative_path(self, tmp_path):
+    def test_get_relative_path(self, tmp_path: Path) -> None:
         """Test getting relative path with leading slash."""
         subdir = tmp_path / "lib"
         subdir.mkdir()
@@ -338,7 +338,7 @@ class TestUtilityFunctions:
         assert result == "/lib/libtest.so"
         assert result.startswith("/")
 
-    def test_get_file_size(self, tmp_path):
+    def test_get_file_size(self, tmp_path: Path) -> None:
         """Test getting file size."""
         test_file = tmp_path / "test.txt"
         test_file.write_text("Hello, World!")
@@ -346,7 +346,7 @@ class TestUtilityFunctions:
         size = get_file_size(test_file)
         assert size == 13  # "Hello, World!" is 13 bytes
 
-    def test_get_file_size_nonexistent(self, tmp_path):
+    def test_get_file_size_nonexistent(self, tmp_path: Path) -> None:
         """Test getting size of nonexistent file."""
         nonexistent = tmp_path / "nonexistent.txt"
 
@@ -357,7 +357,7 @@ class TestUtilityFunctions:
 class TestPerformance:
     """Test performance with large file sets."""
 
-    def test_find_files_many_files(self, tmp_path):
+    def test_find_files_many_files(self, tmp_path: Path) -> None:
         """Test finding files with 1000+ files."""
         # Create 1000 test files
         for i in range(1000):
