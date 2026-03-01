@@ -19,21 +19,21 @@ from lib.extraction import (
 class TestExtractStrings:
     """Test extract_strings function."""
 
-    def test_extract_strings_basic(self):
+    def test_extract_strings_basic(self) -> None:
         """Test basic string extraction."""
         data = b"Hello\x00World\x00"
         result = extract_strings(data)
         assert "Hello" in result
         assert "World" in result
 
-    def test_extract_strings_min_length(self):
+    def test_extract_strings_min_length(self) -> None:
         """Test minimum length filtering."""
         data = b"Hi\x00Hello\x00"
         result = extract_strings(data, min_length=4)
         assert "Hello" in result
         assert "Hi" not in result  # Too short
 
-    def test_extract_strings_custom_min_length(self):
+    def test_extract_strings_custom_min_length(self) -> None:
         """Test custom minimum length."""
         data = b"Hi\x00Hello\x00A\x00"
         result = extract_strings(data, min_length=2)
@@ -41,31 +41,31 @@ class TestExtractStrings:
         assert "Hello" in result
         assert "A" not in result
 
-    def test_extract_strings_empty_data(self):
+    def test_extract_strings_empty_data(self) -> None:
         """Test with empty data."""
         result = extract_strings(b"")
         assert result == []
 
-    def test_extract_strings_no_printable(self):
+    def test_extract_strings_no_printable(self) -> None:
         """Test with no printable characters."""
         data = b"\x00\x01\x02\x03\x04"
         result = extract_strings(data)
         assert result == []
 
-    def test_extract_strings_mixed_binary(self):
+    def test_extract_strings_mixed_binary(self) -> None:
         """Test with mixed binary and text."""
         data = b"\x00\x01test\x02\x03another\x00"
         result = extract_strings(data)
         assert "test" in result
         assert "another" in result
 
-    def test_extract_strings_last_string(self):
+    def test_extract_strings_last_string(self) -> None:
         """Test that last string is captured."""
         data = b"start\x00middle\x00test"
         result = extract_strings(data)
         assert "test" in result  # "test" is 4 chars, meets min_length
 
-    def test_extract_strings_special_chars(self):
+    def test_extract_strings_special_chars(self) -> None:
         """Test with special printable characters."""
         data = b"Hello, World!\x00"
         result = extract_strings(data)
@@ -75,7 +75,7 @@ class TestExtractStrings:
 class TestFilterStrings:
     """Test filter_strings function."""
 
-    def test_filter_by_keywords(self):
+    def test_filter_by_keywords(self) -> None:
         """Test filtering by keywords."""
         strings = ["version 1.0", "copyright 2025", "hello world"]
         result = filter_strings(strings, keywords=["version", "copyright"])
@@ -83,20 +83,20 @@ class TestFilterStrings:
         assert "copyright 2025" in result
         assert "hello world" not in result
 
-    def test_filter_case_insensitive(self):
+    def test_filter_case_insensitive(self) -> None:
         """Test case-insensitive keyword matching."""
         strings = ["Version 1.0", "COPYRIGHT 2025"]
         result = filter_strings(strings, keywords=["version", "copyright"])
         assert len(result) == 2
 
-    def test_filter_case_sensitive(self):
+    def test_filter_case_sensitive(self) -> None:
         """Test case-sensitive keyword matching."""
         strings = ["Version 1.0", "version 2.0"]
         result = filter_strings(strings, keywords=["version"], case_sensitive=True)
         assert "version 2.0" in result
         assert "Version 1.0" not in result
 
-    def test_filter_by_single_regex(self):
+    def test_filter_by_single_regex(self) -> None:
         """Test filtering by single regex pattern."""
         strings = ["version 1.0", "v2.0", "hello"]
         result = filter_strings(strings, regex=r"v.*\d+\.\d+")
@@ -104,7 +104,7 @@ class TestFilterStrings:
         assert "v2.0" in result
         assert "hello" not in result
 
-    def test_filter_by_multiple_regex(self):
+    def test_filter_by_multiple_regex(self) -> None:
         """Test filtering by multiple regex patterns."""
         strings = ["version 1.0", "build 123", "hello"]
         result = filter_strings(strings, regex_patterns=[r"version", r"build"])
@@ -112,24 +112,24 @@ class TestFilterStrings:
         assert "build 123" in result
         assert "hello" not in result
 
-    def test_filter_empty_strings(self):
+    def test_filter_empty_strings(self) -> None:
         """Test filtering empty list."""
         result = filter_strings([], keywords=["test"])
         assert result == []
 
-    def test_filter_no_matches(self):
+    def test_filter_no_matches(self) -> None:
         """Test when no strings match."""
         strings = ["hello", "world"]
         result = filter_strings(strings, keywords=["notfound"])
         assert result == []
 
-    def test_filter_sorted_unique(self):
+    def test_filter_sorted_unique(self) -> None:
         """Test that results are sorted and unique."""
         strings = ["zebra", "apple", "zebra", "banana"]
         result = filter_strings(strings, keywords=["a", "b", "z"])
         assert result == ["apple", "banana", "zebra"]
 
-    def test_filter_combined_keywords_and_regex(self):
+    def test_filter_combined_keywords_and_regex(self) -> None:
         """Test combining keywords and regex."""
         strings = ["version 1.0", "build 123", "copyright", "hello"]
         result = filter_strings(
@@ -146,7 +146,7 @@ class TestFilterStrings:
 class TestExtractGzipAtOffset:
     """Test extract_gzip_at_offset function."""
 
-    def test_extract_gzip_python_method(self, tmp_path):
+    def test_extract_gzip_python_method(self, tmp_path: Path) -> None:
         """Test gzip extraction with Python method."""
         # Create test data
         original_data = b"Hello, this is test data!"
@@ -161,7 +161,7 @@ class TestExtractGzipAtOffset:
 
         assert result == original_data
 
-    def test_extract_gzip_with_offset(self, tmp_path):
+    def test_extract_gzip_with_offset(self, tmp_path: Path) -> None:
         """Test gzip extraction from offset."""
         # Create test data with offset
         original_data = b"Test data"
@@ -177,7 +177,7 @@ class TestExtractGzipAtOffset:
 
         assert result == original_data
 
-    def test_extract_gzip_invalid_data(self, tmp_path):
+    def test_extract_gzip_invalid_data(self, tmp_path: Path) -> None:
         """Test with invalid gzip data."""
         test_file = tmp_path / "test.bin"
         test_file.write_bytes(b"not gzip data")
@@ -186,13 +186,13 @@ class TestExtractGzipAtOffset:
 
         assert result is None
 
-    def test_extract_gzip_nonexistent_file(self):
+    def test_extract_gzip_nonexistent_file(self) -> None:
         """Test with nonexistent file."""
         result = extract_gzip_at_offset(Path("/nonexistent.bin"), 0, 100, use_dd=False)
 
         assert result is None
 
-    def test_extract_gzip_empty_result(self, tmp_path):
+    def test_extract_gzip_empty_result(self, tmp_path: Path) -> None:
         """Test when extraction returns empty."""
         test_file = tmp_path / "test.bin"
         test_file.write_bytes(b"")
@@ -205,7 +205,7 @@ class TestExtractGzipAtOffset:
 class TestExtractFirmwareComponent:
     """Test extract_firmware_component function."""
 
-    def test_extract_component_with_keywords(self, tmp_path):
+    def test_extract_component_with_keywords(self, tmp_path: Path) -> None:
         """Test extracting component with keyword filtering."""
         # Create test data
         original_data = b"version 1.0\x00build 123\x00hello world\x00"
@@ -228,7 +228,7 @@ class TestExtractFirmwareComponent:
         assert "build 123" in result
         assert "hello world" not in result
 
-    def test_extract_component_with_regex(self, tmp_path):
+    def test_extract_component_with_regex(self, tmp_path: Path) -> None:
         """Test extracting component with regex filtering."""
         original_data = b"version 1.0\x00v2.0\x00hello\x00"
         compressed = gzip.compress(original_data)
@@ -248,7 +248,7 @@ class TestExtractFirmwareComponent:
         assert "v2.0" in result
         assert "hello" not in result
 
-    def test_extract_component_no_filter(self, tmp_path):
+    def test_extract_component_no_filter(self, tmp_path: Path) -> None:
         """Test extracting all strings without filtering."""
         original_data = b"string1\x00string2\x00string3\x00"
         compressed = gzip.compress(original_data)
@@ -268,7 +268,7 @@ class TestExtractFirmwareComponent:
         assert "string2" in result
         assert "string3" in result
 
-    def test_extract_component_invalid_gzip(self, tmp_path):
+    def test_extract_component_invalid_gzip(self, tmp_path: Path) -> None:
         """Test with invalid gzip data."""
         test_file = tmp_path / "firmware.bin"
         test_file.write_bytes(b"not gzip")
@@ -287,7 +287,7 @@ class TestExtractFirmwareComponent:
 class TestIntegration:
     """Integration tests combining multiple functions."""
 
-    def test_full_extraction_pipeline(self, tmp_path):
+    def test_full_extraction_pipeline(self, tmp_path: Path) -> None:
         """Test complete extraction pipeline."""
         # Create realistic test data
         data_parts = [
@@ -319,7 +319,7 @@ class TestIntegration:
         assert "Random data here" not in strings
         assert "Build date: Jan 1 2024" not in strings
 
-    def test_multiple_filters(self, tmp_path):
+    def test_multiple_filters(self, tmp_path: Path) -> None:
         """Test using multiple filtering strategies."""
         data = b"version 1.0\nbuild 123\nv2.0\ncopyright\nhello"
         compressed = gzip.compress(data)

@@ -14,7 +14,7 @@ import pytest
 class TestCodeFormatting:
     """Test that code is properly formatted."""
 
-    def test_ruff_format_check(self):
+    def test_ruff_format_check(self) -> None:
         """Test that all Python files are formatted with ruff."""
         result = subprocess.run(
             ["ruff", "format", "--check", "scripts/", "tests/"],
@@ -32,7 +32,7 @@ class TestCodeFormatting:
 class TestCodeLinting:
     """Test that code passes linting checks."""
 
-    def test_ruff_linting(self):
+    def test_ruff_linting(self) -> None:
         """Test that all Python files pass ruff linting."""
         result = subprocess.run(
             ["ruff", "check", "scripts/", "tests/"],
@@ -50,7 +50,7 @@ class TestCodeLinting:
 class TestShellScripts:
     """Test that shell scripts pass shellcheck."""
 
-    def test_shellcheck(self):
+    def test_shellcheck(self) -> None:
         """Test that all bash scripts pass shellcheck."""
         # Find all .sh files in scripts/
         script_dir = Path(__file__).parent.parent / "scripts"

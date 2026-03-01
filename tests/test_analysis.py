@@ -26,26 +26,26 @@ from analysis import (
 class TestTrackedValue:
     """Test TrackedValue class."""
 
-    def test_tracked_value_creation(self):
+    def test_tracked_value_creation(self) -> None:
         """Test creating a TrackedValue."""
         tv = TrackedValue(42, "test", "echo 42")
         assert tv.value == 42
         assert tv.source == "test"
         assert tv.method == "echo 42"
 
-    def test_tracked_value_str(self):
+    def test_tracked_value_str(self) -> None:
         """Test string representation."""
         tv = TrackedValue("0x2000", "kernel", "binwalk")
         assert str(tv) == "0x2000"
 
-    def test_tracked_value_equality(self):
+    def test_tracked_value_equality(self) -> None:
         """Test equality comparisons."""
         tv1 = TrackedValue(42, "test", "echo 42")
         tv2 = TrackedValue(42, "other", "different")
         assert tv1 == tv2  # Same value
         assert tv1 == 42  # Compare with raw value
 
-    def test_tracked_value_int_conversion(self):
+    def test_tracked_value_int_conversion(self) -> None:
         """Test integer conversion."""
         tv = TrackedValue("42", "test", "echo 42")
         assert int(tv) == 42
@@ -54,7 +54,7 @@ class TestTrackedValue:
 class TestConvertToTrackedValues:
     """Test convert_to_tracked_values function."""
 
-    def test_converts_with_metadata(self):
+    def test_converts_with_metadata(self) -> None:
         """Test conversion of values with _source and _method metadata."""
         result = {
             "offset": "0x2000",
@@ -79,7 +79,7 @@ class TestConvertToTrackedValues:
         assert "offset_source" not in tracked
         assert "offset_method" not in tracked
 
-    def test_converts_with_default_source(self):
+    def test_converts_with_default_source(self) -> None:
         """Test that values without _source use analysis_type as default."""
         result = {"value": 42, "value_method": "echo 42"}
 
@@ -92,7 +92,7 @@ class TestConvertToTrackedValues:
 class TestHashFile:
     """Test hash_file function."""
 
-    def test_hash_file(self):
+    def test_hash_file(self) -> None:
         """Test hashing a file."""
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
             f.write("test content")
@@ -117,7 +117,7 @@ class TestHashFile:
 class TestCaching:
     """Test caching functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Set up test environment."""
         # Create temporary test directory
         self.test_dir = Path(tempfile.mkdtemp())
@@ -143,12 +143,12 @@ EOF
 """)
         test_script.chmod(0o755)
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Clean up test environment."""
         os.chdir(self.orig_cwd)
         shutil.rmtree(self.test_dir)
 
-    def test_cache_invalidation_on_script_change(self):
+    def test_cache_invalidation_on_script_change(self) -> None:
         """Test that cache is invalidated when script changes."""
         # Clear the lru_cache for testing
         analyze.cache_clear()
