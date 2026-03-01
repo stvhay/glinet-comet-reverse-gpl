@@ -1,5 +1,5 @@
 # U-Boot bootloader analysis
-# Generated: 2026-03-01T17:14:25.798257+00:00
+# Generated: 2026-03-01T17:18:04.256355+00:00
 
 # Source: filesystem
 # Method: Path(firmware).name
@@ -29,5 +29,14 @@ environment_variables = ["nh=!0F_", "f=K3g=K", "a=I(F", "root=", "initrd=", "ear
 
 # Supported Commands
 supported_commands = ["dhcp", "md5 : not support sign image.", "mdio", "mdio read <phydev> [<devad>.]<reg> - read PHY's register at <devad>.<reg>", "mdio rx <phydev> [<devad>.]<reg> - read PHY's extended register at <devad>.<reg>", "mdio write <phydev> [<devad>.]<reg> <data> - write PHY's register at <devad>.<reg>", "mdio wx <phydev> [<devad>.]<reg> <data> - write PHY's extended register at <devad>.<reg>", "mdio_alloc() failed", "mdio_register() failed: %d", "mdio_register: non unique device name '%s'", "mmc dev 0", "mmc dev 1", "mmc dev [dev] [part] - show or set current mmc device [partition]", "mmc erase blk# cnt", "mmc erase failed", "mmc fail to send stop cmd", "mmc hwpartition [args...] - does hardware partitioning", "mmc list - lists available devices", "mmc part - lists available partition on current mmc device", "mmc read addr blk# cnt"]
+
+# Httpd Server
+httpd_server = ["## Error: HTTP ugrade failed!", "HTTP server is ready!", "HTTP server is starting at IP: %ld.%ld.%ld.%ld", "HTTP ugrade is done! Rebooting...", "HTTP/1.0 200 OK", "HTTP/1.0 404 File not found", "Start HTTP server for firmware update...", "httpd", "httpd failed; host %s is not alive", "start web server for firmware recovery"]
+
+# Third Party Urls
+third_party_urls = ["https://github.com/pepe2k/u-boot_mod"]
+
+# Recovery Modes
+recovery_modes = ["boot mode: recovery (cmd)", "boot mode: recovery (env)", "boot mode: recovery (key)", "boot mode: recovery (misc)", "boot mode: recovery (usb)"]
 
 

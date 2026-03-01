@@ -9,6 +9,9 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import re
+from typing import ClassVar
+
 from analyze_uboot import (
     COMPLEX_FIELDS,
     SIMPLE_FIELDS,
@@ -36,6 +39,9 @@ class TestUBootAnalysis:
         assert analysis.environment_variables == []
         assert analysis.supported_commands == []
         assert analysis.copyright_license == []
+        assert analysis.httpd_server == []
+        assert analysis.third_party_urls == []
+        assert analysis.recovery_modes == []
 
     def test_analysis_with_optional_fields(self):
         """Test creating a UBootAnalysis with all optional fields."""
@@ -146,6 +152,147 @@ class TestUBootAnalysis:
         """Test that UBootAnalysis uses slots for memory efficiency."""
         # Verify it has slots defined
         assert hasattr(UBootAnalysis, "__slots__")
+
+
+class TestHttpdDetection:
+    """Test HTTPD server, third-party URL, and recovery mode detection patterns."""
+
+    # Realistic strings from the actual RM1 U-Boot binary
+    SAMPLE_STRINGS: ClassVar[list[str]] = [
+        "U-Boot 2017.09-gfd8bfa2acd-dirty #vscode",
+        "HTTP server is starting at IP: %ld.%ld.%ld.%ld",
+        "HTTP server is ready!",
+        "HTTP ugrade is done! Rebooting...",
+        "## Error: HTTP ugrade failed!",
+        "Start HTTP server for firmware update...",
+        "start web server for firmware recovery",
+        "httpd failed; host %s is not alive",
+        "httpd",
+        "HTTP/1.0 200 OK",
+        "HTTP/1.0 404 File not found",
+        "https://github.com/pepe2k/u-boot_mod",
+        "uboot2.0 version:25.11.27",
+        "boot mode: recovery (key)",
+        "boot mode: recovery (usb)",
+        "boot mode: recovery (env)",
+        "boot mode: recovery (misc)",
+        "boot mode: recovery (cmd)",
+        "bootcmd=boot_fit;boot_android ${devtype} ${devnum};",
+        "baudrate=1500000",
+        "board=evb_rv1126",
+        "rv1126_gpll_set_clk",
+    ]
+
+    def _run_httpd_pattern(self, strings: list[str]) -> list[str]:
+        """Apply the HTTPD detection regex from analyze_uboot.py."""
+        return [
+            s
+            for s in strings
+            if re.search(
+                r"HTTP server|start web server|httpd|HTTP ugrade|"
+                r"HTTP/1\.[01] [0-9]{3}|Start HTTP server",
+                s,
+            )
+        ]
+
+    def _run_url_pattern(self, strings: list[str]) -> list[str]:
+        """Apply the third-party URL extraction regex."""
+        urls: set[str] = set()
+        for s in strings:
+            for match in re.finditer(r"https?://github\.com/[\w.-]+/[\w.-]+", s):
+                urls.add(match.group())
+        return sorted(urls)
+
+    def _run_recovery_pattern(self, strings: list[str]) -> list[str]:
+        """Apply the recovery mode regex."""
+        return sorted({s for s in strings if re.match(r"boot mode: recovery", s)})
+
+    def test_httpd_detection_finds_server_strings(self):
+        """Test that HTTPD pattern matches server-related strings."""
+        results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
+        assert "HTTP server is starting at IP: %ld.%ld.%ld.%ld" in results
+        assert "HTTP server is ready!" in results
+        assert "start web server for firmware recovery" in results
+        assert "httpd" in results
+
+    def test_httpd_detection_finds_http_responses(self):
+        """Test that HTTPD pattern matches HTTP response codes."""
+        results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
+        assert "HTTP/1.0 200 OK" in results
+        assert "HTTP/1.0 404 File not found" in results
+
+    def test_httpd_detection_excludes_unrelated(self):
+        """Test that HTTPD pattern doesn't match unrelated strings."""
+        results = self._run_httpd_pattern(self.SAMPLE_STRINGS)
+        assert "baudrate=1500000" not in results
+        assert "board=evb_rv1126" not in results
+        assert "rv1126_gpll_set_clk" not in results
+
+    def test_url_extraction_finds_pepe2k(self):
+        """Test that URL extraction finds pepe2k/u-boot_mod from HTML."""
+        results = self._run_url_pattern(self.SAMPLE_STRINGS)
+        assert "https://github.com/pepe2k/u-boot_mod" in results
+
+    def test_url_extraction_no_false_positives(self):
+        """Test that URL extraction doesn't produce false positives."""
+        strings_without_urls = [s for s in self.SAMPLE_STRINGS if "github.com" not in s]
+        results = self._run_url_pattern(strings_without_urls)
+        assert results == []
+
+    def test_recovery_modes_detected(self):
+        """Test that all recovery boot modes are found."""
+        results = self._run_recovery_pattern(self.SAMPLE_STRINGS)
+        assert len(results) == 5
+        assert "boot mode: recovery (key)" in results
+        assert "boot mode: recovery (usb)" in results
+        assert "boot mode: recovery (env)" in results
+        assert "boot mode: recovery (misc)" in results
+        assert "boot mode: recovery (cmd)" in results
+
+    def test_recovery_excludes_non_boot_mode(self):
+        """Test that recovery pattern doesn't match non-boot-mode strings."""
+        results = self._run_recovery_pattern(self.SAMPLE_STRINGS)
+        # "start web server for firmware recovery" should NOT match
+        assert all(s.startswith("boot mode: recovery") for s in results)
+
+    def test_gpl_regex_no_gpll_false_positive(self):
+        """Test that GPL regex with word boundary doesn't match gpll."""
+        pattern = r"copyright|license|\bGPL\b"
+        assert not re.search(pattern, "rv1126_gpll_set_clk", re.IGNORECASE)
+        assert not re.search(pattern, "gpll", re.IGNORECASE)
+        assert re.search(pattern, "License GPLv2+", re.IGNORECASE)
+        assert re.search(pattern, "GPL", re.IGNORECASE)
+
+    def test_new_fields_in_toml_output(self):
+        """Test that new fields appear correctly in TOML output."""
+        analysis = UBootAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            httpd_server=["HTTP server is ready!", "httpd"],
+            third_party_urls=["https://github.com/pepe2k/u-boot_mod"],
+            recovery_modes=["boot mode: recovery (key)"],
+        )
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+        parsed = tomlkit.loads(toml_str)
+
+        assert parsed["httpd_server"] == ["HTTP server is ready!", "httpd"]
+        assert parsed["third_party_urls"] == ["https://github.com/pepe2k/u-boot_mod"]
+        assert parsed["recovery_modes"] == ["boot mode: recovery (key)"]
+
+    def test_empty_new_fields_excluded_from_toml(self):
+        """Test that empty new fields are excluded from TOML output."""
+        analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+
+        assert "httpd_server" not in toml_str
+        assert "third_party_urls" not in toml_str
+        assert "recovery_modes" not in toml_str
 
 
 class TestExtractStrings:

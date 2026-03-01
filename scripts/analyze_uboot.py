@@ -48,6 +48,9 @@ COMPLEX_FIELDS = [
     "environment_variables",
     "supported_commands",
     "copyright_license",
+    "httpd_server",
+    "third_party_urls",
+    "recovery_modes",
 ]
 
 
@@ -63,6 +66,9 @@ class UBootAnalysis(AnalysisBase):
     environment_variables: list[str] = field(default_factory=list)
     supported_commands: list[str] = field(default_factory=list)
     copyright_license: list[str] = field(default_factory=list)
+    httpd_server: list[str] = field(default_factory=list)
+    third_party_urls: list[str] = field(default_factory=list)
+    recovery_modes: list[str] = field(default_factory=list)
     extraction_method: str | None = None
     extraction_offset: str | None = None
 
@@ -221,6 +227,47 @@ def analyze_uboot(firmware_path: str, output_dir: Path) -> UBootAnalysis:  # noq
                 "copyright_license",
                 "gzip_extraction",
                 "strings matching 'copyright|license|GPL' (case-insensitive)",
+            )
+
+        # Detect embedded HTTPD server
+        httpd_strings = [
+            s
+            for s in uboot_strings
+            if re.search(
+                r"HTTP server|start web server|httpd|HTTP ugrade|"
+                r"HTTP/1\.[01] [0-9]{3}|Start HTTP server",
+                s,
+            )
+        ]
+        if httpd_strings:
+            analysis.httpd_server = sorted(set(httpd_strings))[:20]
+            analysis.add_metadata(
+                "httpd_server",
+                "gzip_extraction",
+                "strings matching HTTP server/httpd/web server patterns",
+            )
+
+        # Extract third-party code URLs (e.g. github.com/pepe2k/u-boot_mod)
+        urls: set[str] = set()
+        for s in uboot_strings:
+            for match in re.finditer(r"https?://github\.com/[\w.-]+/[\w.-]+", s):
+                urls.add(match.group())
+        if urls:
+            analysis.third_party_urls = sorted(urls)
+            analysis.add_metadata(
+                "third_party_urls",
+                "gzip_extraction",
+                "GitHub URLs extracted from embedded HTML/strings",
+            )
+
+        # Extract recovery boot modes
+        recovery_strings = [s for s in uboot_strings if re.match(r"boot mode: recovery", s)]
+        if recovery_strings:
+            analysis.recovery_modes = sorted(set(recovery_strings))
+            analysis.add_metadata(
+                "recovery_modes",
+                "gzip_extraction",
+                "strings matching '^boot mode: recovery'",
             )
 
     if not analysis.version:
