@@ -1,0 +1,8 @@
+# Everything by default
+*
+
+# Only send what the Dockerfile COPYs
+!flake.nix
+!flake.lock
+!pyproject.toml
+!uv.lock

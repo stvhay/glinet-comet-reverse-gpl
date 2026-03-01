@@ -336,7 +336,7 @@ class TestManifestFunctions:
         scripts_dir = tmp_path / "scripts"
         scripts_dir.mkdir()
         script_file = scripts_dir / "analyze_test.sh"
-        script_file.write_text("#!/bin/bash\necho test")
+        script_file.write_text("#!/usr/bin/env bash\necho test")
 
         update_manifest("test", manifest_file)
 
@@ -439,7 +439,7 @@ class TestCacheValidation:
         scripts_dir = tmp_path / "scripts"
         scripts_dir.mkdir()
         script_file = scripts_dir / "analyze_test.sh"
-        script_file.write_text("#!/bin/bash\necho test")
+        script_file.write_text("#!/usr/bin/env bash\necho test")
 
         # Calculate actual hashes
         fw_hash = hash_file(firmware_file)
@@ -584,7 +584,7 @@ Offset: {{ data.offset | src }}
         """Test template with |src filter for footnotes."""
         # Create dummy script first
         script_file = self.test_dir / "scripts" / "analyze_srctest.sh"
-        script_file.write_text('#!/bin/bash\necho \'{"value": "test"}\'')
+        script_file.write_text('#!/usr/bin/env bash\necho \'{"value": "test"}\'')
         script_file.chmod(0o755)
 
         # Create results file
@@ -636,7 +636,7 @@ class TestAnalyzeFunction:
 
         # Create a bash script that outputs JSON
         script_file = scripts_dir / "analyze_test.sh"
-        script_file.write_text("#!/bin/bash\necho '{\"value\": 42}'")
+        script_file.write_text("#!/usr/bin/env bash\necho '{\"value\": 42}'")
         script_file.chmod(0o755)
 
         # Clear the cache (analyze uses @lru_cache)
@@ -659,7 +659,7 @@ class TestAnalyzeFunction:
         downloads_dir.mkdir()
 
         script_file = scripts_dir / "analyze_cache_test.sh"
-        script_file.write_text('#!/bin/bash\necho \'{"cached": "yes"}\'')
+        script_file.write_text('#!/usr/bin/env bash\necho \'{"cached": "yes"}\'')
         script_file.chmod(0o755)
 
         analyze.cache_clear()
@@ -705,7 +705,7 @@ class TestAnalyzeFunction:
         firmware_file.write_bytes(b"firmware")
 
         script_file = scripts_dir / "analyze_cached.sh"
-        script_file.write_text("#!/bin/bash\necho '{\"value\": 1}'")
+        script_file.write_text("#!/usr/bin/env bash\necho '{\"value\": 1}'")
         script_file.chmod(0o755)
 
         # Create results file with different value
@@ -746,7 +746,7 @@ class TestIntegrationWithRealTemplates:
 
         # Create analysis script
         script_file = scripts_dir / "analyze_kernel.sh"
-        script_content = """#!/bin/bash
+        script_content = """#!/usr/bin/env bash
 cat <<EOF
 {
   "offset": "0x2000",
@@ -801,7 +801,7 @@ Compression: {{ k.compression }}
 
         # Create dummy script
         script_file = scripts_dir / "analyze_multi.sh"
-        script_file.write_text('#!/bin/bash\necho \'{"val1": "first"}\'')
+        script_file.write_text('#!/usr/bin/env bash\necho \'{"val1": "first"}\'')
         script_file.chmod(0o755)
 
         # Create results with multiple values from same source
@@ -868,7 +868,7 @@ class TestErrorHandling:
 
         # Create script that outputs invalid JSON
         script_file = scripts_dir / "analyze_badjson.sh"
-        script_file.write_text("#!/bin/bash\necho 'not json'")
+        script_file.write_text("#!/usr/bin/env bash\necho 'not json'")
         script_file.chmod(0o755)
 
         analyze.cache_clear()
@@ -915,7 +915,7 @@ class TestHashAnalysisScript:
         scripts_dir = tmp_path / "scripts"
         scripts_dir.mkdir()
         script_file = scripts_dir / "analyze_test.sh"
-        script_file.write_text("#!/bin/bash\necho test")
+        script_file.write_text("#!/usr/bin/env bash\necho test")
 
         result = hash_analysis_script("test")
 

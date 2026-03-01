@@ -52,6 +52,8 @@
               # Development
               shellcheck
               uv
+              ruff
+              mypy
 
               # Python interpreter only — packages managed by uv (pyproject.toml + uv.lock)
               # Run Python commands via: uv run python3 scripts/...
