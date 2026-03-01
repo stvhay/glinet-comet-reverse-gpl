@@ -49,3 +49,6 @@ htmlcov/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Working scratchpad (session-local, synced to gist separately)
+.scratchpad.md
