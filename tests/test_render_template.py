@@ -149,8 +149,8 @@ class TestFootnoteRegistry:
         assert "## Sources" in rendered
         assert "[^1]:" in rendered
         assert "[^2]:" in rendered
-        assert "scripts/analyze_kernel.sh" in rendered
-        assert "scripts/analyze_filesystem.sh" in rendered
+        assert "scripts/analyze_kernel.py" in rendered
+        assert "scripts/analyze_filesystem.py" in rendered
         assert "binwalk -e" in rendered
         assert "ls -la" in rendered
 
@@ -169,7 +169,7 @@ class TestFootnoteRegistry:
         rendered = registry.render()
 
         assert "[^1]:" in rendered
-        assert "scripts/analyze_test.sh" in rendered
+        assert "scripts/analyze_test.py" in rendered
         # Should not have " - " when no method
         assert " - `" not in rendered
 
@@ -592,7 +592,7 @@ Offset: {{ data.offset | src }}
         # Check rendered content
         assert "Offset: 0x2000[^1]" in rendered
         assert "## Sources" in rendered
-        assert "scripts/analyze_render_test.sh" in rendered
+        assert "scripts/analyze_render_test.py" in rendered
         assert "binwalk firmware.img" in rendered
 
     def test_render_with_src_filter(self) -> None:
@@ -808,7 +808,7 @@ Compression: {{ k.compression }}
         assert "Compression: gzip" in content
         assert "## Sources" in content
         assert "[^1]:" in content
-        assert "scripts/analyze_kernel.sh" in content
+        assert "scripts/analyze_kernel.py" in content
 
     def test_multiple_footnotes_same_source(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

@@ -60,7 +60,7 @@ class FootnoteRegistry:
 
         lines = ["\n## Sources\n"]
         for i, (source, method) in enumerate(self.footnotes, 1):
-            script_link = f"[scripts/analyze_{source}.sh](../scripts/analyze_{source}.sh)"
+            script_link = f"[scripts/analyze_{source}.py](../scripts/analyze_{source}.py)"
             if method:
                 lines.append(f"[^{i}]: {script_link} - `{method}`")
             else:

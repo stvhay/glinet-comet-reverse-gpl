@@ -49,6 +49,6 @@ This analysis was performed by:
 
 ## Sources
 
-[^1]: [scripts/analyze_device_tree_diff.sh](../scripts/analyze_device_tree_diff.sh) - `grep 'model = ' output/dtb/kernel-fit.dts | awk -F'"' '{print $2}'`
-[^2]: [scripts/analyze_device_tree_diff.sh](../scripts/analyze_device_tree_diff.sh) - `grep 'compatible = ' output/dtb/kernel-fit.dts | awk -F'"' '{print $2}'`
-[^3]: [scripts/analyze_device_tree_diff.sh](../scripts/analyze_device_tree_diff.sh) - `curl -s https://gitlab.com/firefly-linux/kernel/-/raw/rv1126_rv1109/linux_release_v2.2.5g/arch/arm/boot/dts/rv1126-evb-ddr3-v13.dts | grep 'model = '`
+[^1]: [scripts/analyze_device_tree_diff.py](../scripts/analyze_device_tree_diff.py) - `grep 'model = ' output/dtb/kernel-fit.dts | awk -F'"' '{print $2}'`
+[^2]: [scripts/analyze_device_tree_diff.py](../scripts/analyze_device_tree_diff.py) - `grep 'compatible = ' output/dtb/kernel-fit.dts | awk -F'"' '{print $2}'`
+[^3]: [scripts/analyze_device_tree_diff.py](../scripts/analyze_device_tree_diff.py) - `curl -s https://gitlab.com/firefly-linux/kernel/-/raw/rv1126_rv1109/linux_release_v2.2.5g/arch/arm/boot/dts/rv1126-evb-ddr3-v13.dts | grep 'model = '`
