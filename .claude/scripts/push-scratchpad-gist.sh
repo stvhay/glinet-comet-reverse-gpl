@@ -10,7 +10,7 @@ set -euo pipefail
 
 gist_id="165f51b518db358f3515610af94e01fb"
 
-scratchpad_file="/tmp/claude-glinet-comet-reversing/scratchpad.md"
+scratchpad_file="$(git rev-parse --show-toplevel)/.scratchpad.md"
 semaphore="/tmp/$(basename "$(git rev-parse --show-toplevel)").scratchpad-semaphore"
 
 if mkdir "$semaphore" 2>/dev/null; then
