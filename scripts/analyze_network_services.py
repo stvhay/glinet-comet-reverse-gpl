@@ -368,9 +368,58 @@ def find_firewall_rules(rootfs: Path) -> list[str]:
     return list(dict.fromkeys(rules))[:5]
 
 
-def analyze_firmware(  # noqa: PLR0915
-    firmware_path: str, rootfs: Path
-) -> NetworkServicesAnalysis:
+def _scan_network_services(analysis: NetworkServicesAnalysis, rootfs: Path) -> None:
+    """Scan rootfs for network services and populate analysis fields."""
+    analysis.init_scripts = find_init_scripts(rootfs)
+    if analysis.init_scripts:
+        analysis.add_metadata(
+            "init_scripts",
+            "filesystem",
+            "find /etc/init.d -maxdepth 1 -type f",
+        )
+
+    analysis.systemd_services = find_systemd_services(rootfs)
+    if analysis.systemd_services:
+        analysis.add_metadata(
+            "systemd_services",
+            "filesystem",
+            "find rootfs -name '*.service' -type f",
+        )
+
+    analysis.web_servers = find_web_servers(rootfs)
+    if analysis.web_servers:
+        analysis.add_metadata(
+            "web_servers",
+            "filesystem",
+            "find rootfs for nginx, lighttpd, httpd, apache2, uvicorn, gunicorn",
+        )
+
+    analysis.web_frameworks = find_web_frameworks(rootfs)
+    if analysis.web_frameworks:
+        analysis.add_metadata(
+            "web_frameworks",
+            "filesystem",
+            "find rootfs -path '*/site-packages/aiohttp*' or uvicorn*",
+        )
+
+    analysis.ssh_server = find_ssh_server(rootfs)
+    if analysis.ssh_server:
+        analysis.add_metadata(
+            "ssh_server",
+            "filesystem",
+            "find rootfs for sshd or dropbear",
+        )
+
+    analysis.network_services = find_network_services(rootfs)
+    if analysis.network_services:
+        analysis.add_metadata(
+            "network_services",
+            "filesystem",
+            "find rootfs for dnsmasq, hostapd, mosquitto, telnetd, etc.",
+        )
+
+
+def analyze_firmware(firmware_path: str, rootfs: Path) -> NetworkServicesAnalysis:
     """Analyze firmware for network services and attack surface.
 
     Args:
@@ -395,60 +444,7 @@ def analyze_firmware(  # noqa: PLR0915
 
     # Scan for network services
     section("Scanning for network services")
-
-    # Find init scripts
-    analysis.init_scripts = find_init_scripts(rootfs)
-    if analysis.init_scripts:
-        analysis.add_metadata(
-            "init_scripts",
-            "filesystem",
-            "find /etc/init.d -maxdepth 1 -type f",
-        )
-
-    # Find systemd services
-    analysis.systemd_services = find_systemd_services(rootfs)
-    if analysis.systemd_services:
-        analysis.add_metadata(
-            "systemd_services",
-            "filesystem",
-            "find rootfs -name '*.service' -type f",
-        )
-
-    # Find web servers
-    analysis.web_servers = find_web_servers(rootfs)
-    if analysis.web_servers:
-        analysis.add_metadata(
-            "web_servers",
-            "filesystem",
-            "find rootfs for nginx, lighttpd, httpd, apache2, uvicorn, gunicorn",
-        )
-
-    # Find web frameworks
-    analysis.web_frameworks = find_web_frameworks(rootfs)
-    if analysis.web_frameworks:
-        analysis.add_metadata(
-            "web_frameworks",
-            "filesystem",
-            "find rootfs -path '*/site-packages/aiohttp*' or uvicorn*",
-        )
-
-    # Find SSH server
-    analysis.ssh_server = find_ssh_server(rootfs)
-    if analysis.ssh_server:
-        analysis.add_metadata(
-            "ssh_server",
-            "filesystem",
-            "find rootfs for sshd or dropbear",
-        )
-
-    # Find other network services
-    analysis.network_services = find_network_services(rootfs)
-    if analysis.network_services:
-        analysis.add_metadata(
-            "network_services",
-            "filesystem",
-            "find rootfs for dnsmasq, hostapd, mosquitto, telnetd, etc.",
-        )
+    _scan_network_services(analysis, rootfs)
 
     # Security analysis
     section("Security analysis")

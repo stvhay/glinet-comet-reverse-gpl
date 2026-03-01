@@ -995,12 +995,9 @@ class TestOutputToml:
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    @patch("subprocess.run")
-    def test_realistic_network_services_analysis(  # noqa: PLR0915
-        self, mock_run: Any, tmp_path: Path
-    ) -> None:
-        """Test complete analysis workflow with realistic filesystem."""
-        # Create realistic filesystem structure
+    @staticmethod
+    def _setup_network_rootfs(tmp_path: Path) -> Path:
+        """Create a realistic rootfs with network services for integration testing."""
         rootfs = tmp_path / "squashfs-root"
 
         # Create init scripts
@@ -1035,9 +1032,18 @@ user:!:19001:0:99999:7:::
         # Create firewall config
         (etc / "firewall").write_text("config defaults")
 
+        # Create sensitive config file
+        (etc / "config").write_text("password=secret")
+
+        return rootfs
+
+    @patch("subprocess.run")
+    def test_realistic_network_services_analysis(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test complete analysis workflow with realistic filesystem."""
+        rootfs = self._setup_network_rootfs(tmp_path)
+
         # Mock grep for sensitive files
-        config_file = etc / "config"
-        config_file.write_text("password=secret")
+        config_file = rootfs / "etc" / "config"
         mock_run.return_value = MagicMock(stdout=str(config_file), returncode=0)
 
         # Create analysis object

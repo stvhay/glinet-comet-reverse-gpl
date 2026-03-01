@@ -1071,13 +1071,9 @@ class TestOutputToml:
 class TestIntegration:
     """Integration tests with realistic data."""
 
-    @patch("analyze_proprietary_blobs.has_gpl_string")
-    @patch("subprocess.run")
-    def test_realistic_proprietary_blobs_analysis(  # noqa: PLR0915
-        self, mock_run: Any, mock_has_gpl: Any, tmp_path: Path
-    ) -> None:
-        """Test complete analysis workflow with realistic filesystem."""
-        # Create realistic filesystem structure
+    @staticmethod
+    def _setup_blobs_rootfs(tmp_path: Path) -> Path:
+        """Create a realistic rootfs with proprietary blobs for integration testing."""
         rootfs = tmp_path / "squashfs-root"
 
         # Create Rockchip libraries
@@ -1102,6 +1098,16 @@ class TestIntegration:
         modules_dir.mkdir(parents=True)
         (modules_dir / "rockchip_vpu.ko").write_bytes(b"x" * 102400)
         (modules_dir / "dwc3.ko").write_bytes(b"x" * 51200)
+
+        return rootfs
+
+    @patch("analyze_proprietary_blobs.has_gpl_string")
+    @patch("subprocess.run")
+    def test_realistic_proprietary_blobs_analysis(
+        self, mock_run: Any, mock_has_gpl: Any, tmp_path: Path
+    ) -> None:
+        """Test complete analysis workflow with realistic filesystem."""
+        rootfs = self._setup_blobs_rootfs(tmp_path)
 
         # Mock GPL detection
         mock_has_gpl.side_effect = [True, False]
@@ -1175,7 +1181,6 @@ class TestIntegration:
         assert analysis.binary_analysis is not None
 
         # Verify TOML output
-
         toml_str = output_toml(
             analysis,
             title="Test",

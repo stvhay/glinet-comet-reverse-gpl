@@ -18,7 +18,51 @@ TOML_MAX_COMMENT_LENGTH = 80
 TOML_COMMENT_TRUNCATE_LENGTH = 77
 
 
-def output_toml(  # noqa: PLR0912
+def _auto_detect_fields(data: dict[str, Any]) -> tuple[list[str], list[str]]:
+    """Classify data fields into simple (primitives) and complex (lists/dicts).
+
+    Returns:
+        Tuple of (simple_fields, complex_fields)
+    """
+    simple: list[str] = []
+    complex_: list[str] = []
+
+    for key, value in data.items():
+        if key.endswith("_source") or key.endswith("_method"):
+            continue
+
+        if isinstance(value, list | dict):
+            complex_.append(key)
+        else:
+            simple.append(key)
+
+    return simple, complex_
+
+
+def _add_simple_fields(
+    doc: tomlkit.TOMLDocument, data: dict[str, Any], simple_fields: list[str]
+) -> None:
+    """Add simple fields with source metadata comments to TOML document."""
+    for key in simple_fields:
+        if key not in data:
+            continue
+
+        value = data[key]
+
+        if f"{key}_source" in data:
+            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
+        if f"{key}_method" in data:
+            method = data[f"{key}_method"]
+            if len(method) > TOML_MAX_COMMENT_LENGTH:
+                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
+            else:
+                doc.add(tomlkit.comment(f"Method: {method}"))
+
+        doc.add(key, value)
+        doc.add(tomlkit.nl())
+
+
+def output_toml(
     analysis: Any,
     title: str,
     simple_fields: list[str] | None = None,
@@ -49,51 +93,20 @@ def output_toml(  # noqa: PLR0912
 
     # Auto-detect simple vs complex fields if not provided
     if simple_fields is None or complex_fields is None:
-        auto_simple: list[str] = []
-        auto_complex: list[str] = []
-
-        for key, value in data.items():
-            # Skip metadata fields
-            if key.endswith("_source") or key.endswith("_method"):
-                continue
-
-            # Classify by type
-            if isinstance(value, list | dict):
-                auto_complex.append(key)
-            else:
-                auto_simple.append(key)
-
+        auto_simple, auto_complex = _auto_detect_fields(data)
         if simple_fields is None:
             simple_fields = auto_simple
         if complex_fields is None:
             complex_fields = auto_complex
 
     # Add simple fields first (primitives with metadata comments)
-    for key in simple_fields:
-        if key not in data:
-            continue
-
-        value = data[key]
-
-        # Add source metadata as comment
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-
-        doc.add(key, value)
-        doc.add(tomlkit.nl())
+    _add_simple_fields(doc, data, simple_fields)
 
     # Add complex fields (arrays/objects with header comments)
     for key in complex_fields:
         if key not in data or not data[key]:
             continue
 
-        # Add descriptive header comment
         doc.add(tomlkit.comment(key.replace("_", " ").title()))
         doc.add(key, data[key])
         doc.add(tomlkit.nl())
