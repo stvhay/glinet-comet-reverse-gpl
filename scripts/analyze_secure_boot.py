@@ -222,7 +222,92 @@ def extract_device_tree_node(
     return None
 
 
-def analyze_secure_boot(  # noqa: PLR0912, PLR0915
+def _analyze_uboot_strings(
+    analysis: SecureBootAnalysis, firmware: Path, offsets: dict[str, str | int]
+) -> None:
+    """Extract and analyze U-Boot verification strings from gzip-compressed data."""
+    uboot_offset_dec = offsets.get("UBOOT_GZ_OFFSET_DEC")
+    if not isinstance(uboot_offset_dec, int):
+        return
+
+    uboot_data = extract_gzip_at_offset(firmware, uboot_offset_dec, 500000, use_dd=False)
+    uboot_strings = extract_strings(uboot_data) if uboot_data else []
+
+    verification_patterns = [
+        r"verified",
+        r"signature",
+        r"secure.?boot",
+        r"FIT.*sign",
+        r"required",
+        r"rsa.*verify",
+    ]
+    analysis.uboot_verification_strings = filter_strings(
+        uboot_strings, regex_patterns=verification_patterns
+    )[:30]
+
+    if analysis.uboot_verification_strings:
+        analysis.add_metadata(
+            "uboot_verification_strings",
+            "strings",
+            (
+                "gunzip U-Boot | strings | grep -E "
+                "'verified|signature|secure.?boot|FIT.*sign|required|rsa.*verify'"
+            ),
+        )
+
+    key_patterns = [
+        r"FIT:.*signed",
+        r"Verified-boot:",
+        r"Can't read verified-boot",
+        r"CONFIG_FIT_SIGNATURE",
+    ]
+    analysis.uboot_key_findings = filter_strings(uboot_strings, regex_patterns=key_patterns)
+
+    if analysis.uboot_key_findings:
+        analysis.add_metadata(
+            "uboot_key_findings",
+            "strings",
+            (
+                "gunzip U-Boot | strings | grep -E "
+                "'FIT:.*signed|Verified-boot:|Can't read verified-boot|CONFIG_FIT_SIGNATURE'"
+            ),
+        )
+
+
+def _analyze_optee_strings(
+    analysis: SecureBootAnalysis, firmware: Path, offsets: dict[str, str | int]
+) -> None:
+    """Extract and analyze OP-TEE secure boot strings from gzip-compressed data."""
+    optee_offset_dec = offsets.get("OPTEE_GZ_OFFSET_DEC")
+    if not isinstance(optee_offset_dec, int):
+        return
+
+    optee_data = extract_gzip_at_offset(firmware, optee_offset_dec, 300000, use_dd=False)
+    optee_strings = extract_strings(optee_data) if optee_data else []
+
+    secure_boot_patterns = [
+        r"secure.?boot",
+        r"otp.*key",
+        r"set.*flag",
+        r"key.*index",
+        r"enable.*flag",
+    ]
+    analysis.optee_secure_boot_strings = filter_strings(
+        optee_strings, regex_patterns=secure_boot_patterns
+    )[:30]
+
+    if analysis.optee_secure_boot_strings:
+        analysis.add_metadata(
+            "optee_secure_boot_strings",
+            "strings",
+            (
+                "gunzip OP-TEE | strings | grep -E "
+                "'secure.?boot|otp.*key|set.*flag|key.*index|enable.*flag'"
+            ),
+        )
+
+
+def analyze_secure_boot(
     firmware_path: str, offsets: dict[str, str | int], work_dir: Path
 ) -> SecureBootAnalysis:
     """Analyze secure boot configuration in firmware.
@@ -237,7 +322,6 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
     """
     firmware = Path(firmware_path)
 
-    # Create analysis object
     analysis = SecureBootAnalysis(
         firmware_file=firmware.name,
         firmware_size=firmware.stat().st_size,
@@ -306,85 +390,11 @@ def analyze_secure_boot(  # noqa: PLR0912, PLR0915
 
     # Analyze U-Boot strings
     section("Analyzing U-Boot verification strings")
-
-    uboot_offset_dec = offsets.get("UBOOT_GZ_OFFSET_DEC")
-    if isinstance(uboot_offset_dec, int):
-        # Extract and decompress U-Boot gzip data
-        uboot_data = extract_gzip_at_offset(firmware, uboot_offset_dec, 500000, use_dd=False)
-        uboot_strings = extract_strings(uboot_data) if uboot_data else []
-
-        # Filter for verification-related strings
-        verification_patterns = [
-            r"verified",
-            r"signature",
-            r"secure.?boot",
-            r"FIT.*sign",
-            r"required",
-            r"rsa.*verify",
-        ]
-        analysis.uboot_verification_strings = filter_strings(
-            uboot_strings, regex_patterns=verification_patterns
-        )[:30]
-
-        if analysis.uboot_verification_strings:
-            analysis.add_metadata(
-                "uboot_verification_strings",
-                "strings",
-                (
-                    "gunzip U-Boot | strings | grep -E "
-                    "'verified|signature|secure.?boot|FIT.*sign|required|rsa.*verify'"
-                ),
-            )
-
-        # Key findings
-        key_patterns = [
-            r"FIT:.*signed",
-            r"Verified-boot:",
-            r"Can't read verified-boot",
-            r"CONFIG_FIT_SIGNATURE",
-        ]
-        analysis.uboot_key_findings = filter_strings(uboot_strings, regex_patterns=key_patterns)
-
-        if analysis.uboot_key_findings:
-            analysis.add_metadata(
-                "uboot_key_findings",
-                "strings",
-                (
-                    "gunzip U-Boot | strings | grep -E "
-                    "'FIT:.*signed|Verified-boot:|Can't read verified-boot|CONFIG_FIT_SIGNATURE'"
-                ),
-            )
+    _analyze_uboot_strings(analysis, firmware, offsets)
 
     # Analyze OP-TEE strings
     section("Analyzing OP-TEE secure boot strings")
-
-    optee_offset_dec = offsets.get("OPTEE_GZ_OFFSET_DEC")
-    if isinstance(optee_offset_dec, int):
-        # Extract and decompress OP-TEE gzip data
-        optee_data = extract_gzip_at_offset(firmware, optee_offset_dec, 300000, use_dd=False)
-        optee_strings = extract_strings(optee_data) if optee_data else []
-
-        # Filter for secure boot related strings
-        secure_boot_patterns = [
-            r"secure.?boot",
-            r"otp.*key",
-            r"set.*flag",
-            r"key.*index",
-            r"enable.*flag",
-        ]
-        analysis.optee_secure_boot_strings = filter_strings(
-            optee_strings, regex_patterns=secure_boot_patterns
-        )[:30]
-
-        if analysis.optee_secure_boot_strings:
-            analysis.add_metadata(
-                "optee_secure_boot_strings",
-                "strings",
-                (
-                    "gunzip OP-TEE | strings | grep -E "
-                    "'secure.?boot|otp.*key|set.*flag|key.*index|enable.*flag'"
-                ),
-            )
+    _analyze_optee_strings(analysis, firmware, offsets)
 
     # Analyze device tree
     section("Analyzing device tree OTP/crypto nodes")
