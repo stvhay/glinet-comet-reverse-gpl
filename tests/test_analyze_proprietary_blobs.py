@@ -761,7 +761,7 @@ class TestHasGplString:
         ko_file = tmp_path / "test.ko"
         ko_file.write_bytes(b"dummy")
 
-        mock_run.side_effect = Exception("strings command failed")
+        mock_run.side_effect = OSError("strings command failed")
 
         result = has_gpl_string(ko_file)
 
@@ -902,7 +902,7 @@ class TestAnalyzeBinary:
         lib_file = tmp_path / "test.so"
         lib_file.write_bytes(b"dummy")
 
-        mock_run.side_effect = Exception("file command failed")
+        mock_run.side_effect = OSError("file command failed")
 
         result = analyze_binary(lib_file)
 
@@ -920,7 +920,7 @@ class TestAnalyzeBinary:
             if cmd[0] == "file":
                 return MagicMock(stdout="ELF", returncode=0)
             if cmd[0] == "strings":
-                raise Exception("strings command failed")
+                raise OSError("strings command failed")
             return MagicMock(returncode=1)
 
         mock_run.side_effect = mock_subprocess

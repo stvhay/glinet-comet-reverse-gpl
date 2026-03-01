@@ -30,9 +30,7 @@ from lib.finders import (
     get_file_size,
     get_relative_path,
 )
-from lib.firmware import extract_firmware  # noqa: F401 - Re-exported for tests
-from lib.firmware import find_squashfs_rootfs as find_rootfs  # noqa: F401 - Re-exported
-from lib.logging import section
+from lib.logging import section, warn
 
 # Constants
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
@@ -286,7 +284,8 @@ def has_gpl_string(ko_file: Path) -> bool:
             ["strings", str(ko_file)], capture_output=True, text=True, check=False
         )
         return "gpl" in result.stdout.lower()
-    except Exception:
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Failed to check GPL string in {ko_file.name}: {e}")
         return False
 
 
@@ -333,7 +332,8 @@ def analyze_binary(lib_file: Path) -> BinaryAnalysis | None:
             ["file", "-b", str(lib_file)], capture_output=True, text=True, check=False
         )
         file_type = file_result.stdout.strip().split(",")[0] if file_result.stdout else "unknown"
-    except Exception:
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Failed to determine file type for {lib_file.name}: {e}")
         file_type = "unknown"
 
     # Extract interesting strings
@@ -352,8 +352,8 @@ def analyze_binary(lib_file: Path) -> BinaryAnalysis | None:
                     interesting_strings.append(line.strip())
                     if len(interesting_strings) >= MAX_INTERESTING_STRINGS:
                         break
-    except Exception:
-        pass
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Failed to extract strings from {lib_file.name}: {e}")
 
     return BinaryAnalysis(
         library_name=lib_file.name,

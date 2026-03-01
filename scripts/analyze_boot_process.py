@@ -28,8 +28,8 @@ from typing import Any
 
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
-from lib.finders import find_files
-from lib.logging import error, section, success
+from lib.finders import find_elf_binaries, find_files
+from lib.logging import error, section, success, warn
 from lib.offsets import OffsetManager
 
 # A/B redundancy detection threshold
@@ -151,7 +151,8 @@ def get_fit_info(dts_file: Path) -> str | None:
     if dts_file.exists():
         try:
             return dts_file.read_text()
-        except Exception:
+        except (OSError, UnicodeDecodeError) as e:
+            warn(f"Failed to read DTS file {dts_file}: {e}")
             return None
     return None
 
@@ -291,28 +292,27 @@ def analyze_hardware_properties(
         # Derive architecture from ELF binaries in rootfs
         rootfs = find_rootfs(extract_dir)
         if rootfs:
-            all_files = find_files(rootfs, ["*"], file_type="file")
-            for elf_sample in all_files:
-                if elf_sample.stat().st_mode & 0o111:  # Check if executable
-                    try:
-                        result = subprocess.run(
-                            ["file", str(elf_sample)],
-                            capture_output=True,
-                            text=True,
-                            check=False,
-                        )
-                        if arch_match := re.search(r"(ARM|x86-64|aarch64)", result.stdout):
-                            arch = arch_match.group(1)
-                            analysis.hardware_properties.append(
-                                HardwareProperty(
-                                    property="Architecture", value=arch, source="ELF header"
-                                )
+            elf_candidates = find_elf_binaries(rootfs, ["busybox", "sh", "ls", "cat"])
+            for elf_sample in elf_candidates:
+                try:
+                    result = subprocess.run(
+                        ["file", str(elf_sample)],
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    if arch_match := re.search(r"(ARM|x86-64|aarch64)", result.stdout):
+                        arch = arch_match.group(1)
+                        analysis.hardware_properties.append(
+                            HardwareProperty(
+                                property="Architecture", value=arch, source="ELF header"
                             )
-                            break
-                    except Exception:
-                        continue
-    except Exception:
-        pass
+                        )
+                        break
+                except (OSError, subprocess.SubprocessError):
+                    continue
+    except (OSError, ValueError) as e:
+        warn(f"Failed to analyze hardware properties: {e}")
 
 
 def analyze_boot_components(
@@ -364,7 +364,8 @@ def analyze_boot_components(
                     ),
                 )
             )
-        except Exception:
+        except (OSError, subprocess.SubprocessError) as e:
+            warn(f"Failed to run strings on firmware: {e}")
             analysis.boot_components.append(
                 BootComponent(stage="U-Boot", found=False, evidence="U-Boot not identified")
             )
@@ -431,7 +432,8 @@ def analyze_component_versions(
             uboot_version = match.group(0)
         else:
             uboot_version = "unknown"
-    except Exception:
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Failed to extract U-Boot version: {e}")
         uboot_version = "unknown"
 
     analysis.component_versions.append(
@@ -454,7 +456,7 @@ def analyze_component_versions(
                 if match := re.search(r"vermagic=([0-9]+\.[0-9]+\.[0-9]+)", result.stdout):
                     kernel_version = match.group(1)
                     break
-            except Exception:
+            except (OSError, subprocess.SubprocessError):
                 continue
 
     analysis.component_versions.append(
@@ -474,8 +476,8 @@ def analyze_component_versions(
                             component="Buildroot", version=br_version, source="/etc/os-release"
                         )
                     )
-            except Exception:
-                pass
+            except OSError as e:
+                warn(f"Failed to read {os_release}: {e}")
 
 
 def analyze_partitions(offsets: dict[str, str | int], analysis: BootProcessAnalysis) -> None:
@@ -612,8 +614,8 @@ def analyze_boot_config(dts_file: Path, analysis: BootProcessAnalysis) -> None:
                 ConsoleConfig(parameter="Console", value=console, source="DTS stdout-path/bootargs")
             )
 
-    except Exception:
-        pass
+    except (OSError, ValueError) as e:
+        warn(f"Failed to analyze boot config: {e}")
 
 
 def _write_hardware_table(f: Any, hardware_properties: list[HardwareProperty]) -> None:
@@ -634,7 +636,7 @@ def _write_partitions_table(f: Any, partitions: list[Partition]) -> None:
     f.write("Derived from firmware offsets in `binwalk-offsets.sh`:\n")
     f.write("\n")
     f.write("| Region | Offset | Size | Type | Content |\n")
-    f.write("|--------|--------|------|------|---------||\n")
+    f.write("|--------|--------|------|------|--------|\n")
     for partition in partitions:
         f.write(
             f"| {partition.region} | `{partition.offset}` | ~{partition.size_mb} MB | "
@@ -821,12 +823,8 @@ class BootProcessScript(AnalysisScript):
         Args:
             analysis: Completed boot process analysis
         """
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        output_dir = project_root / "output"
-
         section("Generating markdown report")
-        md_output = output_dir / "boot-process.md"
+        md_output = self.output_dir / "boot-process.md"
 
         if isinstance(analysis, BootProcessAnalysis):
             generate_markdown(analysis, md_output)

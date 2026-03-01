@@ -600,10 +600,7 @@ class TestIntegration:
             version="U-Boot 2023.07-rc4 (Dec 15 2023 - 10:30:00 +0000)",
             build_date="(Dec 15 2023 - 10:30:00 +0000)",
             boot_commands=["bootcmd=run distro_bootcmd"],
-            # NOTE: extraction_method field name ends with "_method" which causes it to be
-            # filtered out by output_toml's check for metadata fields. This appears to be
-            # a bug in the original code, but we test the actual behavior here.
-            # extraction_method="gzip_decompression",  # This would be filtered out
+            extraction_method="gzip_decompression",
             extraction_offset="0x901B4",
         )
 
@@ -638,8 +635,7 @@ class TestIntegration:
         assert "U-Boot 2023.07" in parsed["version"]
         assert parsed["build_date"] == "(Dec 15 2023 - 10:30:00 +0000)"
         assert len(parsed["boot_commands"]) == 1
-        # extraction_method would be filtered out by output_toml
-        # assert "extraction_method" not in parsed  # Known issue
+        assert parsed["extraction_method"] == "gzip_decompression"
         assert parsed["extraction_offset"] == "0x901B4"
 
         # Check header comments

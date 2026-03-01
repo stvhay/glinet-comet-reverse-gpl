@@ -15,7 +15,6 @@ Arguments:
 """
 
 import re
-import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -23,6 +22,7 @@ from typing import Any
 from lib.analysis_base import AnalysisBase
 from lib.base_script import AnalysisScript
 from lib.extraction import extract_gzip_at_offset, extract_strings, filter_strings
+from lib.firmware import extract_firmware
 from lib.logging import section
 
 
@@ -78,35 +78,6 @@ class SecureBootAnalysis(AnalysisBase):
                 "signed_components": value.signed_components,
             }
         return False, None
-
-
-def extract_firmware(firmware: Path, work_dir: Path) -> Path:
-    """Extract firmware using binwalk.
-
-    Args:
-        firmware: Path to firmware file
-        work_dir: Work directory for extractions
-
-    Returns:
-        Path to extracted directory
-    """
-    extract_base = work_dir / "extractions"
-    extract_dir = extract_base / f"{firmware.name}.extracted"
-
-    extract_base.mkdir(parents=True, exist_ok=True)
-
-    if not extract_dir.exists():
-        try:
-            subprocess.run(
-                ["binwalk", "-e", "--run-as=root", str(firmware)],
-                cwd=extract_base,
-                capture_output=True,
-                check=False,
-            )
-        except FileNotFoundError as e:
-            raise FileNotFoundError("binwalk command not found") from e
-
-    return extract_dir
 
 
 def find_dtb_file(extract_dir: Path, offset_hex: str) -> Path | None:

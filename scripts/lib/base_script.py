@@ -114,8 +114,8 @@ class AnalysisScript(ABC):
         Returns:
             Path to output/ directory
         """
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
+        script_dir = Path(__file__).parent  # scripts/lib/
+        project_root = script_dir.parent.parent  # project root
         output_dir = project_root / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
         return output_dir

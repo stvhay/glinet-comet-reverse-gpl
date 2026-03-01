@@ -9,6 +9,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Literal, TypeVar
 
+from .logging import warn
+
 T = TypeVar("T")
 
 
@@ -105,8 +107,8 @@ def find_and_create(
         try:
             obj = creator_func(rootfs, path)
             objects.append(obj)
-        except Exception:
-            # Skip files that fail to process
+        except (OSError, ValueError, KeyError) as e:
+            warn(f"Skipped {path.name}: {e}")
             continue
 
     return objects
@@ -118,6 +120,9 @@ def find_by_names(
     file_type: Literal["file", "dir", "any"] = "file",
 ) -> dict[str, Path | None]:
     """Find multiple files/directories by exact name, returning first match for each.
+
+    Tries exact name match first. If not found, falls back to wildcard prefix
+    match (e.g., "ssh" would also match "sshd", "ssh_config").
 
     Args:
         rootfs: Root filesystem path to search in
@@ -236,8 +241,8 @@ def find_libraries(
             "usr/lib",
             "lib64",
             "usr/lib64",
-            "lib/aarch64-linux-gnu",
-            "usr/lib/aarch64-linux-gnu",
+            "lib/arm-linux-gnueabihf",
+            "usr/lib/arm-linux-gnueabihf",
         ]
 
     found_libs: set[Path] = set()

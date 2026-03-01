@@ -28,8 +28,11 @@ def _auto_detect_fields(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     complex_: list[str] = []
 
     for key, value in data.items():
+        # Skip metadata keys: {field}_source and {field}_method where {field} is another key
         if key.endswith("_source") or key.endswith("_method"):
-            continue
+            base_key = key.rsplit("_", 1)[0]
+            if base_key in data:
+                continue
 
         if isinstance(value, list | dict):
             complex_.append(key)
@@ -117,7 +120,7 @@ def output_toml(
     # Validate by parsing it back
     try:
         tomlkit.loads(toml_str)
-    except Exception as e:
+    except (tomlkit.exceptions.ParseError, ValueError) as e:
         error(f"Generated invalid TOML: {e}")
         sys.exit(1)
 
@@ -138,7 +141,7 @@ def output_json(analysis: Any) -> str:
     # Validate by parsing it back
     try:
         json.loads(json_str)
-    except Exception as e:
+    except (json.JSONDecodeError, ValueError) as e:
         error(f"Generated invalid JSON: {e}")
         sys.exit(1)
 

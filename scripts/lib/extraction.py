@@ -11,6 +11,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from .logging import warn
+
 # String extraction constants
 MIN_STRING_LENGTH = 4  # Minimum length for extracted strings (matching GNU strings default)
 ASCII_PRINTABLE_MIN = 32  # Space character
@@ -87,7 +89,8 @@ def _extract_gzip_with_dd(firmware: Path, offset: int, size: int) -> bytes | Non
 
         return decompressed_data if decompressed_data else None
 
-    except Exception:
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Pipeline extraction failed at offset {offset}: {e}")
         return None
 
 
