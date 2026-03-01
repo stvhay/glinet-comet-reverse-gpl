@@ -7,14 +7,14 @@
 # GPL compliance report for the GL.iNet Comet (GL-RM1) firmware.
 #
 # Modules (can also be run individually):
-#   analyze_binwalk.py         - Firmware structure analysis
-#   analyze-device-trees.sh    - Device tree extraction
-#   analyze-uboot.sh           - U-Boot bootloader analysis
-#   analyze-boot-process.sh    - Boot chain documentation
-#   analyze-rootfs.sh          - Rootfs, licenses, packages
-#   analyze-network-services.sh - Network attack surface
-#   analyze-proprietary-blobs.sh - Vendor binary inventory
-#   analyze-secure-boot.sh     - Secure boot configuration
+#   analyze_binwalk.py            - Firmware structure analysis
+#   analyze_device_trees.py       - Device tree extraction
+#   analyze_uboot.py              - U-Boot bootloader analysis
+#   analyze_boot_process.py       - Boot chain documentation
+#   analyze_rootfs.py             - Rootfs, licenses, packages
+#   analyze_network_services.py   - Network attack surface
+#   analyze_proprietary_blobs.py  - Vendor binary inventory
+#   analyze_secure_boot.py        - Secure boot configuration
 
 set -euo pipefail
 
@@ -227,11 +227,10 @@ should_run "device-trees" && run_python_module "device-trees"
 should_run "uboot" && run_python_module "uboot"
 should_run "rootfs" && run_python_module "rootfs"
 
-# Bash modules (output markdown to output/) - to be migrated incrementally
-should_run "boot-process" && run_bash_module "boot-process"
-should_run "network-services" && run_bash_module "network-services"
-should_run "proprietary-blobs" && run_bash_module "proprietary-blobs"
-should_run "secure-boot" && run_bash_module "secure-boot"
+should_run "boot-process" && run_python_module "boot-process"
+should_run "network-services" && run_python_module "network-services"
+should_run "proprietary-blobs" && run_python_module "proprietary-blobs"
+should_run "secure-boot" && run_python_module "secure-boot"
 
 # ==============================================================================
 # Render wiki templates
