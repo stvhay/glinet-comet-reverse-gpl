@@ -153,6 +153,7 @@ def _create_library_info(purpose_prefix: str) -> Callable[[Path, Path], "Library
     """
 
     def creator(rootfs: Path, path: Path) -> LibraryInfo:
+        """Create a LibraryInfo from a found library path."""
         size = get_file_size(path)
         rel_path = get_relative_path(rootfs, path)
         # Extract base library name without version
@@ -227,6 +228,7 @@ def find_wifi_bt_blobs(rootfs: Path) -> list[FirmwareBlob]:
     all_patterns = bcm_patterns + rtl_patterns
 
     def create_blob(rootfs: Path, path: Path) -> FirmwareBlob:
+        """Create a FirmwareBlob from a found firmware binary path."""
         return FirmwareBlob(
             name=path.name,
             path=get_relative_path(rootfs, path),
@@ -299,6 +301,7 @@ def find_kernel_modules(rootfs: Path) -> list[KernelModule]:
     """
 
     def create_module(rootfs: Path, path: Path) -> KernelModule:
+        """Create a KernelModule from a found .ko path."""
         return KernelModule(
             name=path.name,
             path=get_relative_path(rootfs, path),
