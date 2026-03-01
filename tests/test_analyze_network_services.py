@@ -1038,9 +1038,7 @@ user:!:19001:0:99999:7:::
         return rootfs
 
     @patch("subprocess.run")
-    def test_realistic_network_services_analysis(
-        self, mock_run: Any, tmp_path: Path
-    ) -> None:
+    def test_realistic_network_services_analysis(self, mock_run: Any, tmp_path: Path) -> None:
         """Test complete analysis workflow with realistic filesystem."""
         rootfs = self._setup_network_rootfs(tmp_path)
 

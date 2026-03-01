@@ -178,9 +178,7 @@ def _parse_uboot_strings(analysis: UBootAnalysis, uboot_strings: list[str]) -> N
             "strings matching '^boot(cmd|args|delay)='",
         )
 
-    env_vars = [
-        s for s in uboot_strings if re.match(r"^[a-z_]+=", s) and not s.startswith("boot")
-    ]
+    env_vars = [s for s in uboot_strings if re.match(r"^[a-z_]+=", s) and not s.startswith("boot")]
     if env_vars:
         analysis.environment_variables = env_vars[:20]
         analysis.add_metadata(

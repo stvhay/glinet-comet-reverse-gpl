@@ -419,9 +419,7 @@ def _scan_network_services(analysis: NetworkServicesAnalysis, rootfs: Path) -> N
         )
 
 
-def analyze_firmware(
-    firmware_path: str, rootfs: Path
-) -> NetworkServicesAnalysis:
+def analyze_firmware(firmware_path: str, rootfs: Path) -> NetworkServicesAnalysis:
     """Analyze firmware for network services and attack surface.
 
     Args:
