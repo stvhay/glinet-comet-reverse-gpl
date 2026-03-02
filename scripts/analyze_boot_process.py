@@ -18,6 +18,7 @@ Arguments:
 """
 
 import re
+import struct
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -37,6 +38,10 @@ MIN_FIT_IMAGES_FOR_AB = 2
 
 # FIT info extraction limit
 FIT_INFO_LINE_LIMIT = 30
+
+# Rockchip parameter file constants
+RKFW_PARAM_OFFSET_POS = 0x22
+RKFW_PARAM_MAX_SIZE = 65536
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,6 +97,11 @@ class BootProcessAnalysis(AnalysisBase):
 
     firmware_file: str
     firmware_size: int
+    soc_name: str | None = None
+    cpu_architecture: str | None = None
+    storage_type: str | None = None
+    console_device: str | None = None
+    console_baudrate: str | None = None
     hardware_properties: list[HardwareProperty] = field(default_factory=list)
     boot_components: list[BootComponent] = field(default_factory=list)
     component_versions: list[ComponentVersion] = field(default_factory=list)
@@ -172,6 +182,203 @@ def load_firmware_offsets(output_dir: Path) -> dict[str, str | int]:
         sys.exit(1)
 
 
+def extract_rockchip_parameter(firmware_path: Path) -> str | None:
+    """Extract the Rockchip parameter file from RKFW firmware image.
+
+    The RKFW format embeds a parameter file at an offset specified in the
+    firmware header. The parameter file contains partition layout definitions
+    in CMDLINE format.
+
+    Args:
+        firmware_path: Path to firmware image
+
+    Returns:
+        Parameter file contents as string, or None if extraction fails
+    """
+    try:
+        with firmware_path.open("rb") as f:
+            # Read RKFW magic
+            magic = f.read(4)
+            if magic != b"RKFW":
+                return None
+
+            # Read parameter offset from header (little-endian uint32 at 0x22)
+            f.seek(RKFW_PARAM_OFFSET_POS)
+            param_offset = struct.unpack("<I", f.read(4))[0]
+
+            # Read parameter section header (4 bytes magic + 4 bytes size)
+            f.seek(param_offset)
+            param_magic = f.read(4)
+            if param_magic != b"PARM":
+                return None
+
+            param_size = struct.unpack("<I", f.read(4))[0]
+            if param_size > RKFW_PARAM_MAX_SIZE:
+                # Sanity check: parameter files are typically < 1KB
+                return None
+
+            # Read parameter content
+            param_data = f.read(param_size)
+            return param_data.decode("utf-8", errors="replace")
+    except (OSError, struct.error, ValueError) as e:
+        warn(f"Failed to extract Rockchip parameter file: {e}")
+        return None
+
+
+def parse_rockchip_partitions(param_content: str) -> list[Partition]:
+    """Parse partition definitions from Rockchip parameter file content.
+
+    The parameter file uses CMDLINE format with mtdparts/blkdevparts syntax:
+    CMDLINE:mtdparts=rk29xxnand:0x2000@0x2000(uboot),...
+
+    Args:
+        param_content: Raw parameter file text
+
+    Returns:
+        List of Partition objects parsed from parameter file
+    """
+    partitions: list[Partition] = []
+
+    # Find CMDLINE line containing partition definitions
+    for raw_line in param_content.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("CMDLINE:"):
+            continue
+
+        # Extract mtdparts or blkdevparts definition
+        parts_match = re.search(r"(?:mtdparts|blkdevparts)=[^:]+:(.*?)(?:\s|$)", line)
+        if not parts_match:
+            continue
+
+        parts_str = parts_match.group(1)
+        # Parse each partition: size@offset(name)
+        for part_match in re.finditer(r"(0x[0-9a-fA-F]+|-)@(0x[0-9a-fA-F]+)\(([^)]+)\)", parts_str):
+            size_str = part_match.group(1)
+            offset_str = part_match.group(2)
+
+            # Convert size from 512-byte sectors to MB
+            if size_str == "-":
+                size_mb = 0  # Remaining space
+            else:
+                size_sectors = int(size_str, 16)
+                size_mb = (size_sectors * 512) // (1024 * 1024)
+
+            name = part_match.group(3)
+
+            # Determine partition type and content from name
+            ptype, content = _classify_partition(name)
+
+            partitions.append(
+                Partition(
+                    region=name,
+                    offset=offset_str,
+                    size_mb=size_mb,
+                    type=ptype,
+                    content=content,
+                )
+            )
+
+    return partitions
+
+
+def _classify_partition(name: str) -> tuple[str, str]:
+    """Classify a partition by name into type and content description.
+
+    Args:
+        name: Partition name from parameter file
+
+    Returns:
+        Tuple of (type, content description)
+    """
+    classifications: dict[str, tuple[str, str]] = {
+        "uboot": ("raw", "U-Boot bootloader"),
+        "trust": ("raw", "OP-TEE / Trusted firmware"),
+        "misc": ("raw", "Boot control / recovery flags"),
+        "dtb": ("raw", "Device tree blob"),
+        "dtbo": ("raw", "Device tree overlay"),
+        "boot": ("FIT/raw", "Kernel + ramdisk"),
+        "recovery": ("FIT/raw", "Recovery kernel + ramdisk"),
+        "rootfs": ("SquashFS", "Main filesystem"),
+        "oem": ("ext4", "OEM data partition"),
+        "userdata": ("ext4", "User data partition"),
+        "reserved": ("raw", "Reserved space"),
+    }
+
+    # Try exact match first
+    if name in classifications:
+        return classifications[name]
+
+    # Try prefix match (e.g., dtb1, dtb2)
+    for prefix, (ptype, content) in classifications.items():
+        if name.startswith(prefix):
+            return ptype, content
+
+    return "unknown", name
+
+
+def analyze_storage_type(analysis: BootProcessAnalysis, dts_file: Path | None) -> None:
+    """Determine storage type from bootargs or device tree.
+
+    Looks for eMMC/SD card evidence in kernel command line (root=/dev/mmcblk)
+    or DTS mmc/emmc/dwmmc nodes.
+
+    Args:
+        analysis: Analysis object to update
+        dts_file: Path to device tree source file (may be None)
+    """
+    # Check kernel command line for mmcblk references
+    if analysis.kernel_cmdline and "mmcblk" in analysis.kernel_cmdline:
+        analysis.storage_type = "eMMC"
+        analysis.add_metadata(
+            "storage_type",
+            "kernel-cmdline",
+            "bootargs contains mmcblk reference indicating eMMC/MMC storage",
+        )
+        return
+
+    # Check DTS for eMMC/MMC controller nodes
+    if dts_file and dts_file.exists():
+        try:
+            content = dts_file.read_text()
+            if re.search(r"(?:emmc|mmc-hs[24]00|sdhci)", content, re.IGNORECASE):
+                analysis.storage_type = "eMMC"
+                analysis.add_metadata(
+                    "storage_type",
+                    "device-tree",
+                    "DTS contains eMMC/SDHCI controller nodes",
+                )
+                return
+        except (OSError, ValueError):
+            pass
+
+    # Check U-Boot environment for mmc references
+    if analysis.kernel_cmdline and "mmc" in analysis.kernel_cmdline.lower():
+        analysis.storage_type = "eMMC"
+        analysis.add_metadata(
+            "storage_type",
+            "kernel-cmdline",
+            "bootargs contains mmc reference",
+        )
+
+
+def _analyze_partitions_from_firmware(
+    firmware: Path, offsets: dict[str, str | int], analysis: BootProcessAnalysis
+) -> None:
+    """Try Rockchip parameter file first, fall back to offset-based partitions."""
+    param_content = extract_rockchip_parameter(firmware)
+    if param_content:
+        param_partitions = parse_rockchip_partitions(param_content)
+        if param_partitions:
+            analysis.partitions.extend(param_partitions)
+            analysis.add_metadata(
+                "partitions",
+                "rockchip-parameter-file",
+                "parse CMDLINE mtdparts from RKFW parameter section",
+            )
+    if not analysis.partitions:
+        analyze_partitions(offsets, analysis)
+
+
 def analyze_boot_process(
     firmware_path: str, extract_dir: Path, offsets: dict[str, str | int]
 ) -> BootProcessAnalysis:
@@ -244,15 +451,16 @@ def analyze_boot_process(
     # Analyze component versions
     analyze_component_versions(firmware, extract_dir, analysis)
 
-    # Analyze partition layout
-    analyze_partitions(offsets, analysis)
+    # Analyze partition layout (try Rockchip parameter file first, fall back to offsets)
+    _analyze_partitions_from_firmware(firmware, offsets, analysis)
 
     # Analyze A/B redundancy
     analyze_ab_redundancy(extract_dir, analysis)
 
-    # Analyze boot configuration
+    # Analyze boot configuration and storage type
     if kernel_full_dts:
         analyze_boot_config(kernel_full_dts, analysis)
+    analyze_storage_type(analysis, kernel_full_dts)
 
     return analysis
 
@@ -285,10 +493,15 @@ def analyze_hardware_properties(
 
             # Derive SoC from compatible string
             if "rv1126" in compat:
+                soc_value = "Rockchip RV1126"
                 analysis.hardware_properties.append(
-                    HardwareProperty(
-                        property="SoC", value="Rockchip RV1126", source="DTS compatible"
-                    )
+                    HardwareProperty(property="SoC", value=soc_value, source="DTS compatible")
+                )
+                analysis.soc_name = soc_value
+                analysis.add_metadata(
+                    "soc_name",
+                    "device-tree",
+                    "derived from DTS compatible string containing rv1126",
                 )
 
         # Derive architecture from ELF binaries in rootfs
@@ -309,6 +522,19 @@ def analyze_hardware_properties(
                             HardwareProperty(
                                 property="Architecture", value=arch, source="ELF header"
                             )
+                        )
+                        # Set top-level cpu_architecture field
+                        if arch == "ARM":
+                            cpu_arch = "ARM Cortex-A7 (32-bit)"
+                        elif arch == "aarch64":
+                            cpu_arch = "ARM (64-bit)"
+                        else:
+                            cpu_arch = arch
+                        analysis.cpu_architecture = cpu_arch
+                        analysis.add_metadata(
+                            "cpu_architecture",
+                            "ELF-header",
+                            f"file command on {elf_sample.name} reports {arch}",
                         )
                         break
                 except (OSError, subprocess.SubprocessError):
@@ -610,10 +836,25 @@ def analyze_boot_config(dts_file: Path, analysis: BootProcessAnalysis) -> None:
                     parameter="Baud Rate", value=str(baudrate), source="DTS rockchip,baudrate"
                 )
             )
+            analysis.console_baudrate = str(baudrate)
+            analysis.add_metadata(
+                "console_baudrate",
+                "device-tree",
+                "rockchip,baudrate property in DTS",
+            )
 
         if console:
             analysis.console_configs.append(
                 ConsoleConfig(parameter="Console", value=console, source="DTS stdout-path/bootargs")
+            )
+            # Extract just the device name (e.g., "ttyFIQ0" from "ttyFIQ0,1500000n8"
+            # or "serial0" from "serial0:1500000n8")
+            console_dev = re.split(r"[,:]", console)[0]
+            analysis.console_device = console_dev
+            analysis.add_metadata(
+                "console_device",
+                "device-tree",
+                "stdout-path or bootargs console= in DTS",
             )
 
     except (OSError, ValueError) as e:
@@ -778,6 +1019,11 @@ def generate_markdown(analysis: BootProcessAnalysis, output_file: Path) -> None:
 SIMPLE_FIELDS = [
     "firmware_file",
     "firmware_size",
+    "soc_name",
+    "cpu_architecture",
+    "storage_type",
+    "console_device",
+    "console_baudrate",
     "bootloader_fit_info",
     "kernel_fit_info",
     "ab_redundancy",
