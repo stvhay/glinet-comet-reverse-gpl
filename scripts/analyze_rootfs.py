@@ -114,10 +114,14 @@ class RootfsAnalysis(AnalysisBase):
         if key == "gpl_binaries":
             return True, [
                 {
-                    "name": b.name,
-                    "path": b.path,
-                    "license": b.license,
-                    "version": b.version,
+                    k: v
+                    for k, v in {
+                        "name": b.name,
+                        "path": b.path,
+                        "license": b.license,
+                        "version": b.version,
+                    }.items()
+                    if v is not None
                 }
                 for b in value
             ]

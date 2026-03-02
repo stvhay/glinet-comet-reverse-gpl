@@ -110,7 +110,7 @@ def _extract_gzip_with_python(firmware: Path, offset: int, size: int) -> bytes |
         decompressed = gzip.decompress(compressed_data)
         return decompressed if decompressed else None
 
-    except (OSError, gzip.BadGzipFile):
+    except (OSError, gzip.BadGzipFile, EOFError):
         return None
 
 

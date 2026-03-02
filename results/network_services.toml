@@ -1,0 +1,380 @@
+# Network services and attack surface analysis
+# Generated: 2026-03-02T00:48:00.023686+00:00
+
+# Source: filesystem
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: filesystem
+# Method: Path(firmware).stat().st_size
+# Reproducibility: software
+firmware_size = 273547736
+
+# Source: binwalk
+# Method: find squashfs-root in extracted firmware
+# Reproducibility: software
+rootfs_path = "/tmp/fw_analysis/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root"
+
+# Source: filesystem
+# Method: check if /etc/passwd exists
+# Reproducibility: software
+passwd_file_exists = true
+
+# Source: filesystem
+# Method: check if /etc/shadow exists
+# Reproducibility: software
+shadow_file_exists = true
+
+# Source: filesystem
+# Method: check if /etc/network/interfaces exists
+# Reproducibility: software
+network_interfaces_exists = true
+
+# Source: filesystem
+# Method: count web server binaries found
+# Reproducibility: software
+web_server_count = 1
+
+# Source: filesystem
+# Method: count SSH server binaries found
+# Reproducibility: software
+ssh_server_count = 1
+
+# Source: filesystem
+# Method: find /etc/init.d -maxdepth 1 -type f
+# Reproducibility: software
+# Init Scripts
+sensitive_files = ["etc/kvmd/ipmipasswd", "etc/kvmd/janus/janus.jcfg", "etc/kvmd/nginx/mime-types.conf", "etc/kvmd/vncpasswd", "etc/screenrc", "etc/udev/hwdb.d/20-OUI.hwdb", "etc/udev/hwdb.d/20-bluetooth-vendor-product.hwdb", "etc/udev/hwdb.d/20-usb-vendor-model.hwdb", "etc/udev/hwdb.d/20-pci-vendor-model.hwdb", "etc/udev/hwdb.d/20-pci-classes.hwdb", "etc/bash_completion.d/perf", "etc/ssl/misc/tsget.pl", "etc/ssl/openssl.cnf.dist", "etc/ssl/openssl.cnf", "etc/init.d/S23config", "etc/init.d/S99cloudflare", "etc/janus/janus.transport.http.jcfg.sample", "etc/janus/janus.transport.websockets.jcfg.sample", "etc/janus/janus.jcfg.sample", "etc/ssh/sshd_config"]
+
+[[init_scripts]]
+name = ".usb_config"
+size = 0
+
+[[init_scripts]]
+name = "S01logging"
+size = 675
+
+[[init_scripts]]
+name = "S04startup_app_ipc"
+size = 343
+
+[[init_scripts]]
+name = "S10atomic_commit.sh"
+size = 428
+
+[[init_scripts]]
+name = "S10udevd"
+size = 2266
+
+[[init_scripts]]
+name = "S10watchdog"
+size = 582
+
+[[init_scripts]]
+name = "S20urandom"
+size = 1272
+
+[[init_scripts]]
+name = "S21mountall.sh"
+size = 13035
+
+[[init_scripts]]
+name = "S22config_env"
+size = 300
+
+[[init_scripts]]
+name = "S22overlayfs"
+size = 1096
+
+[[init_scripts]]
+name = "S23config"
+size = 2407
+
+[[init_scripts]]
+name = "S23crontab"
+size = 525
+
+[[init_scripts]]
+name = "S23hdmi"
+size = 4105
+
+[[init_scripts]]
+name = "S23led"
+size = 1407
+
+[[init_scripts]]
+name = "S24glhwinfo"
+size = 1014
+
+[[init_scripts]]
+name = "S30dbus"
+size = 1691
+
+[[init_scripts]]
+name = "S36load_rv1109_wifi_modules"
+size = 784
+
+[[init_scripts]]
+name = "S40network"
+size = 438
+
+[[init_scripts]]
+name = "S45connman"
+size = 1173
+
+[[init_scripts]]
+name = "S46kvmd-network"
+size = 3362
+
+[[init_scripts]]
+name = "S49alsa"
+size = 314
+
+[[init_scripts]]
+name = "S49ntp"
+size = 675
+
+[[init_scripts]]
+name = "S50dropbear"
+size = 1357
+
+[[init_scripts]]
+name = "S50fcgiwrap"
+size = 830
+
+[[init_scripts]]
+name = "S50kvmd-otg"
+size = 1309
+
+[[init_scripts]]
+name = "S50usbdevice"
+size = 13154
+
+[[init_scripts]]
+name = "S51n4"
+size = 89
+
+[[init_scripts]]
+name = "S59snmpd"
+size = 2737
+
+[[init_scripts]]
+name = "S80mDNSResponder"
+size = 1238
+
+[[init_scripts]]
+name = "S80ttyd"
+size = 913
+
+[[init_scripts]]
+name = "S81bluetoothd"
+size = 641
+
+[[init_scripts]]
+name = "S81ubus"
+size = 425
+
+[[init_scripts]]
+name = "S97kvmd-rndis"
+size = 539
+
+[[init_scripts]]
+name = "S98_lunch_init"
+size = 502
+
+[[init_scripts]]
+name = "S98kvmd"
+size = 1285
+
+[[init_scripts]]
+name = "S98kvmd-media"
+size = 1195
+
+[[init_scripts]]
+name = "S99_auto_reboot"
+size = 742
+
+[[init_scripts]]
+name = "S99_bootcontrol"
+size = 208
+
+[[init_scripts]]
+name = "S99_fgb_init"
+size = 198
+
+[[init_scripts]]
+name = "S99cloudflare"
+size = 2112
+
+[[init_scripts]]
+name = "S99custom"
+size = 1182
+
+[[init_scripts]]
+name = "S99gl-cloud"
+size = 875
+
+[[init_scripts]]
+name = "S99input-event-daemon"
+size = 468
+
+[[init_scripts]]
+name = "S99kvmd-janus"
+size = 2405
+
+[[init_scripts]]
+name = "S99kvmd-nginx"
+size = 2437
+
+[[init_scripts]]
+name = "S99rtty"
+size = 2533
+
+[[init_scripts]]
+name = "S99tailscale"
+size = 2381
+
+[[init_scripts]]
+name = "S99zerotier"
+size = 2246
+
+[[init_scripts]]
+name = "rcK"
+size = 423
+
+[[init_scripts]]
+name = "rcS"
+size = 408
+
+# Source: filesystem
+# Method: find rootfs for nginx, lighttpd, httpd, apache2, uvicorn, gunicorn
+# Reproducibility: software
+# Web Servers
+
+[[web_servers]]
+name = "nginx"
+path = "etc/logrotate.d/nginx"
+description = "Nginx web server"
+
+# Source: filesystem
+# Method: find rootfs -path '*/site-packages/aiohttp*' or uvicorn*
+# Reproducibility: software
+# Web Frameworks
+
+[[web_frameworks]]
+name = "aiohttp"
+path = "Python package"
+description = "Async HTTP framework"
+
+# Source: filesystem
+# Method: find rootfs for sshd or dropbear
+# Reproducibility: software
+# Ssh Server
+
+[ssh_server]
+name = "sshd"
+path = "etc/ssh/sshd_config"
+description = "OpenSSH server"
+
+# Source: filesystem
+# Method: find rootfs for dnsmasq, hostapd, mosquitto, telnetd, etc.
+# Reproducibility: software
+# Network Services
+
+[[network_services]]
+name = "dnsmasq"
+path = "etc/dnsmasq.conf"
+description = "DNS/DHCP"
+
+[[network_services]]
+name = "hostapd"
+path = "usr/sbin/hostapd"
+description = "WiFi AP"
+
+[[network_services]]
+name = "wpa_supplicant"
+path = "usr/sbin/wpa_supplicant"
+description = "WiFi client"
+
+[[network_services]]
+name = "ntpd"
+path = "usr/sbin/ntpd"
+description = "NTP"
+
+[[network_services]]
+name = "bluetoothd"
+path = "usr/sbin/bluetoothd"
+description = "Bluetooth"
+
+[[network_services]]
+name = "janus"
+path = "usr/bin/janus"
+description = "WebRTC gateway"
+
+# Source: filesystem
+# Method: parse /etc/shadow and identify hash types
+# Reproducibility: software
+# Password Entries
+
+[[password_entries]]
+username = "root"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "daemon"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "bin"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "sys"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "sync"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "mail"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "www-data"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "operator"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "nobody"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "dbus"
+hash_type = "locked"
+description = "No password / locked"
+
+[[password_entries]]
+username = "snmp"
+hash_type = "locked"
+description = "No password / locked"
+
+# Source: grep
+# Method: grep -r -l -i 'password|secret|api.key|token' /etc
+# Reproducibility: software
+# Sensitive Files
+
+

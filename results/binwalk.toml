@@ -1,0 +1,169 @@
+# Binwalk firmware analysis
+# Generated: 2026-03-02T00:40:12.193928+00:00
+
+# Source: binwalk
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: binwalk
+# Method: Path(firmware).stat().st_size
+# Reproducibility: software
+firmware_size = 273547736
+
+# Source: binwalk
+# Method: count lines matching 'squashfs'
+# Reproducibility: software
+squashfs_count = 1
+
+# Source: binwalk
+# Method: count lines matching 'gzip'
+# Reproducibility: software
+gzip_count = 6
+
+# Source: binwalk
+# Method: count lines matching 'device tree|dtb|flattened'
+# Reproducibility: software
+dtb_count = 12
+
+# Source: binwalk
+# Method: count lines matching 'ext.*filesystem'
+# Reproducibility: software
+ext4_count = 2
+
+# Source: binwalk
+# Method: first line matching 'device tree blob'
+# Reproducibility: software
+bootloader_fit_offset = "0x8F1B4"
+
+# Source: binwalk
+# Method: first line matching 'u-boot-nodtb.bin'
+# Reproducibility: software
+uboot_offset = "0x901B4"
+
+# Source: binwalk
+# Method: first line matching 'tee.bin'
+# Reproducibility: software
+optee_offset = "0xFD5B4"
+
+# Source: binwalk
+# Method: first DTB line matching '96558 bytes'
+# Reproducibility: software
+kernel_fit_offset = "0x49B9B4"
+
+# Source: binwalk
+# Method: first line matching 'rootfs.cpio'
+# Reproducibility: software
+rootfs_cpio_offset = "0x1465DB4"
+
+# Source: binwalk
+# Method: first line matching 'squashfs'
+# Reproducibility: software
+squashfs_offset = "0x1CEA1B4"
+
+# Source: binwalk
+# Method: binwalk output parsing
+# Reproducibility: software
+# Identified Components
+
+[[identified_components]]
+offset = "0x8F1B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 2048 bytes"
+
+[[identified_components]]
+offset = "0x901B4"
+type = "gzip"
+description = "gzip compressed data, original file name: \"u-boot-nodtb.bin\", operating system: Unix, timestamp: 2025-11-27 08:06:13, total size:"
+
+[[identified_components]]
+offset = "0xFD5B4"
+type = "gzip"
+description = "gzip compressed data, original file name: \"tee.bin\", operating system: Unix, timestamp: 2025-11-27 08:06:14, total size: 216189"
+
+[[identified_components]]
+offset = "0x1323B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 11308 bytes"
+
+[[identified_components]]
+offset = "0x28F1B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 2048 bytes"
+
+[[identified_components]]
+offset = "0x2901B4"
+type = "gzip"
+description = "gzip compressed data, original file name: \"u-boot-nodtb.bin\", operating system: Unix, timestamp: 2025-11-27 08:06:13, total size:"
+
+[[identified_components]]
+offset = "0x2FD5B4"
+type = "gzip"
+description = "gzip compressed data, original file name: \"tee.bin\", operating system: Unix, timestamp: 2025-11-27 08:06:14, total size: 216189"
+
+[[identified_components]]
+offset = "0x3323B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 11308 bytes"
+
+[[identified_components]]
+offset = "0x49B1B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 1536 bytes"
+
+[[identified_components]]
+offset = "0x49B9B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 96558 bytes"
+
+[[identified_components]]
+offset = "0x4CB8B2"
+type = "SHA256"
+description = "SHA256 hash constants, little endian"
+
+[[identified_components]]
+offset = "0xC385B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 96558 bytes"
+
+[[identified_components]]
+offset = "0xCC91B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 2048 bytes"
+
+[[identified_components]]
+offset = "0xCC99B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 96558 bytes"
+
+[[identified_components]]
+offset = "0xCF98B2"
+type = "SHA256"
+description = "SHA256 hash constants, little endian"
+
+[[identified_components]]
+offset = "0x1465DB4"
+type = "gzip"
+description = "gzip compressed data, original file name: \"rootfs.cpio\", operating system: Unix, timestamp: 2025-11-27 08:56:39, total size:"
+
+[[identified_components]]
+offset = "0x1C597B4"
+type = "Device"
+description = "Device tree blob (DTB), version: 17, CPU ID: 0, total size: 96558 bytes"
+
+[[identified_components]]
+offset = "0x1CEA1B4"
+type = "SquashFS"
+description = "SquashFS file system, little endian, version: 4.0, compression: gzip, inode count: 11378, block size: 131072, image size:"
+
+[[identified_components]]
+offset = "0xF9E01B4"
+type = "EXT"
+description = "EXT filesystem for Linux, inodes: 1536, block size: 1024, block count: 4155, free blocks: 307, reserved blocks: 6144, total size:"
+
+[[identified_components]]
+offset = "0xFFE01B4"
+type = "EXT"
+description = "EXT filesystem for Linux, inodes: 1280, block size: 1024, block count: 4653, free blocks: 256, reserved blocks: 5120, total size:"
+
+

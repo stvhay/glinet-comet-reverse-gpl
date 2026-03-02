@@ -74,8 +74,7 @@ def extract_firmware(firmware: Path, work_dir: Path) -> Path:
         extract_base.mkdir(parents=True, exist_ok=True)
         try:
             subprocess.run(
-                ["binwalk", "-e", "--run-as=root", str(firmware)],
-                cwd=extract_base,
+                ["binwalk", "-e", "-C", str(extract_dir), str(firmware)],
                 capture_output=True,
                 check=False,
             )

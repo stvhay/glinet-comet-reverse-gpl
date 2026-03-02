@@ -1,0 +1,78 @@
+# Boot process and partition layout analysis
+# Generated: 2026-03-02T00:41:54.898465+00:00
+
+# Source: filesystem
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: filesystem
+# Method: Path(firmware).stat().st_size
+# Reproducibility: software
+firmware_size = 273547736
+
+ab_redundancy = false
+
+# Boot Components
+
+[[boot_components]]
+stage = "OP-TEE"
+found = false
+evidence = "tee.bin not found"
+
+[[boot_components]]
+stage = "U-Boot"
+found = true
+evidence = "U-Boot strings found in firmware"
+
+[[boot_components]]
+stage = "Kernel"
+found = true
+evidence = "FIT image at offset `0x49B9B4`"
+
+[[boot_components]]
+stage = "Initramfs"
+found = true
+evidence = "CPIO at offset `0x1465DB4`"
+
+[[boot_components]]
+stage = "SquashFS"
+found = true
+evidence = "Filesystem at offset `0x1CEA1B4`"
+
+# Component Versions
+
+[[component_versions]]
+component = "U-Boot"
+version = "unknown"
+source = "Binary strings"
+
+[[component_versions]]
+component = "Linux Kernel"
+version = "unknown"
+source = "Module vermagic"
+
+# Partitions
+
+[[partitions]]
+region = "Bootloader"
+offset = "0x8F1B4"
+size_mb = 4
+type = "FIT"
+content = "U-Boot + OP-TEE"
+
+[[partitions]]
+region = "Kernel"
+offset = "0x49B9B4"
+size_mb = 15
+type = "FIT"
+content = "Linux kernel + DTB"
+
+[[partitions]]
+region = "Initramfs"
+offset = "0x1465DB4"
+size_mb = 8
+type = "CPIO"
+content = "Early userspace"
+
+

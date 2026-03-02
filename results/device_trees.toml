@@ -1,0 +1,100 @@
+# Device tree analysis
+# Generated: 2026-03-02T00:48:06.489141+00:00
+
+# Source: firmware
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: firmware
+# Method: Path(firmware).stat().st_size
+# Reproducibility: software
+firmware_size = 273547736
+
+# Source: binwalk
+# Method: find extracted DTB files
+# Reproducibility: software
+dtb_count = 10
+
+# Source: binwalk
+# Method: DTB extraction from firmware partitions
+# Reproducibility: software
+# Device Trees
+
+[[device_trees]]
+filename = "system.dtb"
+size = 13660
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 Evaluation Board"
+compatible = "rockchip,rv1126-evb"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 110972
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 EVB DDR3 V13 Board"
+compatible = "rockchip,rv1126-evb-ddr3-v13"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 1893
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "FIT Image (Flattened Image Tree)"
+fit_description = "description = \"FIT Image with ATF/OP-TEE/U-Boot/MCU\";\ndescription = \"U-Boot\";\ntype = \"standalone\";\narch = \"arm\";\nos = \"U-Boot\";\ncompression = \"gzip\";\nalgo = \"sha256\";\nalgo = \"sha256\";\ndescription = \"OP-TEE\";\ntype = \"firmware\";\narch = \"arm\";\nos = \"op-tee\";\ncompression = \"gzip\";\nalgo = \"sha256\";\nalgo = \"sha256\";\ndescription = \"U-Boot dtb\";\ntype = \"flat_dt\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\ndescription = \"rv1126-evb\";\nalgo = \"sha256,rsa2048\";\nkey-name-hint = \"dev\";\nsign-images = \"fdt\", \"loadables\", \"firmware\";"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 13660
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 Evaluation Board"
+compatible = "rockchip,rv1126-evb"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 1411
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "U-Boot Device Tree"
+fit_description = "description = \"U-Boot FIT source file for arm\";\ntype = \"flat_dt\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\ntype = \"kernel\";\narch = \"arm\";\nos = \"linux\";\ncompression = \"none\";\nalgo = \"sha256\";\ntype = \"multi\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\nalgo = \"sha256,rsa2048\";\nkey-name-hint = \"dev\";\nsign-images = \"fdt\", \"kernel\", \"multi\";"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 110972
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 EVB DDR3 V13 Board"
+compatible = "rockchip,rv1126-evb-ddr3-v13"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 1893
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "FIT Image (Flattened Image Tree)"
+fit_description = "description = \"FIT Image with ATF/OP-TEE/U-Boot/MCU\";\ndescription = \"U-Boot\";\ntype = \"standalone\";\narch = \"arm\";\nos = \"U-Boot\";\ncompression = \"gzip\";\nalgo = \"sha256\";\nalgo = \"sha256\";\ndescription = \"OP-TEE\";\ntype = \"firmware\";\narch = \"arm\";\nos = \"op-tee\";\ncompression = \"gzip\";\nalgo = \"sha256\";\nalgo = \"sha256\";\ndescription = \"U-Boot dtb\";\ntype = \"flat_dt\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\ndescription = \"rv1126-evb\";\nalgo = \"sha256,rsa2048\";\nkey-name-hint = \"dev\";\nsign-images = \"fdt\", \"loadables\", \"firmware\";"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 110972
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 EVB DDR3 V13 Board"
+compatible = "rockchip,rv1126-evb-ddr3-v13"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 1767
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "U-Boot Device Tree"
+fit_description = "description = \"U-Boot FIT source file for arm\";\ntype = \"flat_dt\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\ntype = \"kernel\";\narch = \"arm\";\nos = \"linux\";\ncompression = \"none\";\nalgo = \"sha256\";\ntype = \"ramdisk\";\narch = \"arm\";\nos = \"linux\";\ncompression = \"none\";\nalgo = \"sha256\";\ntype = \"multi\";\narch = \"arm\";\ncompression = \"none\";\nalgo = \"sha256\";\nalgo = \"sha256,rsa2048\";\nkey-name-hint = \"dev\";\nsign-images = \"fdt\", \"kernel\", \"ramdisk\", \"multi\";"
+
+[[device_trees]]
+filename = "system.dtb"
+size = 110972
+offset = "glkvm-RM1-1.7.2-1128-1764344791.img.extracted"
+type = "Device Tree"
+model = "Rockchip RV1126 EVB DDR3 V13 Board"
+compatible = "rockchip,rv1126-evb-ddr3-v13"
+
+
