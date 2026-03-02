@@ -1,0 +1,925 @@
+# Root filesystem analysis
+# Generated: 2026-03-02T00:47:55.306651+00:00
+
+# Source: filesystem
+# Method: basename(firmware_path)
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: binwalk extraction
+# Method: find_squashfs_rootfs()
+# Reproducibility: software
+rootfs_path = "/tmp/fw_analysis/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root"
+
+# Source: /etc/os-release
+# Method: NAME field
+# Reproducibility: software
+os_name = "Buildroot"
+
+# Source: /etc/os-release
+# Method: VERSION field
+# Reproducibility: software
+os_version = "2018.02-rc3-gd56bbacb"
+
+# Source: /etc/os-release
+# Method: PRETTY_NAME field
+# Reproducibility: software
+os_pretty_name = "Buildroot 2018.02-rc3"
+
+# Source: kernel module
+# Method: strings bcmdhd.ko | grep vermagic
+# Reproducibility: software
+kernel_version = "vermagic=4.19.111 SMP preempt mod_unload ARMv7 p2v8 "
+
+# Source: filesystem scan
+# Method: find rootfs -name '*.ko' | wc -l
+# Reproducibility: software
+kernel_modules_count = 1
+
+# Source: filesystem scan
+# Method: find rootfs -name '*.so*' | wc -l
+# Reproducibility: software
+shared_libraries_count = 843
+
+# Source: filesystem
+# Method: test -f /bin/busybox
+# Reproducibility: software
+busybox_found = true
+
+# Source: /bin/busybox
+# Method: strings /bin/busybox | grep 'BusyBox v'
+# Reproducibility: software
+busybox_version = "BusyBox v1.27.2 (2025-11-27 08:14:38 UTC)"
+
+# Kernel Modules
+
+[[kernel_modules]]
+name = "bcmdhd.ko"
+path = "/system/lib/modules/bcmdhd.ko"
+size = 12462652
+
+# Shared Libraries
+
+[[shared_libraries]]
+name = "ld-2.28.so"
+path = "/lib/ld-2.28.so"
+size = 1347940
+
+[[shared_libraries]]
+name = "ld-linux-armhf.so.3"
+path = "/lib/ld-linux-armhf.so.3"
+size = 1347940
+
+[[shared_libraries]]
+name = "libanl-2.28.so"
+path = "/lib/libanl-2.28.so"
+size = 133528
+
+[[shared_libraries]]
+name = "libanl.so.1"
+path = "/lib/libanl.so.1"
+size = 133528
+
+[[shared_libraries]]
+name = "libatomic.so.1"
+path = "/lib/libatomic.so.1"
+size = 204268
+
+[[shared_libraries]]
+name = "libatomic.so.1.2.0"
+path = "/lib/libatomic.so.1.2.0"
+size = 204268
+
+[[shared_libraries]]
+name = "libblkid.so.1"
+path = "/lib/libblkid.so.1"
+size = 364392
+
+[[shared_libraries]]
+name = "libblkid.so.1.1.0"
+path = "/lib/libblkid.so.1.1.0"
+size = 364392
+
+[[shared_libraries]]
+name = "libc-2.28.so"
+path = "/lib/libc-2.28.so"
+size = 16311568
+
+[[shared_libraries]]
+name = "libc.so.6"
+path = "/lib/libc.so.6"
+size = 16311568
+
+[[shared_libraries]]
+name = "libcrypt-2.28.so"
+path = "/lib/libcrypt-2.28.so"
+size = 153372
+
+[[shared_libraries]]
+name = "libcrypt.so.1"
+path = "/lib/libcrypt.so.1"
+size = 153372
+
+[[shared_libraries]]
+name = "libdl-2.28.so"
+path = "/lib/libdl-2.28.so"
+size = 225508
+
+[[shared_libraries]]
+name = "libdl.so.2"
+path = "/lib/libdl.so.2"
+size = 225508
+
+[[shared_libraries]]
+name = "libfdisk.so.1"
+path = "/lib/libfdisk.so.1"
+size = 474616
+
+[[shared_libraries]]
+name = "libfdisk.so.1.1.0"
+path = "/lib/libfdisk.so.1.1.0"
+size = 474616
+
+[[shared_libraries]]
+name = "libgcc_s.so.1"
+path = "/lib/libgcc_s.so.1"
+size = 9063520
+
+[[shared_libraries]]
+name = "libm-2.28.so"
+path = "/lib/libm-2.28.so"
+size = 6416640
+
+[[shared_libraries]]
+name = "libm.so.6"
+path = "/lib/libm.so.6"
+size = 6416640
+
+[[shared_libraries]]
+name = "libmount.so.1"
+path = "/lib/libmount.so.1"
+size = 428620
+
+[[shared_libraries]]
+name = "libmount.so.1.1.0"
+path = "/lib/libmount.so.1.1.0"
+size = 428620
+
+[[shared_libraries]]
+name = "libnsl-2.28.so"
+path = "/lib/libnsl-2.28.so"
+size = 722176
+
+[[shared_libraries]]
+name = "libnsl.so.1"
+path = "/lib/libnsl.so.1"
+size = 722176
+
+[[shared_libraries]]
+name = "libnss_dns-2.28.so"
+path = "/lib/libnss_dns-2.28.so"
+size = 122236
+
+[[shared_libraries]]
+name = "libnss_dns.so.2"
+path = "/lib/libnss_dns.so.2"
+size = 122236
+
+[[shared_libraries]]
+name = "libnss_files-2.28.so"
+path = "/lib/libnss_files-2.28.so"
+size = 373084
+
+[[shared_libraries]]
+name = "libnss_files.so.2"
+path = "/lib/libnss_files.so.2"
+size = 373084
+
+[[shared_libraries]]
+name = "libpthread-2.28.so"
+path = "/lib/libpthread-2.28.so"
+size = 2742208
+
+[[shared_libraries]]
+name = "libpthread.so.0"
+path = "/lib/libpthread.so.0"
+size = 2742208
+
+[[shared_libraries]]
+name = "libresolv-2.28.so"
+path = "/lib/libresolv-2.28.so"
+size = 436644
+
+[[shared_libraries]]
+name = "libresolv.so.2"
+path = "/lib/libresolv.so.2"
+size = 436644
+
+[[shared_libraries]]
+name = "librt-2.28.so"
+path = "/lib/librt-2.28.so"
+size = 424948
+
+[[shared_libraries]]
+name = "librt.so.1"
+path = "/lib/librt.so.1"
+size = 424948
+
+[[shared_libraries]]
+name = "libsmartcols.so.1"
+path = "/lib/libsmartcols.so.1"
+size = 292556
+
+[[shared_libraries]]
+name = "libsmartcols.so.1.1.0"
+path = "/lib/libsmartcols.so.1.1.0"
+size = 292556
+
+[[shared_libraries]]
+name = "libstdc++.so.6"
+path = "/lib/libstdc++.so.6"
+size = 11930116
+
+[[shared_libraries]]
+name = "libstdc++.so.6.0.25"
+path = "/lib/libstdc++.so.6.0.25"
+size = 11930116
+
+[[shared_libraries]]
+name = "libstdc++.so.6.0.25-gdb.py"
+path = "/lib/libstdc++.so.6.0.25-gdb.py"
+size = 2388
+
+[[shared_libraries]]
+name = "libthread_db-1.0.so"
+path = "/lib/libthread_db-1.0.so"
+size = 581668
+
+[[shared_libraries]]
+name = "libthread_db.so.1"
+path = "/lib/libthread_db.so.1"
+size = 581668
+
+[[shared_libraries]]
+name = "libudev.so.1"
+path = "/lib/libudev.so.1"
+size = 170276
+
+[[shared_libraries]]
+name = "libudev.so.1.6.3"
+path = "/lib/libudev.so.1.6.3"
+size = 170276
+
+[[shared_libraries]]
+name = "libutil-2.28.so"
+path = "/lib/libutil-2.28.so"
+size = 40320
+
+[[shared_libraries]]
+name = "libutil.so.1"
+path = "/lib/libutil.so.1"
+size = 40320
+
+[[shared_libraries]]
+name = "libuuid.so.1"
+path = "/lib/libuuid.so.1"
+size = 64952
+
+[[shared_libraries]]
+name = "libuuid.so.1.3.0"
+path = "/lib/libuuid.so.1.3.0"
+size = 64952
+
+[[shared_libraries]]
+name = "libasound_module_ctl_arcam_av.so"
+path = "/usr/lib/alsa-lib/libasound_module_ctl_arcam_av.so"
+size = 68820
+
+[[shared_libraries]]
+name = "libasound_module_ctl_oss.so"
+path = "/usr/lib/alsa-lib/libasound_module_ctl_oss.so"
+size = 32824
+
+[[shared_libraries]]
+name = "libasound_module_pcm_a52.so"
+path = "/usr/lib/alsa-lib/libasound_module_pcm_a52.so"
+size = 89984
+
+[[shared_libraries]]
+name = "libasound_module_pcm_oss.so"
+path = "/usr/lib/alsa-lib/libasound_module_pcm_oss.so"
+size = 33908
+
+[[shared_libraries]]
+name = "libasound_module_pcm_upmix.so"
+path = "/usr/lib/alsa-lib/libasound_module_pcm_upmix.so"
+size = 39776
+
+[[shared_libraries]]
+name = "libasound_module_pcm_usb_stream.so"
+path = "/usr/lib/alsa-lib/libasound_module_pcm_usb_stream.so"
+size = 39488
+
+[[shared_libraries]]
+name = "libasound_module_pcm_vdownmix.so"
+path = "/usr/lib/alsa-lib/libasound_module_pcm_vdownmix.so"
+size = 30084
+
+[[shared_libraries]]
+name = "libasound_module_rate_lavcrate.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_lavcrate.so"
+size = 29932
+
+[[shared_libraries]]
+name = "libasound_module_rate_lavcrate_fast.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_lavcrate_fast.so"
+size = 29932
+
+[[shared_libraries]]
+name = "libasound_module_rate_lavcrate_faster.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_lavcrate_faster.so"
+size = 29932
+
+[[shared_libraries]]
+name = "libasound_module_rate_lavcrate_high.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_lavcrate_high.so"
+size = 29932
+
+[[shared_libraries]]
+name = "libasound_module_rate_lavcrate_higher.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_lavcrate_higher.so"
+size = 29932
+
+[[shared_libraries]]
+name = "libasound_module_rate_speexrate.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_speexrate.so"
+size = 59692
+
+[[shared_libraries]]
+name = "libasound_module_rate_speexrate_best.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_speexrate_best.so"
+size = 59692
+
+[[shared_libraries]]
+name = "libasound_module_rate_speexrate_medium.so"
+path = "/usr/lib/alsa-lib/libasound_module_rate_speexrate_medium.so"
+size = 59692
+
+[[shared_libraries]]
+name = "sixaxis.so"
+path = "/usr/lib/bluetooth/plugins/sixaxis.so"
+size = 20228
+
+[[shared_libraries]]
+name = "afalg.so"
+path = "/usr/lib/engines-1.1/afalg.so"
+size = 20404
+
+[[shared_libraries]]
+name = "capi.so"
+path = "/usr/lib/engines-1.1/capi.so"
+size = 8284
+
+[[shared_libraries]]
+name = "padlock.so"
+path = "/usr/lib/engines-1.1/padlock.so"
+size = 8288
+
+[[shared_libraries]]
+name = "libjanus_gelfevh.so"
+path = "/usr/lib/janus/events/libjanus_gelfevh.so"
+size = 39016
+
+[[shared_libraries]]
+name = "libjanus_gelfevh.so.2"
+path = "/usr/lib/janus/events/libjanus_gelfevh.so.2"
+size = 39016
+
+[[shared_libraries]]
+name = "libjanus_gelfevh.so.2.0.6"
+path = "/usr/lib/janus/events/libjanus_gelfevh.so.2.0.6"
+size = 39016
+
+[[shared_libraries]]
+name = "libjanus_wsevh.so"
+path = "/usr/lib/janus/events/libjanus_wsevh.so"
+size = 46352
+
+[[shared_libraries]]
+name = "libjanus_wsevh.so.2"
+path = "/usr/lib/janus/events/libjanus_wsevh.so.2"
+size = 46352
+
+[[shared_libraries]]
+name = "libjanus_wsevh.so.2.0.6"
+path = "/usr/lib/janus/events/libjanus_wsevh.so.2.0.6"
+size = 46352
+
+[[shared_libraries]]
+name = "libjanus_nosip.so"
+path = "/usr/lib/janus/plugins/libjanus_nosip.so"
+size = 112432
+
+[[shared_libraries]]
+name = "libjanus_nosip.so.2"
+path = "/usr/lib/janus/plugins/libjanus_nosip.so.2"
+size = 112432
+
+[[shared_libraries]]
+name = "libjanus_nosip.so.2.0.6"
+path = "/usr/lib/janus/plugins/libjanus_nosip.so.2.0.6"
+size = 112432
+
+[[shared_libraries]]
+name = "libjanus_http.so"
+path = "/usr/lib/janus/transports/libjanus_http.so"
+size = 108832
+
+[[shared_libraries]]
+name = "libjanus_http.so.2"
+path = "/usr/lib/janus/transports/libjanus_http.so.2"
+size = 108832
+
+[[shared_libraries]]
+name = "libjanus_http.so.2.0.6"
+path = "/usr/lib/janus/transports/libjanus_http.so.2.0.6"
+size = 108832
+
+[[shared_libraries]]
+name = "libjanus_pfunix.so"
+path = "/usr/lib/janus/transports/libjanus_pfunix.so"
+size = 50816
+
+[[shared_libraries]]
+name = "libjanus_pfunix.so.2"
+path = "/usr/lib/janus/transports/libjanus_pfunix.so.2"
+size = 50816
+
+[[shared_libraries]]
+name = "libjanus_pfunix.so.2.0.6"
+path = "/usr/lib/janus/transports/libjanus_pfunix.so.2.0.6"
+size = 50816
+
+[[shared_libraries]]
+name = "libjanus_websockets.so"
+path = "/usr/lib/janus/transports/libjanus_websockets.so"
+size = 65576
+
+[[shared_libraries]]
+name = "libjanus_websockets.so.2"
+path = "/usr/lib/janus/transports/libjanus_websockets.so.2"
+size = 65576
+
+[[shared_libraries]]
+name = "libjanus_websockets.so.2.0.6"
+path = "/usr/lib/janus/transports/libjanus_websockets.so.2.0.6"
+size = 65576
+
+[[shared_libraries]]
+name = "libBasicUsageEnvironment.so"
+path = "/usr/lib/libBasicUsageEnvironment.so"
+size = 58840
+
+[[shared_libraries]]
+name = "libBasicUsageEnvironment.so.1"
+path = "/usr/lib/libBasicUsageEnvironment.so.1"
+size = 58840
+
+[[shared_libraries]]
+name = "libBasicUsageEnvironment.so.1.0.0"
+path = "/usr/lib/libBasicUsageEnvironment.so.1.0.0"
+size = 58840
+
+[[shared_libraries]]
+name = "libGeoIP.so"
+path = "/usr/lib/libGeoIP.so"
+size = 248256
+
+[[shared_libraries]]
+name = "libGeoIP.so.1"
+path = "/usr/lib/libGeoIP.so.1"
+size = 248256
+
+[[shared_libraries]]
+name = "libGeoIP.so.1.6.11"
+path = "/usr/lib/libGeoIP.so.1.6.11"
+size = 248256
+
+[[shared_libraries]]
+name = "libIPCProtocol.so"
+path = "/usr/lib/libIPCProtocol.so"
+size = 156984
+
+[[shared_libraries]]
+name = "libRKAP_3A.so"
+path = "/usr/lib/libRKAP_3A.so"
+size = 54936
+
+[[shared_libraries]]
+name = "libRKAP_ANR.so"
+path = "/usr/lib/libRKAP_ANR.so"
+size = 13720
+
+[[shared_libraries]]
+name = "libRKAP_Common.so"
+path = "/usr/lib/libRKAP_Common.so"
+size = 17828
+
+[[shared_libraries]]
+name = "libUsageEnvironment.so"
+path = "/usr/lib/libUsageEnvironment.so"
+size = 14976
+
+[[shared_libraries]]
+name = "libUsageEnvironment.so.3"
+path = "/usr/lib/libUsageEnvironment.so.3"
+size = 14976
+
+[[shared_libraries]]
+name = "libUsageEnvironment.so.3.1.0"
+path = "/usr/lib/libUsageEnvironment.so.3.1.0"
+size = 14976
+
+[[shared_libraries]]
+name = "libasound.so"
+path = "/usr/lib/libasound.so"
+size = 1100552
+
+[[shared_libraries]]
+name = "libasound.so.2"
+path = "/usr/lib/libasound.so.2"
+size = 1100552
+
+[[shared_libraries]]
+name = "libasound.so.2.0.0"
+path = "/usr/lib/libasound.so.2.0.0"
+size = 1100552
+
+[[shared_libraries]]
+name = "libatomic.so.1"
+path = "/usr/lib/libatomic.so.1"
+size = 204268
+
+# Gpl Binaries
+
+[[gpl_binaries]]
+name = "busybox"
+path = "/bin/busybox"
+license = "GPL-2.0"
+version = "BusyBox v1.27.2 (2025-11-27 08:14:38 UTC)"
+
+[[gpl_binaries]]
+name = "ls"
+path = "/bin/ls"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "cp"
+path = "/bin/cp"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "mv"
+path = "/bin/mv"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "rm"
+path = "/bin/rm"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "cat"
+path = "/bin/cat"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "grep"
+path = "/bin/grep"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "sed"
+path = "/bin/sed"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "awk"
+path = "/usr/bin/awk"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "bash"
+path = "/bin/bash"
+license = "GPL-3.0+"
+
+[[gpl_binaries]]
+name = "sh"
+path = "/bin/sh"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "ash"
+path = "/bin/ash"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "tar"
+path = "/bin/tar"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "gzip"
+path = "/bin/gzip"
+license = "BusyBox (GPL-2.0)"
+
+[[gpl_binaries]]
+name = "xz"
+path = "/usr/bin/xz"
+license = "GPL"
+
+# License Files
+
+[[license_files]]
+path = "/usr/lib/python3.12/LICENSE.txt"
+content_preview = "A. HISTORY OF THE SOFTWARE\n==========================\n\nPython was created in the early 1990s by Guido van Rossum at Stichting\nMathematisch Centrum (CWI, see https://www.cwi.nl) in the Netherlands\nas a successor of a language called ABC.  Guido remains Python's\nprincipal author, although it includes many contributions from others.\n\nIn 1995, Guido continued his work on Python at the Corporation for\nNational Research Initiatives (CNRI, see https://www.cnri.reston.va.us)\nin Reston, Virginia where he released several versions of the\nsoftware.\n\nIn May 2000, Guido and the Python core development team moved to\nBeOpen.com to form the BeOpen PythonLabs team.  In October of the same\nyear, the PythonLabs team moved to Digital Creations, which became\nZope Corporation.  In 2001, the Python Software Foundation (PSF, see\nhttps://www.python.org/psf/) was formed, a non-profit organization\ncreated specifically to own Python-related Intellectual Property.\nZope Corporation was a sponsoring member of the PSF.\n\nAll Python releases are Open Source (see https://opensource.org for\nthe Open Source Definition).  Historically, most, but not all, Python\nreleases have also been GPL-compatible; the table below summarizes\nthe various releases.\n\n    Release         Derived     Year        Owner       GPL-\n                    from                                compatible? (1)\n\n    0.9.0 thru 1.2              1991-1995   CWI         yes\n    1.3 thru 1.5.2  1.2         1995-1999   CNRI        yes\n    1.6             1.5.2       2000        CNRI        no\n    2.0             1.6         2000        BeOpen.com  no\n    1.6.1           1.6         2001        CNRI        yes (2)\n    2.1             2.0+1.6.1   2001        PSF         no\n    2.0.1           2.0+1.6.1   2001        PSF         yes\n    2.1.1           2.1+2.0.1   2001        PSF         yes\n    2.1.2           2.1.1       2002        PSF         yes\n    2.1.3           2.1.2       2002        PSF         yes\n    2.2 and above   2.1.1       2001-now    PSF         yes\n\nFootnotes:\n\n(1) GPL-compatible doesn't mean that we're distributing Python under\n    the GPL.  All Python licenses, unlike the GPL, let you distribute\n    a modified version without making your changes open source.  The\n    GPL-compatible licenses make it possible to combine Python with\n    other software that is released under the GPL; the others don't.\n\n(2) According to Richard Stallman, 1.6.1 is not GPL-compatible,"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/Brotli-1.1.0.dist-info/LICENSE"
+content_preview = "Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/Mako-1.3.5.dist-info/LICENSE"
+content_preview = "Copyright 2006-2024 the Mako authors and contributors <see AUTHORS file>.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/MarkupSafe-2.1.5.dist-info/LICENSE.rst"
+content_preview = "Copyright 2010 Pallets\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n1.  Redistributions of source code must retain the above copyright\n    notice, this list of conditions and the following disclaimer.\n\n2.  Redistributions in binary form must reproduce the above copyright\n    notice, this list of conditions and the following disclaimer in the\n    documentation and/or other materials provided with the distribution.\n\n3.  Neither the name of the copyright holder nor the names of its\n    contributors may be used to endorse or promote products derived from\n    this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\nPARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\nHOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED\nTO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\nPROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\nLIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\nNEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/PyYAML-6.0.2.dist-info/LICENSE"
+content_preview = "Copyright (c) 2017-2021 Ingy döt Net\nCopyright (c) 2006-2016 Kirill Simonov\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/aiodns-3.2.0.dist-info/LICENSE"
+content_preview = "Copyright (C) 2014 by Saúl Ibarra Corretgé\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.\n"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/aiofiles-24.1.0.dist-info/licenses/LICENSE"
+content_preview = "Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/aiohappyeyeballs-2.4.0.dist-info/LICENSE"
+content_preview = "A. HISTORY OF THE SOFTWARE\n==========================\n\nPython was created in the early 1990s by Guido van Rossum at Stichting\nMathematisch Centrum (CWI, see https://www.cwi.nl) in the Netherlands\nas a successor of a language called ABC.  Guido remains Python's\nprincipal author, although it includes many contributions from others.\n\nIn 1995, Guido continued his work on Python at the Corporation for\nNational Research Initiatives (CNRI, see https://www.cnri.reston.va.us)\nin Reston, Virginia where he released several versions of the\nsoftware.\n\nIn May 2000, Guido and the Python core development team moved to\nBeOpen.com to form the BeOpen PythonLabs team.  In October of the same\nyear, the PythonLabs team moved to Digital Creations, which became\nZope Corporation.  In 2001, the Python Software Foundation (PSF, see\nhttps://www.python.org/psf/) was formed, a non-profit organization\ncreated specifically to own Python-related Intellectual Property.\nZope Corporation was a sponsoring member of the PSF.\n\nAll Python releases are Open Source (see https://opensource.org for\nthe Open Source Definition).  Historically, most, but not all, Python\nreleases have also been GPL-compatible; the table below summarizes\nthe various releases.\n\n    Release         Derived     Year        Owner       GPL-\n                    from                                compatible? (1)\n\n    0.9.0 thru 1.2              1991-1995   CWI         yes\n    1.3 thru 1.5.2  1.2         1995-1999   CNRI        yes\n    1.6             1.5.2       2000        CNRI        no\n    2.0             1.6         2000        BeOpen.com  no\n    1.6.1           1.6         2001        CNRI        yes (2)\n    2.1             2.0+1.6.1   2001        PSF         no\n    2.0.1           2.0+1.6.1   2001        PSF         yes\n    2.1.1           2.1+2.0.1   2001        PSF         yes\n    2.1.2           2.1.1       2002        PSF         yes\n    2.1.3           2.1.2       2002        PSF         yes\n    2.2 and above   2.1.1       2001-now    PSF         yes\n\nFootnotes:\n\n(1) GPL-compatible doesn't mean that we're distributing Python under\n    the GPL.  All Python licenses, unlike the GPL, let you distribute\n    a modified version without making your changes open source.  The\n    GPL-compatible licenses make it possible to combine Python with\n    other software that is released under the GPL; the others don't.\n\n(2) According to Richard Stallman, 1.6.1 is not GPL-compatible,"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/aiohttp-3.10.5.dist-info/LICENSE.txt"
+content_preview = "   Copyright aio-libs contributors.\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/aiosignal-1.3.1.dist-info/LICENSE"
+content_preview = "Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/async_lru-2.0.4.dist-info/LICENSE"
+content_preview = "The MIT License\n\nCopyright (c) 2018 aio-libs team https://github.com/aio-libs/\nCopyright (c) 2017 Ocean S. A. https://ocean.io/\nCopyright (c) 2016-2017 WikiBusiness Corporation http://wikibusiness.org/\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/asyncinotify-4.2.1.dist-info/LICENSE"
+content_preview = "Mozilla Public License Version 2.0\n==================================\n\n1. Definitions\n--------------\n\n1.1. \"Contributor\"\n    means each individual or legal entity that creates, contributes to\n    the creation of, or owns Covered Software.\n\n1.2. \"Contributor Version\"\n    means the combination of the Contributions of others (if any) used\n    by a Contributor and that particular Contributor's Contribution.\n\n1.3. \"Contribution\"\n    means Covered Software of a particular Contributor.\n\n1.4. \"Covered Software\"\n    means Source Code Form to which the initial Contributor has attached\n    the notice in Exhibit A, the Executable Form of such Source Code\n    Form, and Modifications of such Source Code Form, in each case\n    including portions thereof.\n\n1.5. \"Incompatible With Secondary Licenses\"\n    means\n\n    (a) that the initial Contributor has attached the notice described\n        in Exhibit B to the Covered Software; or\n\n    (b) that the Covered Software was made available under the terms of\n        version 1.1 or earlier of the License, but not also under the\n        terms of a Secondary License.\n\n1.6. \"Executable Form\"\n    means any form of the work other than Source Code Form.\n\n1.7. \"Larger Work\"\n    means a work that combines Covered Software with other material, in\n    a separate file or files, that is not Covered Software.\n\n1.8. \"License\"\n    means this document.\n\n1.9. \"Licensable\"\n    means having the right to grant, to the maximum extent possible,\n    whether at the time of the initial grant or subsequently, any and\n    all of the rights conveyed by this License.\n\n1.10. \"Modifications\"\n    means any of the following:"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/attrs-24.2.0.dist-info/licenses/LICENSE"
+content_preview = "The MIT License (MIT)\n\nCopyright (c) 2015 Hynek Schlawack and the attrs contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/cachecontrol-0.14.0.dist-info/LICENSE.txt"
+content_preview = "Copyright 2012-2021  Eric Larson\n\nLicensed under the Apache License, Version 2.0 (the \"License\");\nyou may not use this file except in compliance with the License.\nYou may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/certifi-2024.8.30.dist-info/LICENSE"
+content_preview = "This package contains a modified version of ca-bundle.crt:\n\nca-bundle.crt -- Bundle of CA Root Certificates\n\nThis is a bundle of X.509 certificates of public Certificate Authorities\n(CA). These were automatically extracted from Mozilla's root certificates\nfile (certdata.txt).  This file can be found in the mozilla source tree:\nhttps://hg.mozilla.org/mozilla-central/file/tip/security/nss/lib/ckfw/builtins/certdata.txt\nIt contains the certificates in PEM format and therefore\ncan be directly used with curl / libcurl / php_curl, or with\nan Apache+mod_ssl webserver for SSL client authentication.\nJust configure this file as the SSLCACertificateFile.#\n\n***** BEGIN LICENSE BLOCK *****\nThis Source Code Form is subject to the terms of the Mozilla Public License,\nv. 2.0. If a copy of the MPL was not distributed with this file, You can obtain\none at http://mozilla.org/MPL/2.0/.\n\n***** END LICENSE BLOCK *****\n@(#) $RCSfile: certdata.txt,v $ $Revision: 1.80 $ $Date: 2011/11/03 15:11:58 $"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/cffi-1.16.0.dist-info/LICENSE"
+content_preview = "\nExcept when otherwise stated (look for LICENSE files in directories or\ninformation at the beginning of each file) all software and\ndocumentation is licensed as follows: \n\n    The MIT License\n\n    Permission is hereby granted, free of charge, to any person \n    obtaining a copy of this software and associated documentation \n    files (the \"Software\"), to deal in the Software without \n    restriction, including without limitation the rights to use, \n    copy, modify, merge, publish, distribute, sublicense, and/or \n    sell copies of the Software, and to permit persons to whom the \n    Software is furnished to do so, subject to the following conditions:\n\n    The above copyright notice and this permission notice shall be included \n    in all copies or substantial portions of the Software.\n\n    THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS \n    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, \n    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL \n    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER \n    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING \n    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER \n    DEALINGS IN THE SOFTWARE.\n"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/chardet-5.2.0.dist-info/LICENSE"
+content_preview = "                  GNU LESSER GENERAL PUBLIC LICENSE\n                       Version 2.1, February 1999\n\n Copyright (C) 1991, 1999 Free Software Foundation, Inc.\n 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA\n Everyone is permitted to copy and distribute verbatim copies\n of this license document, but changing it is not allowed.\n\n[This is the first released version of the Lesser GPL.  It also counts\n as the successor of the GNU Library Public License, version 2, hence\n the version number 2.1.]\n\n                            Preamble\n\n  The licenses for most software are designed to take away your\nfreedom to share and change it.  By contrast, the GNU General Public\nLicenses are intended to guarantee your freedom to share and change\nfree software--to make sure the software is free for all its users.\n\n  This license, the Lesser General Public License, applies to some\nspecially designated software packages--typically libraries--of the\nFree Software Foundation and other authors who decide to use it.  You\ncan use it too, but we suggest you first think carefully about whether\nthis license or the ordinary General Public License is the better\nstrategy to use in any particular case, based on the explanations below.\n\n  When we speak of free software, we are referring to freedom of use,\nnot price.  Our General Public Licenses are designed to make sure that\nyou have the freedom to distribute copies of free software (and charge\nfor this service if you wish); that you receive source code or can get\nit if you want it; that you can change the software and use pieces of\nit in new free programs; and that you are informed that you can do\nthese things.\n\n  To protect your rights, we need to make restrictions that forbid\ndistributors to deny you these rights or to ask you to surrender these\nrights.  These restrictions translate to certain responsibilities for\nyou if you distribute copies of the library or if you modify it.\n\n  For example, if you distribute copies of the library, whether gratis\nor for a fee, you must give the recipients all the rights that we gave\nyou.  You must make sure that they, too, receive or can get the source\ncode.  If you link other code with the library, you must provide\ncomplete object files to the recipients, so that they can relink them\nwith the library after making changes to the library and recompiling\nit.  And you must show them these terms so they know their rights.\n\n  We protect your rights with a two-step method: (1) we copyright the\nlibrary, and (2) we offer you this license, which gives you legal\npermission to copy, distribute and/or modify the library."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/charset_normalizer-3.3.2.dist-info/LICENSE"
+content_preview = "MIT License\n\nCopyright (c) 2019 TAHRI Ahmed R.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/cleo-2.1.0.dist-info/LICENSE"
+content_preview = "Copyright (c) 2013 Sébastien Eustace\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\nOF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/crashtest-0.4.1.dist-info/LICENSE"
+content_preview = "Copyright (c) 2020 Sébastien Eustace\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\nOF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/dbus_next-0.2.3.dist-info/LICENSE"
+content_preview = "Copyright (c) 2019 Tony Crisci\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/dulwich-0.21.2.dist-info/COPYING"
+content_preview = "Dulwich may be used under the conditions of either of two licenses,\nthe Apache License (version 2.0 or later) or the GNU General Public License,\nversion 2.0 or later.\n\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/evdev-1.9.2.dist-info/LICENSE"
+content_preview = "Copyright (c) 2012-2025 Georgi Valkov. All rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n  1. Redistributions of source code must retain the above copyright\n     notice, this list of conditions and the following disclaimer.\n\n  2. Redistributions in binary form must reproduce the above copyright\n     notice, this list of conditions and the following disclaimer in\n     the documentation and/or other materials provided with the\n     distribution.\n\n  3. Neither the name of author nor the names of its contributors may\n     be used to endorse or promote products derived from this software\n     without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\nA PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\nLIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\nDATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\nTHEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\nOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/fastjsonschema-2.20.0.dist-info/LICENSE"
+content_preview = "Copyright (c) 2018, Michal Horejsek\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification,\nare permitted provided that the following conditions are met:\n\n  Redistributions of source code must retain the above copyright notice, this\n  list of conditions and the following disclaimer.\n\n  Redistributions in binary form must reproduce the above copyright notice, this\n  list of conditions and the following disclaimer in the documentation and/or\n  other materials provided with the distribution.\n\n  Neither the name of the {organization} nor the names of its\n  contributors may be used to endorse or promote products derived from\n  this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/frozenlist-1.4.1.dist-info/LICENSE"
+content_preview = "Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/idna-3.9.dist-info/LICENSE.md"
+content_preview = "BSD 3-Clause License\n\nCopyright (c) 2013-2024, Kim Davies and contributors.\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are\nmet:\n\n1. Redistributions of source code must retain the above copyright\n   notice, this list of conditions and the following disclaimer.\n\n2. Redistributions in binary form must reproduce the above copyright\n   notice, this list of conditions and the following disclaimer in the\n   documentation and/or other materials provided with the distribution.\n\n3. Neither the name of the copyright holder nor the names of its\n   contributors may be used to endorse or promote products derived from\n   this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\nLIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\nA PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\nHOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\nSPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED\nTO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\nPROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\nLIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\nNEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/jaraco.classes-3.4.0.dist-info/LICENSE"
+content_preview = "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to\ndeal in the Software without restriction, including without limitation the\nrights to use, copy, modify, merge, publish, distribute, sublicense, and/or\nsell copies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS\nIN THE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/kvmd-4.82.dist-info/LICENSE"
+content_preview = "                    GNU GENERAL PUBLIC LICENSE\n                       Version 3, 29 June 2007\n\n Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>\n Everyone is permitted to copy and distribute verbatim copies\n of this license document, but changing it is not allowed.\n\n                            Preamble\n\n  The GNU General Public License is a free, copyleft license for\nsoftware and other kinds of works.\n\n  The licenses for most software and other practical works are designed\nto take away your freedom to share and change the works.  By contrast,\nthe GNU General Public License is intended to guarantee your freedom to\nshare and change all versions of a program--to make sure it remains free\nsoftware for all its users.  We, the Free Software Foundation, use the\nGNU General Public License for most of our software; it applies also to\nany other work released this way by its authors.  You can apply it to\nyour programs, too.\n\n  When we speak of free software, we are referring to freedom, not\nprice.  Our General Public Licenses are designed to make sure that you\nhave the freedom to distribute copies of free software (and charge for\nthem if you wish), that you receive source code or can get it if you\nwant it, that you can change the software or use pieces of it in new\nfree programs, and that you know you can do these things.\n\n  To protect your rights, we need to prevent others from denying you\nthese rights or asking you to surrender the rights.  Therefore, you have\ncertain responsibilities if you distribute copies of the software, or if\nyou modify it: responsibilities to respect the freedom of others.\n\n  For example, if you distribute copies of such a program, whether\ngratis or for a fee, you must pass on to the recipients the same\nfreedoms that you received.  You must make sure that they, too, receive\nor can get the source code.  And you must show them these terms so they\nknow their rights.\n\n  Developers that use the GNU GPL protect your rights with two steps:\n(1) assert copyright on the software, and (2) offer you this License\ngiving you legal permission to copy, distribute and/or modify it.\n\n  For the developers' and authors' protection, the GPL clearly explains\nthat there is no warranty for this free software.  For both users' and\nauthors' sake, the GPL requires that modified versions be marked as\nchanged, so that their problems will not be attributed erroneously to\nauthors of previous versions.\n\n  Some devices are designed to deny users access to install or run"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/luma.oled-3.13.0.dist-info/LICENSE.rst"
+content_preview = "The MIT License (MIT)\n---------------------\n\nCopyright (c) 2014-2023 Richard Hull and contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/more_itertools-10.5.0.dist-info/LICENSE"
+content_preview = "Copyright (c) 2012 Erik Rose\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/msgpack-1.1.0.dist-info/COPYING"
+content_preview = "Copyright (C) 2008-2011 INADA Naoki <songofacandy@gmail.com>\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/multidict-6.1.0.dist-info/LICENSE"
+content_preview = "   Copyright 2016 Andrew Svetlov and aio-libs contributors\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/netifaces-0.11.0.dist-info/LICENSE"
+content_preview = "Copyright (c) 2007-2018 Alastair Houghton\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/passlib-1.7.4.dist-info/LICENSE"
+content_preview = ".. -*- restructuredtext -*-\n\n=====================\nCopyrights & Licenses\n=====================\n\nCredits\n=======\nPasslib is primarily developed by Eli Collins.\n\nSpecial thanks to Darin Gordon for testing and\nfeedback on the :mod:`passlib.totp` module.\n\nLicense for Passlib\n===================\nPasslib is (c) `Assurance Technologies <http://www.assurancetechnologies.com>`_,\nand is released under the `BSD license <http://www.opensource.org/licenses/bsd-license.php>`_::\n\n    Passlib\n    Copyright (c) 2008-2020 Assurance Technologies, LLC.\n    All rights reserved.\n\n    Redistribution and use in source and binary forms, with or without\n    modification, are permitted provided that the following conditions are\n    met:\n\n    * Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n\n    * Redistributions in binary form must reproduce the above copyright\n      notice, this list of conditions and the following disclaimer in the\n      documentation and/or other materials provided with the distribution.\n\n    * Neither the name of Assurance Technologies, nor the names of the\n      contributors may be used to endorse or promote products derived\n      from this software without specific prior written permission.\n\n    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n    \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\nLicenses for incorporated software"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pbr/tests/testpackage/LICENSE.txt"
+content_preview = "Copyright (C) 2005 Association of Universities for Research in Astronomy (AURA)\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n\n    1. Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n\n    2. Redistributions in binary form must reproduce the above\n      copyright notice, this list of conditions and the following\n      disclaimer in the documentation and/or other materials provided\n      with the distribution.\n\n    3. The name of AURA and its representatives may not be used to\n      endorse or promote products derived from this software without\n      specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY AURA ``AS IS'' AND ANY EXPRESS OR IMPLIED\nWARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL AURA BE LIABLE FOR ANY DIRECT, INDIRECT,\nINCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,\nBUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS\nOF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\nON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR\nTORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE\nUSE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH\nDAMAGE.\n"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pbr-6.1.1.dist-info/LICENSE"
+content_preview = "\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pexpect-4.9.0.dist-info/LICENSE"
+content_preview = "ISC LICENSE\n\n    This license is approved by the OSI and FSF as GPL-compatible.\n        http://opensource.org/licenses/isc-license.txt\n\n    Copyright (c) 2013-2014, Pexpect development team\n    Copyright (c) 2012, Noah Spurrier <noah@noah.org>\n\n    Permission to use, copy, modify, and/or distribute this software for any\n    purpose with or without fee is hereby granted, provided that the above\n    copyright notice and this permission notice appear in all copies.\n    \n    THE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\n    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\n    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\n    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\n    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\n    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\n    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pillow-10.3.0.dist-info/LICENSE"
+content_preview = "The Python Imaging Library (PIL) is\n\n    Copyright © 1997-2011 by Secret Labs AB\n    Copyright © 1995-2011 by Fredrik Lundh and contributors\n\nPillow is the friendly PIL fork. It is\n\n    Copyright © 2010-2024 by Jeffrey A. Clark and contributors\n\nLike PIL, Pillow is licensed under the open source HPND License:\n\nBy obtaining, using, and/or copying this software and/or its associated\ndocumentation, you agree that you have read, understood, and will comply\nwith the following terms and conditions:\n\nPermission to use, copy, modify and distribute this software and its\ndocumentation for any purpose and without fee is hereby granted,\nprovided that the above copyright notice appears in all copies, and that\nboth that copyright notice and this permission notice appear in supporting\ndocumentation, and that the name of Secret Labs AB or the author not be\nused in advertising or publicity pertaining to distribution of the software\nwithout specific, written prior permission.\n\nSECRET LABS AB AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS\nSOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.\nIN NO EVENT SHALL SECRET LABS AB OR THE AUTHOR BE LIABLE FOR ANY SPECIAL,\nINDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM\nLOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE\nOR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR\nPERFORMANCE OF THIS SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pip-24.2.dist-info/LICENSE.txt"
+content_preview = "Copyright (c) 2008-present The pip developers (see AUTHORS.txt file)\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\nOF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/pkginfo-1.11.1.dist-info/LICENSE.txt"
+content_preview = "MIT License\n\nCopyright (c) 2009 Agendaless Consulting, Inc.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/platformdirs-4.3.6.dist-info/licenses/LICENSE"
+content_preview = "MIT License\n\nCopyright (c) 2010-202x The platformdirs developers\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/fastjsonschema/LICENSE"
+content_preview = "Copyright (c) 2018, Michal Horejsek\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification,\nare permitted provided that the following conditions are met:\n\n  Redistributions of source code must retain the above copyright notice, this\n  list of conditions and the following disclaimer.\n\n  Redistributions in binary form must reproduce the above copyright notice, this\n  list of conditions and the following disclaimer in the documentation and/or\n  other materials provided with the distribution.\n\n  Neither the name of the {organization} nor the names of its\n  contributors may be used to endorse or promote products derived from\n  this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/lark/LICENSE"
+content_preview = "Copyright © 2017 Erez Shinan\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/packaging/LICENSE"
+content_preview = "This software is made available under the terms of *either* of the licenses\nfound in LICENSE.APACHE or LICENSE.BSD. Contributions to this software is made\nunder the terms of *both* these licenses."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/packaging/LICENSE.APACHE"
+content_preview = "\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/packaging/LICENSE.BSD"
+content_preview = "Copyright (c) Donald Stufft and individual contributors.\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n\n    1. Redistributions of source code must retain the above copyright notice,\n       this list of conditions and the following disclaimer.\n\n    2. Redistributions in binary form must reproduce the above copyright\n       notice, this list of conditions and the following disclaimer in the\n       documentation and/or other materials provided with the distribution.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE\nFOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\nDAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR\nSERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER\nCAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\nOR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\nOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/_vendor/tomli/LICENSE"
+content_preview = "MIT License\n\nCopyright (c) 2021 Taneli Hukkinen\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/spdx/data/licenses.json"
+content_preview = "{\n  \"0BSD\": [\n    \"BSD Zero Clause License\",\n    true,\n    false\n  ],\n  \"AAL\": [\n    \"Attribution Assurance License\",\n    true,\n    false\n  ],\n  \"ADSL\": [\n    \"Amazon Digital Services License\",\n    false,\n    false\n  ],\n  \"AFL-1.1\": [\n    \"Academic Free License v1.1\",\n    true,\n    false\n  ],\n  \"AFL-1.2\": [\n    \"Academic Free License v1.2\",\n    true,\n    false\n  ],\n  \"AFL-2.0\": [\n    \"Academic Free License v2.0\",\n    true,\n    false\n  ],\n  \"AFL-2.1\": [\n    \"Academic Free License v2.1\",\n    true,\n    false\n  ],\n  \"AFL-3.0\": [\n    \"Academic Free License v3.0\",\n    true,\n    false\n  ],\n  \"AGPL-1.0\": [\n    \"Affero General Public License v1.0\",\n    false,\n    true\n  ],\n  \"AGPL-1.0-only\": [\n    \"Affero General Public License v1.0 only\",\n    false,\n    false"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry/core/spdx/license.pyc"
+content_preview = "�\n\n\u0000\u0000\u0000\u0000�\n(iQ\u0016\u0000\u0000�\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000\u0001�L\u0000\u0000\u0000�\u0000d\u0000d\u0001l\u0000m\u0001Z\u0001\u0001\u0000d\u0000d\u0002l\u0002m\u0003Z\u0003\u0001\u0000d\u0000d\u0003l\u0004m\u0005Z\u0005\u0001\u0000\u0002\u0000G\u0000d\u0004�\u0000d\u0005\u0002\u0000e\u0003d\u0005d\u0006�\u0002\u0000\u0000\u0000\u0000\u0000\u0000�\u0003\u0000\u0000\u0000\u0000\u0000\u0000Z\u0006y\u0007)\b�\u0000\u0000\u0000\u0000)\u0001�\nannotations)\u0001�\nnamedtuple)\u0001�\bClassVarc\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0007\u0000\u0000\u0000\u0000\u0000\u0000\u0001��\u0001\u0000\u0000�\u0000e\u0000Z\u0001d\u0000Z\u0002U\u0000d\u0001e\u0003d\u0002<\u0000\u0000\u0000d\u0001e\u0003d\u0003<\u0000\u0000\u0000d\u0004e\u0003d\u0005<\u0000\u0000\u0000d\u0004e\u0003d\u0006<\u0000\u0000\u0000h\u0000d\u0007�\u0001Z\u0004d\be\u0003d\t<\u0000\u0000\u0000i\u0000d\nd\n�\u0001d\nd\n�\u0001d\u000ed\u000f�\u0001d\u0010d\u0011�\u0001d\u0012d\u0013�\u0001d\u0014d\u0013�\u0001d\u0015d\u0016�\u0001d\u0017d\u0016�\u0001d\u0018d\u0016�\u0001d\u0019d\u0016�\u0001d\u001ad\u0016�\u0001d\u001bd\n�\u0001d\nd\n�\u0001d\nd\u001f�\u0001d d\u001f�\u0001d!d\u001f�\u0001d\"d#�\u0001i\u0000d$d#�\u0001d%d&�\u0001d'd(�\u0001d)d(�\u0001d*d+�\u0001d,d-�\u0001d.d/�\u0001d0d/�\u0001d1d2�\u0001d3d4�\u0001d5d6�\u0001d7d8�\u0001d9d:�\u0001d;d:�\u0001d<d=�\u0001d>d?�\u0001d@dA�\u0001�\u0001i\u0000dBdA�\u0001dCdD�\u0001dEdD�\u0001dFdG�\u0001dHdG�\u0001dIdJ�\u0001dKdJ�\u0001dLdM�\u0001dNdM�\u0001dOdP�\u0001dQdP�\u0001dRdS�\u0001dTdS�\u0001dUdV�\u0001dWdV�\u0001dXdY�\u0001dZd[�\u0001�\u0001d\\d]d^d^d^d_�\u0005�\u0001Z\u0005d`e\u0003da<\u0000\u0000\u0000e\u0006dedb�\u0004�\u0000\u0000\u0000\u0000\u0000\u0000\u0000Z\u0007e\u0006dfdc�\u0004�\u0000\u0000\u0000\u0000\u0000\u0000\u0000Z\byd)g�\u0007License�\u0003str�\u0002id�\u0004name�\u0004bool�\u000fis_osi_approved�\nis_deprecated><\u0000\u0000\u0000�\u0007EPL-2.0�\u0007MPL-1.2�\u0007ZPL-1.0�\u0003AAL�\u0003MIT�\u0003W3C�\u0004AFPL�\u0005Nokia�\u0007Aladdin�\u0007AFL-1.1�\u0007AFL-1.2�\u0007AFL-2.0�\u0007AFL-2.1�\u0007AFL-3.0�\u0007BSL-1.0�\u0007CC0-1.0�\u0007CPL-1.0�\u0007EFL-1.0�\u0007EFL-2.0�\u0007EPL-1.0�\u0007GPL-2.0�\u0007GPL-3.0�\u0007MPL-1.0�\u0007MPL-1.1�\u0007NPL-1.0�\u0007NPL-1.1�\u0007ZPL-2.0�\u0007ZPL-2.1�\bAGPL-3.0�\bAPSL-1.1�\bAPSL-1.2�\bAPSL-2.0�\bCDDL-1.0�\bCECILL-B�\bCECILL-C�\bEUPL-1.1�\bEUPL-1.2�\bGPL-2.0+�\bGPL-3.0+�\bLGPL-2.0�\bLGPL-3.0�\tLGPL-2.0+�\tLGPL-3.0+�\nApache-1.1�\nApache-2.0�\nCECILL-2.1�\nArtistic-1.0�\nArtistic-2.0�\nBSD-2-Clause�\nBSD-3-Clause�\nGPL-2.0-only�\nGPL-3.0-only�\nAGPL-3.0-only�\nLGPL-2.0-only�\nLGPL-3.0-only�\u0010GPL-2.0-or-later�\u0010GPL-3.0-or-later�\u0011AGPL-3.0-or-later�\u0011LGPL-2.0-or-later�\u0011LGPL-3.0-or-laterz\u0012ClassVar[set[str]]�\u0014CLASSIFIER_SUPPORTEDr\u0014\u0000\u0000\u0000z\"Aladdin Free Public License (AFPL)r\n\u0000\u0000\u0000z4CC0 1.0 Universal (CC0 1.0) Public Domain Dedicationr/\u0000\u0000\u0000z3CeCILL-B Free Software License Agreement (CECILL-B)r0\u0000\u0000\u0000z3CeCILL-C Free Software License Agreement (CECILL-C)r&\u0000\u0000\u0000z\nNetscape Public License (NPL)r'\u0000\u0000\u0000r\u0017\u0000\u0000\u0000z\u001bAcademic Free License (AFL)r\u0018\u0000\u0000\u0000r\u0019\u0000\u0000\u0000r\u001a\u0000\u0000\u0000r\u001b\u0000\u0000\u0000r9\u0000\u0000\u0000z\u0017Apache Software Licenser:\u0000\u0000\u0000r+\u0000\u0000\u0000z\u001bApple Public Source Licenser,\u0000\u0000\u0000r-\u0000\u0000\u0000r<\u0000\u0000\u0000z\u0010Artistic Licenser=\u0000\u0000\u0000r\u0011\u0000\u0000\u0000z\nAttribution Assurance Licenser*\u0000\u0000\u0000z$GNU Affero General Public License v3rB\u0000\u0000\u0000rG\u0000\u0000\u0000z7GNU Affero General Public License v3 or later (AGPLv3+)r\n\u0000\u0000\u0000z$Boost Software License 1.0 (BSL-1.0)r>\u0000\u0000\u0000z\nBSD Licenser?\u0000\u0000\u0000r.\u0000\u0000\u0000z:Common Development and Distribution License 1.0 (CDDL-1.0)r;\u0000\u0000\u0000z?CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)r\n\u0000\u0000\u0000z\u0015Common Public Licenser!\u0000\u0000\u0000z$Eclipse Public License 1.0 (EPL-1.0)r\u001f\u0000\u0000\u0000z\u0014Eiffel Forum Licenser \u0000\u0000\u0000r1\u0000\u0000\u0000z,European Union Public Licence 1.1 (EUPL 1.1)r2\u0000\u0000\u0000z,European Union Public Licence 1.2 (EUPL 1.2)r\"\u0000\u0000\u0000z%GNU General Public License v2 (GPLv2)r@\u0000\u0000\u0000r3\u0000\u0000\u0000z/GNU General Public License v2 or later (GPLv2+)rE\u0000\u0000\u0000r#\u0000\u0000\u0000z%GNU General Public License v3 (GPLv3)rA\u0000\u0000\u0000r4\u0000\u0000\u0000z/GNU General Public License v3 or later (GPLv3+)rF\u0000\u0000\u0000r5\u0000\u0000\u0000z-GNU Lesser General Public License v2 (LGPLv2)rC\u0000\u0000\u0000r7\u0000\u0000\u0000z7GNU Lesser General Public License v2 or later (LGPLv2+)rH\u0000\u0000\u0000r6\u0000\u0000\u0000z-GNU Lesser General Public License v3 (LGPLv3)rD\u0000\u0000\u0000r8\u0000\u0000\u0000z7GNU Lesser General Public License v3 or later (LGPLv3+)rI\u0000\u0000\u0000r$\u0000\u0000\u0000z Mozilla Public License 1.0 (MPL)r%\u0000\u0000\u0000z$Mozilla Public License 1.1 (MPL 1.1)z$Mozilla Public License 2.0 (MPL 2.0)z\nW3C Licensez\u0013Zope Public License)\u0005z\u0007MPL-2.0r\u0013\u0000\u0000\u0000z\u0007ZPL-1.1r(\u0000\u0000\u0000r)\u0000\u0000\u0000z\u0018ClassVar[dict[str, str]]�\u0010CLASSIFIER_NAMESc\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0003\u0000\u0000\u0001�\u0000\u0000\u0000�\u0000d\u0001g\u0001}\u0001|\u0000j\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000r\u0011|\u0001j\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000d\u0002�\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000|\u0000j\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000}\u0002|\u0002�\u0011|\u0001j\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000|\u0002�\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000d\u0003j\u0007\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000|\u0001�\u0001\u0000\u0000\u0000\u0000\u0000\u0000S\u0000)\u0004Nr\u0007\u0000\u0000\u0000z\nOSI Approvedz\u0004 :: )\u0004r\n\u0000\u0000\u0000�\u0006append�\u000fclassifier_name�\u0004join)\u0003�\u0004self�\u0005partsr\n\u0000\u0000\u0000s\u0003\u0000\u0000\u0000   �=/usr/lib/python3.12/site-packages/poetry/core/spdx/license.py�\nclassifierz\u0012License.classifier�\u0000\u0000\u0000sJ\u0000\u0000\u0000�\u0000�\u0011\u001a�\n�\u0005�\n\u000f�\n\u001f�\n\u001f�\n\u0011�L�L�\n�\n(�\u000f\u0013�\u000f#�\u000f#�\u0004�\n\u000f�\n\u001b�\n\u0011�L�L�\u0014�\n\n�\u000f\u0015�{�{�5�\u000f!�\b!�\u0000\u0000\u0000\u0000c\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0003\u0000\u0000\u0001��\u0000\u0000\u0000�\u0000|\u0000j\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000|\u0000j\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000v\u0001r\u000e|\u0000j\u0004\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000r\u0001y\u0000y\u0001|\u0000j\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000|\u0000j\u0006\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000v\u0000r\u0019|\u0000j\u0006\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000|\u0000j\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0019\u0000\u0000\u0000S\u0000|\u0000j\b\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000S\u0000)\u0002Nz\u0019Other/Proprietary License)\u0005r\t\u0000\u0000\u0000rJ\u0000\u0000\u0000r"
+
+[[license_files]]
+path = "/usr/lib/python3.12/site-packages/poetry-1.8.3.dist-info/LICENSE"
+content_preview = "Copyright (c) 2018-present Sébastien Eustace\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\nOF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+
+# Detected Licenses
+
+[[detected_licenses]]
+component = "libc.so"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libpthread"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libm.so"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libdl.so"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "librt.so"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libstdc++"
+license = "GPL-3.0-with-GCC-exception"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libgcc"
+license = "GPL-3.0-with-GCC-exception"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libssl"
+license = "OpenSSL"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libcrypto"
+license = "OpenSSL"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libz.so"
+license = "Zlib"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libsqlite"
+license = "Public-Domain"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "librockchip"
+license = "Apache-2.0"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "librga"
+license = "Apache-2.0"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libavcodec"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libavformat"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+[[detected_licenses]]
+component = "libavutil"
+license = "LGPL-2.1"
+detection_method = "Known library name matching"
+
+

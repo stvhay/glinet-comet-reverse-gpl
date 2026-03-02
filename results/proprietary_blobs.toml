@@ -1,0 +1,124 @@
+# Proprietary blobs analysis
+# Generated: 2026-03-02T00:48:03.768248+00:00
+
+# Source: filesystem
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: binwalk
+# Method: find extracted squashfs-root
+# Reproducibility: software
+rootfs_path = "/tmp/fw_analysis/extractions/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/glkvm-RM1-1.7.2-1128-1764344791.img.extracted/1CEA1B4/squashfs-root"
+
+# Source: filesystem
+# Method: count all_rockchip_libs results
+# Reproducibility: software
+rockchip_count = 22
+
+# Source: filesystem
+# Method: count firmware_blobs results
+# Reproducibility: software
+firmware_blob_count = 2
+
+# Source: filesystem
+# Method: count kernel_modules results
+# Reproducibility: software
+kernel_module_count = 1
+
+# Source: filesystem
+# Method: find rootfs -name 'librockchip_mpp.so*' -o -name 'libmpp.so*' -o -name 'librk...
+# Reproducibility: software
+# Mpp Libraries
+all_rockchip_libs = ["/etc/mpp_enc_cfg.conf", "/usr/bin/mpp_info_test", "/usr/bin/rkmedia_rga_api_test", "/usr/bin/rkmedia_rga_crop_venc_test", "/usr/bin/rkmedia_rga_osd_test", "/usr/bin/rkmedia_vi_rga_test", "/usr/bin/snmppcap", "/usr/bin/snmpping", "/usr/bin/snmpps", "/usr/lib/librga.so", "/usr/lib/librga.so.2", "/usr/lib/librga.so.2.1.0", "/usr/lib/librkaiq.so", "/usr/lib/librkdb.so", "/usr/lib/librkisp_api.so", "/usr/lib/librkuvc.so", "/usr/lib/librockchip_mpp.so", "/usr/lib/librockchip_mpp.so.0", "/usr/lib/librockchip_mpp.so.1", "/usr/lib/librockchip_vpu.so", "/usr/lib/librockchip_vpu.so.0", "/usr/lib/librockchip_vpu.so.1"]
+
+[[mpp_libraries]]
+name = "librockchip_mpp.so"
+path = "/usr/lib/librockchip_mpp.so"
+size = 1439136
+purpose = "Video codec (1439136 bytes)"
+
+# Source: filesystem
+# Method: find rootfs -name 'librga.so*' -o -name 'librockchip_rga.so*'
+# Reproducibility: software
+# Rga Libraries
+
+[[rga_libraries]]
+name = "librga.so"
+path = "/usr/lib/librga.so.2.1.0"
+size = 87240
+purpose = "2D graphics (87240 bytes)"
+
+# Source: filesystem
+# Method: find rootfs -name 'librkaiq.so*' -o -name 'librkisp.so*' -o -name 'librk_aiq....
+# Reproducibility: software
+# Isp Libraries
+
+[[isp_libraries]]
+name = "librkaiq.so"
+path = "/usr/lib/librkaiq.so"
+size = 17983260
+purpose = "Camera ISP (17983260 bytes)"
+
+# Source: filesystem
+# Method: find rootfs -name 'librockchip*' -o -name 'librk*' -o -name '*rga*' -o -name ...
+# Reproducibility: software
+# All Rockchip Libs
+
+# Source: filesystem
+# Method: find rootfs -name 'bcmdhd*' -o -name 'fw_bcm*' -o -name 'brcmfmac*' -o -name ...
+# Reproducibility: software
+# Wifi Bt Blobs
+
+[[wifi_bt_blobs]]
+name = "fw_bcm43456c5_ag_mfg.bin"
+path = "/system/etc/firmware/fw_bcm43456c5_ag_mfg.bin"
+size = 463874
+
+[[wifi_bt_blobs]]
+name = "nvram_ap6256.txt"
+path = "/system/etc/firmware/nvram_ap6256.txt"
+size = 2424
+
+[[wifi_bt_blobs]]
+name = "bcmdhd.ko"
+path = "/system/lib/modules/bcmdhd.ko"
+size = 12462652
+
+# Source: filesystem
+# Method: find rootfs/lib/firmware -type f
+# Reproducibility: software
+# Firmware Blobs
+
+[[firmware_blobs]]
+name = "htc_9271-1.4.0.fw"
+path = "/lib/firmware/ath9k_htc/htc_9271-1.4.0.fw"
+size = 51008
+
+[[firmware_blobs]]
+name = "mt7601u.bin"
+path = "/lib/firmware/mt7601u.bin"
+size = 45412
+
+# Source: filesystem
+# Method: find rootfs -name '*.ko' | strings | grep -i GPL
+# Reproducibility: software
+# Kernel Modules
+
+[[kernel_modules]]
+name = "bcmdhd.ko"
+path = "/system/lib/modules/bcmdhd.ko"
+size = 12462652
+has_gpl = true
+
+# Source: file+strings
+# Method: file /usr/lib/librockchip_mpp.so && strings /usr/lib/librockchip_mpp.so | gre...
+# Reproducibility: software
+# Binary Analysis
+
+[binary_analysis]
+library_name = "librockchip_mpp.so"
+file_type = "symbolic link to librockchip_mpp.so.1"
+interesting_strings = ["show_mpp_version", "get_mpp_version", "rockchip_iep_api_alloc_ctx", "rockchip_iep_api_release_ctx", "rockchip_iep2_api_alloc_ctx", "rockchip_iep2_api_release_ctx", "h265e_dpb_build_list", "mpp_get_ioctl_version", "h264e_dpb_build_list", "h264e_dpb_build_marking", "mpp_get_kernel_version", "librockchip_mpp.so.1", "unknown mpp version for missing VCS info", "mpp version history %d:", "mpp version: %s", "rockchip_iep_api_alloc_ctx", "rockchip_iep2_api_alloc_ctx", "h265e_dpb_build_list", "/workspaces/1126/1.7.1release1/buildroot/output/rockchip_rv1126_rv1109/build/mpp-release/mpp/hal/rkdec/h265d/hal_h265d_rkv.c", "/workspaces/1126/1.7.1release1/buildroot/output/rockchip_rv1126_rv1109/build/mpp-release/mpp/hal/rkdec/h265d/hal_h265d_vdpu34x.c"]
+
+
