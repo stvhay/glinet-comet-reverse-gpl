@@ -17,6 +17,7 @@ from analyze_rootfs import (
     DetectedLicense,
     GplBinary,
     KernelModule,
+    LibraryVersion,
     LicenseFile,
     RootfsAnalysis,
     SharedLibrary,
@@ -27,6 +28,7 @@ from analyze_rootfs import (
     analyze_shared_libraries,
     detect_library_licenses,
     extract_kernel_version,
+    extract_library_versions,
     parse_os_release,
 )
 from lib.firmware import find_squashfs_rootfs
@@ -177,6 +179,40 @@ class TestDetectedLicense:
             detected.license = "MIT"  # type: ignore
 
 
+class TestLibraryVersion:
+    """Test LibraryVersion dataclass."""
+
+    def test_library_version_creation(self) -> None:
+        """Test creating a LibraryVersion."""
+        lv = LibraryVersion(name="glibc", version="2.31", soname="libc.so.6")
+
+        assert lv.name == "glibc"
+        assert lv.version == "2.31"
+        assert lv.soname == "libc.so.6"
+
+    def test_library_version_without_version(self) -> None:
+        """Test creating a LibraryVersion without version (presence-only)."""
+        lv = LibraryVersion(name="live555", version=None, soname="libliveMedia.so.0")
+
+        assert lv.name == "live555"
+        assert lv.version is None
+        assert lv.soname == "libliveMedia.so.0"
+
+    def test_library_version_is_frozen(self) -> None:
+        """Test that LibraryVersion is immutable (frozen)."""
+        lv = LibraryVersion(name="glibc", version="2.31", soname="libc.so.6")
+
+        with pytest.raises(AttributeError):
+            lv.version = "2.32"  # type: ignore
+
+    def test_library_version_uses_slots(self) -> None:
+        """Test that LibraryVersion uses __slots__ for memory efficiency."""
+        lv = LibraryVersion(name="glibc", version="2.31", soname="libc.so.6")
+
+        with pytest.raises((AttributeError, TypeError)):
+            lv.extra_field = "test"  # type: ignore
+
+
 class TestRootfsAnalysis:
     """Test RootfsAnalysis dataclass."""
 
@@ -324,6 +360,25 @@ class TestRootfsAnalysis:
         assert result["detected_licenses"][0]["component"] == "libc.so"
         assert result["detected_licenses"][0]["license"] == "LGPL-2.1"
         assert result["detected_licenses"][0]["detection_method"] == "name matching"
+
+    def test_to_dict_converts_library_versions(self) -> None:
+        """Test to_dict converts LibraryVersion objects to dicts."""
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
+        analysis.library_versions = [
+            LibraryVersion(name="glibc", version="2.31", soname="libc.so.6"),
+            LibraryVersion(name="live555", version=None, soname="libliveMedia.so.0"),
+        ]
+
+        result = analysis.to_dict()
+
+        assert len(result["library_versions"]) == 2
+        assert result["library_versions"][0]["name"] == "glibc"
+        assert result["library_versions"][0]["version"] == "2.31"
+        assert result["library_versions"][0]["soname"] == "libc.so.6"
+        # live555 entry should omit None version
+        assert result["library_versions"][1]["name"] == "live555"
+        assert "version" not in result["library_versions"][1]
+        assert result["library_versions"][1]["soname"] == "libliveMedia.so.0"
 
     def test_to_dict_excludes_internal_fields(self) -> None:
         """Test to_dict excludes internal fields (starting with _)."""
@@ -885,6 +940,120 @@ class TestDetectLibraryLicenses:
         assert components == sorted(components)
 
 
+class TestExtractLibraryVersions:
+    """Test extract_library_versions function."""
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_with_version(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting version from a library with strings."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        # Create a libc.so.6 file
+        (lib_dir / "libc.so.6").write_bytes(b"dummy")
+
+        # Mock strings output containing glibc version
+        mock_run.return_value = MagicMock(
+            stdout="some text\nGNU C Library stable release version 2.31\nmore text\n"
+        )
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        # Should find glibc
+        glibc = next((lv for lv in analysis.library_versions if lv.name == "glibc"), None)
+        assert glibc is not None
+        assert glibc.version == "2.31"
+        assert glibc.soname == "libc.so.6"
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_no_version_match(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting version when regex doesn't match."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libc.so.6").write_bytes(b"dummy")
+
+        # Mock strings output without version info
+        mock_run.return_value = MagicMock(stdout="no version here\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        glibc = next((lv for lv in analysis.library_versions if lv.name == "glibc"), None)
+        assert glibc is not None
+        assert glibc.version is None
+
+    def test_extract_library_versions_no_libraries(self, tmp_path: Path) -> None:
+        """Test extracting versions when no libraries exist."""
+        rootfs = tmp_path / "rootfs"
+        rootfs.mkdir(parents=True)
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        assert analysis.library_versions == []
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_presence_only(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test presence-only library (None regex pattern, e.g., live555)."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libliveMedia.so.0").write_bytes(b"dummy")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        live = next((lv for lv in analysis.library_versions if lv.name == "live555"), None)
+        assert live is not None
+        assert live.version is None
+        assert live.soname == "libliveMedia.so.0"
+        # strings should not be called for presence-only patterns
+        mock_run.assert_not_called()
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_openssl(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting OpenSSL version."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libssl.so.1.1").write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nOpenSSL 1.1.1k  25 Mar 2021\nmore text\n"
+        )
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        openssl = next((lv for lv in analysis.library_versions if lv.name == "OpenSSL"), None)
+        assert openssl is not None
+        assert openssl.version == "1.1.1k"
+        assert openssl.soname == "libssl.so.1.1"
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_adds_metadata(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test that metadata is added when versions are found."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libc.so.6").write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(stdout="GNU C Library stable release version 2.31\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        assert "library_versions" in analysis._source
+        assert analysis._source["library_versions"] == "shared libraries"
+
+
 class TestOutputToml:
     """Test output_toml function."""
 
@@ -978,6 +1147,25 @@ class TestOutputToml:
         assert len(parsed["gpl_binaries"]) == 1
         assert parsed["gpl_binaries"][0]["name"] == "busybox"
         assert parsed["gpl_binaries"][0]["version"] == "1.36.1"
+
+    def test_toml_includes_library_versions(self) -> None:
+        """Test that library_versions array appears in TOML output."""
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
+        analysis.library_versions = [
+            LibraryVersion(name="OpenSSL", version="1.1.1k", soname="libssl.so.1.1"),
+            LibraryVersion(name="live555", version=None, soname="libliveMedia.so.0"),
+        ]
+
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
+        parsed = tomlkit.loads(toml_str)
+
+        assert len(parsed["library_versions"]) == 2
+        assert parsed["library_versions"][0]["name"] == "OpenSSL"
+        assert parsed["library_versions"][0]["version"] == "1.1.1k"
+        assert parsed["library_versions"][0]["soname"] == "libssl.so.1.1"
+        # live555 has no version - key should be absent
+        assert parsed["library_versions"][1]["name"] == "live555"
+        assert "version" not in parsed["library_versions"][1]
 
     def test_toml_includes_header_comment(self) -> None:
         """Test that TOML includes header comment."""

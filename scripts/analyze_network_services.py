@@ -17,6 +17,7 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
+import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -84,6 +85,9 @@ class NetworkServicesAnalysis(AnalysisBase):
 
     # Other network services
     network_services: list[ServiceBinary] = field(default_factory=list)
+
+    # Service versions
+    janus_version: str | None = None
 
     # Security analysis
     passwd_file_exists: bool = False
@@ -419,6 +423,40 @@ def _scan_network_services(analysis: NetworkServicesAnalysis, rootfs: Path) -> N
             "find rootfs for dnsmasq, hostapd, mosquitto, telnetd, etc.",
         )
 
+    # Extract Janus Gateway version if found
+    janus_service = next((s for s in analysis.network_services if s.name == "janus"), None)
+    if janus_service:
+        _extract_janus_version(analysis, rootfs, janus_service.path)
+
+
+def _extract_janus_version(
+    analysis: NetworkServicesAnalysis, rootfs: Path, janus_path: str
+) -> None:
+    """Extract Janus Gateway version from binary strings."""
+    full_path = rootfs / janus_path
+    if not full_path.is_file():
+        return
+
+    try:
+        result = subprocess.run(
+            ["strings", str(full_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        for line in result.stdout.splitlines():
+            match = re.search(r"janus\s+(\d+\.\d+\.\d+)", line, re.IGNORECASE)
+            if match:
+                analysis.janus_version = match.group(1)
+                analysis.add_metadata(
+                    "janus_version",
+                    janus_path,
+                    f"strings {janus_path} | grep -i 'janus.*version'",
+                )
+                return
+    except (OSError, subprocess.SubprocessError):
+        warn("Failed to extract Janus version")
+
 
 def analyze_firmware(firmware_path: str, rootfs: Path) -> NetworkServicesAnalysis:
     """Analyze firmware for network services and attack surface.
@@ -528,6 +566,7 @@ SIMPLE_FIELDS = [
     "firmware_file",
     "firmware_size",
     "rootfs_path",
+    "janus_version",
     "passwd_file_exists",
     "shadow_file_exists",
     "network_interfaces_exists",
