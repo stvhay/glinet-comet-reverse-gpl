@@ -120,9 +120,19 @@ def convert_to_tracked_values(result: dict[str, Any], analysis_type: str) -> dic
     """
     tracked_result = {}
 
+    metadata_suffixes = (
+        "_source",
+        "_method",
+        "_reproducibility",
+        "_equipment",
+        "_procedure",
+        "_performed",
+        "_operator",
+    )
+
     for key, value in result.items():
         # Skip metadata keys
-        if key.endswith("_source") or key.endswith("_method"):
+        if any(key.endswith(suffix) for suffix in metadata_suffixes):
             continue
 
         # Check for source/method metadata

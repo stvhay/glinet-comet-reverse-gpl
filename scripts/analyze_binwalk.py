@@ -64,6 +64,8 @@ class BinwalkAnalysis(AnalysisBase):
     # Source metadata for each field
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
+    _reproducibility: dict[str, str] = field(default_factory=dict)
+    _hardware_metadata: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
         """Convert complex fields to serializable format."""

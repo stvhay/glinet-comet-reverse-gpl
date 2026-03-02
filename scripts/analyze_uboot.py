@@ -76,6 +76,8 @@ class UBootAnalysis(AnalysisBase):
     # Source metadata for each field
     _source: dict[str, str] = field(default_factory=dict)
     _method: dict[str, str] = field(default_factory=dict)
+    _reproducibility: dict[str, str] = field(default_factory=dict)
+    _hardware_metadata: dict[str, dict[str, str]] = field(default_factory=dict)
 
 
 def run_strings(firmware: Path) -> str:
