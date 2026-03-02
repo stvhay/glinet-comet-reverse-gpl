@@ -197,6 +197,8 @@ def analyze_device_trees(firmware_path: str, work_dir: Path) -> DeviceTreeAnalys
         device_tree = analyze_dtb_file(dtb_path, extract_dir)
         analysis.device_trees.append(device_tree)
 
+    analysis.add_metadata("device_trees", "binwalk", "DTB extraction from firmware partitions")
+
     return analysis
 
 

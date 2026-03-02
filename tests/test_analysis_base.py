@@ -30,6 +30,24 @@ class SampleAnalysis(AnalysisBase):
         return False, None
 
 
+@dataclass
+class SampleWithListAnalysis(AnalysisBase):
+    """Analysis dataclass with a complex (list) field for testing."""
+
+    name: str | None = None
+    items: list[dict[str, str]] = field(default_factory=list)
+
+    _source: dict[str, str] = field(default_factory=dict)
+    _method: dict[str, str] = field(default_factory=dict)
+    _reproducibility: dict[str, str] = field(default_factory=dict)
+    _hardware_metadata: dict[str, dict[str, str]] = field(default_factory=dict)
+
+    def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
+        if key == "items":
+            return True, value
+        return False, None
+
+
 class TestReproducibilityMetadata:
     """Test reproducibility metadata tracking."""
 
@@ -151,3 +169,50 @@ class TestReproducibilityTomlOutput:
         assert "version_source" not in parsed
         assert "version_method" not in parsed
         assert "version_reproducibility" not in parsed
+
+
+class TestComplexFieldMetadata:
+    """Test metadata tracking for complex (list/dict) fields."""
+
+    def test_to_dict_emits_metadata_for_complex_fields(self) -> None:
+        analysis = SampleWithListAnalysis()
+        analysis.name = "test"
+        analysis.items = [{"key": "value"}]
+        analysis.add_metadata("items", "binwalk", "output parsing")
+        d = analysis.to_dict()
+        assert d["items_source"] == "binwalk"
+        assert d["items_method"] == "output parsing"
+        assert d["items_reproducibility"] == "software"
+
+    def test_toml_renders_metadata_comments_for_complex_fields(self) -> None:
+        analysis = SampleWithListAnalysis()
+        analysis.name = "test"
+        analysis.items = [{"key": "value"}]
+        analysis.add_metadata("items", "binwalk", "output parsing")
+        toml_str = output_toml(analysis, "Test")
+        assert "# Source: binwalk" in toml_str
+        assert "# Method: output parsing" in toml_str
+        assert "# Reproducibility: software" in toml_str
+
+    def test_toml_complex_field_metadata_appears_before_section(self) -> None:
+        analysis = SampleWithListAnalysis()
+        analysis.name = "test"
+        analysis.items = [{"key": "value"}]
+        analysis.add_metadata("items", "binwalk", "output parsing")
+        toml_str = output_toml(analysis, "Test")
+        # Metadata comments should appear before the section header
+        source_pos = toml_str.index("# Source: binwalk")
+        header_pos = toml_str.index("# Items")
+        assert source_pos < header_pos
+
+    def test_toml_complex_field_metadata_keys_not_in_parsed(self) -> None:
+        analysis = SampleWithListAnalysis()
+        analysis.name = "test"
+        analysis.items = [{"key": "value"}]
+        analysis.add_metadata("items", "binwalk", "output parsing")
+        toml_str = output_toml(analysis, "Test")
+        parsed = tomlkit.loads(toml_str)
+        assert "items" in parsed
+        assert "items_source" not in parsed
+        assert "items_method" not in parsed
+        assert "items_reproducibility" not in parsed
