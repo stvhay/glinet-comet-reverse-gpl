@@ -15,6 +15,7 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from analyze_proprietary_blobs import (
+    _LICENSE_PATTERNS,
     BinaryAnalysis,
     FirmwareBlob,
     KernelModule,
@@ -23,6 +24,7 @@ from analyze_proprietary_blobs import (
     ProprietaryBlobsScript,
     analyze_binary,
     analyze_proprietary_blobs,
+    classify_license,
     find_all_rockchip_libs,
     find_firmware_blobs,
     find_kernel_modules,
@@ -52,6 +54,22 @@ class TestLibraryInfo:
         assert lib.path == "/usr/lib/librockchip_mpp.so"
         assert lib.size == 1024000
         assert lib.purpose == "Video codec (1024000 bytes)"
+        assert lib.license == "unknown"
+        assert lib.license_evidence == ""
+
+    def test_library_info_with_license(self) -> None:
+        """Test creating a LibraryInfo with license fields."""
+        lib = LibraryInfo(
+            name="librockchip_mpp.so",
+            path="/usr/lib/librockchip_mpp.so",
+            size=1024000,
+            purpose="Video codec (1024000 bytes)",
+            license="open_source",
+            license_evidence="Apache license string found",
+        )
+
+        assert lib.license == "open_source"
+        assert lib.license_evidence == "Apache license string found"
 
     def test_library_info_is_frozen(self) -> None:
         """Test that LibraryInfo is immutable (frozen)."""
@@ -319,6 +337,8 @@ class TestProprietaryBlobsAnalysis:
                 path="/usr/lib/librockchip_mpp.so",
                 size=1024000,
                 purpose="Video codec (1024000 bytes)",
+                license="open_source",
+                license_evidence="Apache license string found",
             )
         ]
 
@@ -329,6 +349,8 @@ class TestProprietaryBlobsAnalysis:
         assert result["mpp_libraries"][0]["path"] == "/usr/lib/librockchip_mpp.so"
         assert result["mpp_libraries"][0]["size"] == 1024000
         assert result["mpp_libraries"][0]["purpose"] == "Video codec (1024000 bytes)"
+        assert result["mpp_libraries"][0]["license"] == "open_source"
+        assert result["mpp_libraries"][0]["license_evidence"] == "Apache license string found"
 
     def test_to_dict_converts_firmware_blobs(self) -> None:
         """Test to_dict converts FirmwareBlob objects to dicts."""
@@ -438,10 +460,143 @@ class TestGetFileSize:
         assert size == 10_000_000
 
 
+class TestClassifyLicense:
+    """Test classify_license function."""
+
+    @patch("subprocess.run")
+    def test_classify_open_source_apache(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test detecting Apache license in binary."""
+        lib_file = tmp_path / "librga.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nLicensed under the Apache License\nmore text\n",
+            returncode=0,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "open_source"
+        assert "Apache" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_open_source_gpl(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test detecting GPL license in binary."""
+        lib_file = tmp_path / "libtest.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nGPL v2\nmore text\n",
+            returncode=0,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "open_source"
+        assert "GPL" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_proprietary(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test classifying binary with no license strings as proprietary."""
+        lib_file = tmp_path / "libproprietary.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some random text\nno matching patterns here\n",
+            returncode=0,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "proprietary"
+        assert "no license strings" in evidence
+
+    def test_classify_file_not_found(self, tmp_path: Path) -> None:
+        """Test classifying a nonexistent file returns unknown."""
+        lib_file = tmp_path / "nonexistent.so"
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "unknown"
+        assert "file not found" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_strings_command_fails(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test classifying when strings command fails."""
+        lib_file = tmp_path / "test.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="",
+            returncode=1,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "unknown"
+        assert "strings command failed" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_exception_handling(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test classifying when subprocess raises exception."""
+        lib_file = tmp_path / "test.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.side_effect = OSError("strings command not found")
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "unknown"
+        assert "error:" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_lgpl(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test detecting LGPL license in binary."""
+        lib_file = tmp_path / "libtest.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nLGPL-2.1\nmore text\n",
+            returncode=0,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "open_source"
+        assert "LGPL" in evidence
+
+    @patch("subprocess.run")
+    def test_classify_bsd(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test detecting BSD license in binary."""
+        lib_file = tmp_path / "libtest.so"
+        lib_file.write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nBSD 3-Clause\nmore text\n",
+            returncode=0,
+        )
+
+        label, evidence = classify_license(lib_file)
+
+        assert label == "open_source"
+        assert "BSD" in evidence
+
+    def test_license_patterns_not_empty(self) -> None:
+        """Test that _LICENSE_PATTERNS is populated."""
+        assert len(_LICENSE_PATTERNS) > 0
+        # Each pattern should be a tuple of (pattern_string, evidence_description)
+        for pattern, evidence in _LICENSE_PATTERNS:
+            assert isinstance(pattern, str)
+            assert isinstance(evidence, str)
+            assert len(pattern) > 0
+            assert len(evidence) > 0
+
+
 class TestFindLibraries:
     """Test find_libraries function."""
 
-    def test_find_libraries_success(self, tmp_path: Path) -> None:
+    @patch("analyze_proprietary_blobs.classify_license")
+    def test_find_libraries_success(self, mock_classify: Any, tmp_path: Path) -> None:
         """Test finding libraries matching patterns."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "usr/lib"
@@ -451,14 +606,20 @@ class TestFindLibraries:
         (lib_dir / "librockchip_mpp.so").write_bytes(b"x" * 1024)
         (lib_dir / "libmpp.so.1").write_bytes(b"x" * 2048)
 
+        mock_classify.return_value = ("open_source", "Apache license string found")
+
         patterns = ["librockchip_mpp.so*", "libmpp.so*"]
         result = find_libraries(rootfs, patterns, "Video codec")
 
         assert len(result) == 2
         assert any(lib.name == "librockchip_mpp.so" for lib in result)
         assert any(lib.name == "libmpp.so" for lib in result)
+        # Verify license fields are populated
+        assert all(lib.license == "open_source" for lib in result)
+        assert all(lib.license_evidence == "Apache license string found" for lib in result)
 
-    def test_find_libraries_with_versions(self, tmp_path: Path) -> None:
+    @patch("analyze_proprietary_blobs.classify_license")
+    def test_find_libraries_with_versions(self, mock_classify: Any, tmp_path: Path) -> None:
         """Test finding versioned libraries (e.g., .so.1.2.3)."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "usr/lib"
@@ -466,12 +627,15 @@ class TestFindLibraries:
 
         (lib_dir / "librga.so.1.2.3").write_bytes(b"x" * 4096)
 
+        mock_classify.return_value = ("proprietary", "no license strings found in binary")
+
         patterns = ["librga.so*"]
         result = find_libraries(rootfs, patterns, "2D graphics")
 
         assert len(result) == 1
         assert result[0].name == "librga.so"  # Base name without version
         assert result[0].size == 4096
+        assert result[0].license == "proprietary"
 
     def test_find_libraries_no_matches(self, tmp_path: Path) -> None:
         """Test finding libraries when no matches exist."""
@@ -483,7 +647,10 @@ class TestFindLibraries:
 
         assert result == []
 
-    def test_find_libraries_multiple_matches_takes_first(self, tmp_path: Path) -> None:
+    @patch("analyze_proprietary_blobs.classify_license")
+    def test_find_libraries_multiple_matches_takes_first(
+        self, mock_classify: Any, tmp_path: Path
+    ) -> None:
         """Test that only first match per pattern is returned."""
         rootfs = tmp_path / "rootfs"
         lib_dir1 = rootfs / "usr/lib"
@@ -495,19 +662,24 @@ class TestFindLibraries:
         (lib_dir1 / "librga.so").write_bytes(b"x" * 1024)
         (lib_dir2 / "librga.so").write_bytes(b"x" * 2048)
 
+        mock_classify.return_value = ("unknown", "")
+
         patterns = ["librga.so*"]
         result = find_libraries(rootfs, patterns, "2D graphics")
 
         # Should only return one library (first match)
         assert len(result) == 1
 
-    def test_find_libraries_purpose_includes_size(self, tmp_path: Path) -> None:
+    @patch("analyze_proprietary_blobs.classify_license")
+    def test_find_libraries_purpose_includes_size(self, mock_classify: Any, tmp_path: Path) -> None:
         """Test that purpose includes file size."""
         rootfs = tmp_path / "rootfs"
         lib_dir = rootfs / "usr/lib"
         lib_dir.mkdir(parents=True)
 
         (lib_dir / "librga.so").write_bytes(b"x" * 512000)
+
+        mock_classify.return_value = ("unknown", "")
 
         patterns = ["librga.so*"]
         result = find_libraries(rootfs, patterns, "2D graphics")
@@ -1024,6 +1196,8 @@ class TestOutputToml:
                 path="/usr/lib/librockchip_mpp.so",
                 size=1024000,
                 purpose="Video codec (1024000 bytes)",
+                license="open_source",
+                license_evidence="Apache license string found",
             )
         ]
 
@@ -1033,6 +1207,8 @@ class TestOutputToml:
         assert len(parsed["mpp_libraries"]) == 1
         assert parsed["mpp_libraries"][0]["name"] == "librockchip_mpp.so"
         assert parsed["mpp_libraries"][0]["size"] == 1024000
+        assert parsed["mpp_libraries"][0]["license"] == "open_source"
+        assert parsed["mpp_libraries"][0]["license_evidence"] == "Apache license string found"
 
     def test_toml_includes_string_arrays(self) -> None:
         """Test that string arrays (all_rockchip_libs) are included."""
@@ -1201,6 +1377,8 @@ class TestIntegration:
             path="/usr/lib/librockchip_mpp.so",
             size=1024000,
             purpose="Video codec (1024000 bytes)",
+            license="open_source",
+            license_evidence="Apache license string found",
         )
 
         blob = FirmwareBlob(
@@ -1247,6 +1425,8 @@ class TestIntegration:
         assert len(parsed_json["mpp_libraries"]) == 1
         assert parsed_json["mpp_libraries"][0]["name"] == "librockchip_mpp.so"
         assert parsed_json["mpp_libraries"][0]["size"] == 1024000
+        assert parsed_json["mpp_libraries"][0]["license"] == "open_source"
+        assert parsed_json["mpp_libraries"][0]["license_evidence"] == "Apache license string found"
         assert len(parsed_json["wifi_bt_blobs"]) == 1
         assert len(parsed_json["kernel_modules"]) == 1
         assert parsed_json["kernel_modules"][0]["has_gpl"] is True

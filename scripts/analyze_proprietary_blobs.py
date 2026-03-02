@@ -35,6 +35,19 @@ from lib.logging import section, warn
 # Constants
 MAX_INTERESTING_STRINGS = 20  # Maximum number of interesting strings to extract
 
+# License string patterns used to identify open-source licenses in binaries
+_LICENSE_PATTERNS: list[tuple[str, str]] = [
+    ("licensed under the apache", "Apache license header found"),
+    ("apache", "Apache license string found"),
+    ("lesser general public license", "LGPL license text found"),
+    ("lgpl", "LGPL license string found"),
+    ("general public license", "GPL license text found"),
+    ("gpl", "GPL license string found"),
+    ("bsd", "BSD license string found"),
+    ("mit license", "MIT license string found"),
+    ("mozilla public license", "MPL license string found"),
+]
+
 
 @dataclass(frozen=True, slots=True)
 class LibraryInfo:
@@ -44,6 +57,8 @@ class LibraryInfo:
     path: str  # Path relative to rootfs
     size: int  # Size in bytes
     purpose: str  # Description of library purpose
+    license: str = "unknown"  # License classification: "open_source", "proprietary", "unknown"
+    license_evidence: str = ""  # Evidence string for the license determination
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,6 +131,8 @@ class ProprietaryBlobsAnalysis(AnalysisBase):
                     "path": lib.path,
                     "size": lib.size,
                     "purpose": lib.purpose,
+                    "license": lib.license,
+                    "license_evidence": lib.license_evidence,
                 }
                 for lib in value
             ]
@@ -142,6 +159,48 @@ class ProprietaryBlobsAnalysis(AnalysisBase):
         return False, None
 
 
+def classify_license(lib_file: Path) -> tuple[str, str]:
+    """Classify the license of a library by examining its string content.
+
+    Runs ``strings`` on the binary and searches for known license patterns
+    (Apache, GPL, LGPL, BSD, MIT, MPL).  When a match is found the library
+    is labelled ``"open_source"``; when ``strings`` succeeds but nothing
+    matches it is labelled ``"proprietary"``; on error it falls back to
+    ``"unknown"``.
+
+    Args:
+        lib_file: Path to library file on disk
+
+    Returns:
+        Tuple of (license_label, evidence_string) where label is one of
+        "open_source", "proprietary", or "unknown"
+    """
+    if not lib_file.exists():
+        return "unknown", "file not found"
+
+    try:
+        result = subprocess.run(
+            ["strings", str(lib_file)], capture_output=True, text=True, check=False
+        )
+
+        if result.returncode != 0:
+            return "unknown", "strings command failed"
+
+        output_lower = result.stdout.lower()
+
+        # Check for known open-source license patterns
+        for pattern, evidence_desc in _LICENSE_PATTERNS:
+            if pattern in output_lower:
+                return "open_source", evidence_desc
+
+        # No license strings found - likely proprietary
+        return "proprietary", "no license strings found in binary"
+
+    except (OSError, subprocess.SubprocessError) as e:
+        warn(f"Failed to classify license for {lib_file.name}: {e}")
+        return "unknown", f"error: {e}"
+
+
 def _create_library_info(purpose_prefix: str) -> Callable[[Path, Path], "LibraryInfo"]:
     """Create a LibraryInfo creator function for find_and_create.
 
@@ -158,11 +217,17 @@ def _create_library_info(purpose_prefix: str) -> Callable[[Path, Path], "Library
         rel_path = get_relative_path(rootfs, path)
         # Extract base library name without version
         base_name = path.name.split(".so")[0] + ".so"
+
+        # Classify license from the actual file on disk
+        license_label, license_evidence = classify_license(path)
+
         return LibraryInfo(
             name=base_name,
             path=rel_path,
             size=size,
             purpose=f"{purpose_prefix} ({size} bytes)",
+            license=license_label,
+            license_evidence=license_evidence,
         )
 
     return creator
@@ -389,8 +454,9 @@ def analyze_proprietary_blobs(firmware_path: str, rootfs: Path) -> ProprietaryBl
     analysis.mpp_libraries = find_libraries(rootfs, mpp_patterns, "Video codec")
     analysis.add_metadata(
         "mpp_libraries",
-        "filesystem",
-        f"find rootfs -name {' -o -name '.join(repr(p) for p in mpp_patterns)}",
+        "filesystem+strings",
+        f"find rootfs -name {' -o -name '.join(repr(p) for p in mpp_patterns)}"
+        " && strings <lib> | grep -iE license patterns",
     )
 
     # Find RGA libraries
@@ -398,8 +464,9 @@ def analyze_proprietary_blobs(firmware_path: str, rootfs: Path) -> ProprietaryBl
     analysis.rga_libraries = find_libraries(rootfs, rga_patterns, "2D graphics")
     analysis.add_metadata(
         "rga_libraries",
-        "filesystem",
-        f"find rootfs -name {' -o -name '.join(repr(p) for p in rga_patterns)}",
+        "filesystem+strings",
+        f"find rootfs -name {' -o -name '.join(repr(p) for p in rga_patterns)}"
+        " && strings <lib> | grep -iE license patterns",
     )
 
     # Find ISP libraries
@@ -407,8 +474,9 @@ def analyze_proprietary_blobs(firmware_path: str, rootfs: Path) -> ProprietaryBl
     analysis.isp_libraries = find_libraries(rootfs, isp_patterns, "Camera ISP")
     analysis.add_metadata(
         "isp_libraries",
-        "filesystem",
-        f"find rootfs -name {' -o -name '.join(repr(p) for p in isp_patterns)}",
+        "filesystem+strings",
+        f"find rootfs -name {' -o -name '.join(repr(p) for p in isp_patterns)}"
+        " && strings <lib> | grep -iE license patterns",
     )
 
     # Find NPU libraries
@@ -416,8 +484,9 @@ def analyze_proprietary_blobs(firmware_path: str, rootfs: Path) -> ProprietaryBl
     analysis.npu_libraries = find_libraries(rootfs, npu_patterns, "AI inference")
     analysis.add_metadata(
         "npu_libraries",
-        "filesystem",
-        f"find rootfs -name {' -o -name '.join(repr(p) for p in npu_patterns)}",
+        "filesystem+strings",
+        f"find rootfs -name {' -o -name '.join(repr(p) for p in npu_patterns)}"
+        " && strings <lib> | grep -iE license patterns",
     )
 
     # Find all Rockchip libraries
