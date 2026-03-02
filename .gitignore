@@ -59,5 +59,8 @@ htmlcov/
 .claude/skills/
 .claude/work/
 
+# Git worktrees
+.worktrees/
+
 # Session memory (local-only, not for version control)
 MEMORY.md
