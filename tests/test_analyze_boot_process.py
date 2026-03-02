@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import struct
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,16 +23,20 @@ from analyze_boot_process import (
     ConsoleConfig,
     HardwareProperty,
     Partition,
+    _classify_partition,
     analyze_ab_redundancy,
     analyze_boot_components,
     analyze_boot_config,
     analyze_component_versions,
     analyze_hardware_properties,
     analyze_partitions,
+    analyze_storage_type,
+    extract_rockchip_parameter,
     find_largest_dts,
     find_rootfs,
     get_fit_info,
     load_firmware_offsets,
+    parse_rockchip_partitions,
 )
 from lib.output import output_toml
 
@@ -1794,3 +1799,378 @@ class TestIntegration:
         assert parsed["firmware_size"] == 1024
         # ab_redundancy defaults to False, so it will be included
         assert parsed["ab_redundancy"] is False
+
+
+class TestNewHardwareSpecFields:
+    """Test the 5 new hardware spec scalar fields."""
+
+    def test_new_fields_default_none(self) -> None:
+        """Test that new fields default to None."""
+        analysis = BootProcessAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+        )
+        assert analysis.soc_name is None
+        assert analysis.cpu_architecture is None
+        assert analysis.storage_type is None
+        assert analysis.console_device is None
+        assert analysis.console_baudrate is None
+
+    def test_new_fields_in_simple_fields(self) -> None:
+        """Test that new fields are in SIMPLE_FIELDS for TOML output."""
+        assert "soc_name" in SIMPLE_FIELDS
+        assert "cpu_architecture" in SIMPLE_FIELDS
+        assert "storage_type" in SIMPLE_FIELDS
+        assert "console_device" in SIMPLE_FIELDS
+        assert "console_baudrate" in SIMPLE_FIELDS
+
+    def test_soc_name_populated_from_dts(self, tmp_path: Path) -> None:
+        """Test that soc_name is set when DTS contains rv1126."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            compatible = "rockchip,rv1126-evb", "rockchip,rv1126";
+        };
+        """)
+
+        extract_dir = tmp_path / "extract"
+        extract_dir.mkdir()
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analyze_hardware_properties(dts_file, analysis, extract_dir)
+
+        assert analysis.soc_name == "Rockchip RV1126"
+        assert "soc_name" in analysis._source
+        assert analysis._source["soc_name"] == "device-tree"
+
+    @patch("subprocess.run")
+    def test_cpu_architecture_populated_from_elf(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test that cpu_architecture is set from ELF header."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("/ { };")
+
+        extract_dir = tmp_path / "extract"
+        squashfs_root = extract_dir / "squashfs-root"
+        bin_dir = squashfs_root / "bin"
+        bin_dir.mkdir(parents=True)
+
+        executable = bin_dir / "busybox"
+        executable.write_bytes(b"dummy")
+        executable.chmod(0o755)
+
+        mock_run.return_value = MagicMock(stdout="ELF 32-bit LSB executable, ARM, version 1")
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analyze_hardware_properties(dts_file, analysis, extract_dir)
+
+        assert analysis.cpu_architecture == "ARM Cortex-A7 (32-bit)"
+        assert "cpu_architecture" in analysis._source
+        assert analysis._source["cpu_architecture"] == "ELF-header"
+
+    def test_console_baudrate_populated(self, tmp_path: Path) -> None:
+        """Test that console_baudrate is set from DTS."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            rockchip,baudrate = <1500000>;
+        };
+        """)
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analyze_boot_config(dts_file, analysis)
+
+        assert analysis.console_baudrate == "1500000"
+        assert "console_baudrate" in analysis._source
+
+    def test_console_device_populated_from_stdout_path(self, tmp_path: Path) -> None:
+        """Test that console_device is set from stdout-path."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            stdout-path = "serial0:1500000n8";
+        };
+        """)
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analyze_boot_config(dts_file, analysis)
+
+        assert analysis.console_device == "serial0"
+        assert "console_device" in analysis._source
+
+    def test_console_device_populated_from_bootargs(self, tmp_path: Path) -> None:
+        """Test that console_device is set from bootargs console=."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            bootargs = "console=ttyFIQ0,1500000 root=/dev/mmcblk0p5";
+        };
+        """)
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analyze_boot_config(dts_file, analysis)
+
+        assert analysis.console_device == "ttyFIQ0"
+
+    def test_new_fields_in_toml_output(self) -> None:
+        """Test that new fields appear in TOML output."""
+        analysis = BootProcessAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            soc_name="Rockchip RV1126",
+            cpu_architecture="ARM Cortex-A7 (32-bit)",
+            storage_type="eMMC",
+            console_device="ttyFIQ0",
+            console_baudrate="1500000",
+        )
+
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
+        parsed = tomlkit.loads(toml_str)
+
+        assert parsed["soc_name"] == "Rockchip RV1126"
+        assert parsed["cpu_architecture"] == "ARM Cortex-A7 (32-bit)"
+        assert parsed["storage_type"] == "eMMC"
+        assert parsed["console_device"] == "ttyFIQ0"
+        assert parsed["console_baudrate"] == "1500000"
+
+    def test_new_fields_excluded_when_none(self) -> None:
+        """Test that None fields are excluded from TOML output."""
+        analysis = BootProcessAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+        )
+
+        toml_str = output_toml(
+            analysis,
+            title="Boot process and partition layout analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
+
+        assert "soc_name" not in toml_str
+        assert "cpu_architecture" not in toml_str
+        assert "storage_type" not in toml_str
+        assert "console_device" not in toml_str
+        assert "console_baudrate" not in toml_str
+
+
+class TestExtractRockchipParameter:
+    """Test extract_rockchip_parameter function."""
+
+    def test_extract_from_rkfw_firmware(self, tmp_path: Path) -> None:
+        """Test extracting parameter from valid RKFW firmware."""
+
+        firmware = tmp_path / "firmware.img"
+
+        # Build a minimal RKFW image with parameter section
+        param_content = b"FIRMWARE_VER:1.0\nCMDLINE:mtdparts=rk29xxnand:0x2000@0x4000(uboot)\n"
+        param_offset = 0x100  # Place PARM section at offset 0x100
+
+        # Build header: RKFW magic + padding to 0x22 + param_offset
+        header = b"RKFW" + b"\x00" * (0x22 - 4)
+        header += struct.pack("<I", param_offset)
+        header += b"\x00" * (param_offset - len(header))
+
+        # Build PARM section
+        parm_section = b"PARM" + struct.pack("<I", len(param_content)) + param_content
+
+        firmware.write_bytes(header + parm_section)
+
+        result = extract_rockchip_parameter(firmware)
+        assert result is not None
+        assert "FIRMWARE_VER" in result
+
+    def test_extract_non_rkfw_returns_none(self, tmp_path: Path) -> None:
+        """Test that non-RKFW firmware returns None."""
+        firmware = tmp_path / "firmware.img"
+        firmware.write_bytes(b"NOTRKFW" + b"\x00" * 256)
+
+        result = extract_rockchip_parameter(firmware)
+        assert result is None
+
+    def test_extract_missing_file_returns_none(self, tmp_path: Path) -> None:
+        """Test that missing firmware file returns None."""
+        firmware = tmp_path / "nonexistent.img"
+
+        result = extract_rockchip_parameter(firmware)
+        assert result is None
+
+    def test_extract_truncated_file_returns_none(self, tmp_path: Path) -> None:
+        """Test that truncated firmware returns None."""
+        firmware = tmp_path / "firmware.img"
+        firmware.write_bytes(b"RKFW")  # Too short to read offset
+
+        result = extract_rockchip_parameter(firmware)
+        assert result is None
+
+
+class TestParseRockchipPartitions:
+    """Test parse_rockchip_partitions function."""
+
+    def test_parse_standard_parameter_file(self) -> None:
+        """Test parsing a standard Rockchip parameter file."""
+        param_content = (
+            "FIRMWARE_VER:8.1\n"
+            "MACHINE_MODEL:RK3399\n"
+            "CMDLINE:mtdparts=rk29xxnand:0x00002000@0x00004000(uboot),"
+            "0x00002000@0x00006000(trust),"
+            "0x00002000@0x00008000(misc),"
+            "0x00010000@0x0000a000(boot),"
+            "0x00010000@0x0001a000(recovery),"
+            "0x00040000@0x0004a000(oem),"
+            "0x00c00000@0x0008a000(rootfs),"
+            "-@0x00c8a000(userdata)\n"
+        )
+
+        partitions = parse_rockchip_partitions(param_content)
+
+        assert len(partitions) == 8
+
+        # Check first partition
+        assert partitions[0].region == "uboot"
+        assert partitions[0].offset == "0x00004000"
+        assert partitions[0].type == "raw"
+        assert partitions[0].content == "U-Boot bootloader"
+
+        # Check trust partition
+        trust_part = next(p for p in partitions if p.region == "trust")
+        assert trust_part.type == "raw"
+        assert "Trusted firmware" in trust_part.content
+
+        # Check misc partition
+        misc_part = next(p for p in partitions if p.region == "misc")
+        assert misc_part.type == "raw"
+
+        # Check userdata (remaining space)
+        userdata_part = next(p for p in partitions if p.region == "userdata")
+        assert userdata_part.size_mb == 0  # "-" means remaining space
+
+    def test_parse_empty_content(self) -> None:
+        """Test parsing empty content returns empty list."""
+        partitions = parse_rockchip_partitions("")
+        assert partitions == []
+
+    def test_parse_no_cmdline(self) -> None:
+        """Test parsing content without CMDLINE returns empty list."""
+        param_content = "FIRMWARE_VER:1.0\nMACHINE_MODEL:Test\n"
+        partitions = parse_rockchip_partitions(param_content)
+        assert partitions == []
+
+    def test_parse_size_conversion(self) -> None:
+        """Test that partition sizes are correctly converted from sectors to MB."""
+        # 0x800 sectors = 2048 sectors * 512 bytes = 1MB
+        param_content = "CMDLINE:mtdparts=rk29xxnand:0x00000800@0x00000000(test)\n"
+        partitions = parse_rockchip_partitions(param_content)
+
+        assert len(partitions) == 1
+        assert partitions[0].size_mb == 1
+
+    def test_parse_blkdevparts_format(self) -> None:
+        """Test parsing blkdevparts format (alternative to mtdparts)."""
+        param_content = (
+            "CMDLINE:blkdevparts=mmcblk0:"
+            "0x00002000@0x00004000(uboot),"
+            "0x00002000@0x00006000(trust)\n"
+        )
+        partitions = parse_rockchip_partitions(param_content)
+        assert len(partitions) == 2
+
+
+class TestClassifyPartition:
+    """Test _classify_partition function."""
+
+    def test_classify_known_partitions(self) -> None:
+        """Test classification of known partition names."""
+        assert _classify_partition("uboot") == ("raw", "U-Boot bootloader")
+        assert _classify_partition("trust") == ("raw", "OP-TEE / Trusted firmware")
+        assert _classify_partition("misc") == ("raw", "Boot control / recovery flags")
+        assert _classify_partition("boot") == ("FIT/raw", "Kernel + ramdisk")
+        assert _classify_partition("recovery") == ("FIT/raw", "Recovery kernel + ramdisk")
+        assert _classify_partition("rootfs") == ("SquashFS", "Main filesystem")
+        assert _classify_partition("oem") == ("ext4", "OEM data partition")
+        assert _classify_partition("userdata") == ("ext4", "User data partition")
+        assert _classify_partition("reserved") == ("raw", "Reserved space")
+
+    def test_classify_prefix_match(self) -> None:
+        """Test classification by prefix match (e.g., dtb1, dtb2)."""
+        ptype, content = _classify_partition("dtb1")
+        assert ptype == "raw"
+        assert "Device tree" in content
+
+    def test_classify_unknown_partition(self) -> None:
+        """Test classification of unknown partition names."""
+        ptype, content = _classify_partition("custom_part")
+        assert ptype == "unknown"
+        assert content == "custom_part"
+
+
+class TestAnalyzeStorageType:
+    """Test analyze_storage_type function."""
+
+    def test_storage_type_from_mmcblk_in_bootargs(self) -> None:
+        """Test detecting eMMC from mmcblk in bootargs."""
+        analysis = BootProcessAnalysis("test.img", 1024)
+        analysis.kernel_cmdline = "console=ttyFIQ0 root=/dev/mmcblk0p5 rootfstype=squashfs"
+
+        analyze_storage_type(analysis, None)
+
+        assert analysis.storage_type == "eMMC"
+        assert analysis._source["storage_type"] == "kernel-cmdline"
+
+    def test_storage_type_from_dts_emmc(self, tmp_path: Path) -> None:
+        """Test detecting eMMC from DTS emmc nodes."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            emmc@ff390000 {
+                compatible = "rockchip,rk3399-dw-mshc";
+                mmc-hs200-1_8v;
+            };
+        };
+        """)
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+
+        analyze_storage_type(analysis, dts_file)
+
+        assert analysis.storage_type == "eMMC"
+        assert analysis._source["storage_type"] == "device-tree"
+
+    def test_storage_type_from_dts_sdhci(self, tmp_path: Path) -> None:
+        """Test detecting eMMC from DTS sdhci nodes."""
+        dts_file = tmp_path / "system.dtb"
+        dts_file.write_text("""
+        / {
+            sdhci@ff370000 {
+                compatible = "arasan,sdhci-5.1";
+            };
+        };
+        """)
+
+        analysis = BootProcessAnalysis("test.img", 1024)
+
+        analyze_storage_type(analysis, dts_file)
+
+        assert analysis.storage_type == "eMMC"
+
+    def test_storage_type_none_when_no_evidence(self) -> None:
+        """Test that storage_type remains None without evidence."""
+        analysis = BootProcessAnalysis("test.img", 1024)
+
+        analyze_storage_type(analysis, None)
+
+        assert analysis.storage_type is None
+
+    def test_storage_type_handles_missing_dts(self, tmp_path: Path) -> None:
+        """Test storage type handles missing DTS gracefully."""
+        dts_file = tmp_path / "nonexistent.dtb"
+        analysis = BootProcessAnalysis("test.img", 1024)
+
+        # Should not raise
+        analyze_storage_type(analysis, dts_file)
+
+        assert analysis.storage_type is None
