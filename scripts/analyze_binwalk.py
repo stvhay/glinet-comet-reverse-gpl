@@ -165,6 +165,7 @@ def analyze_firmware(firmware_path: str) -> BinwalkAnalysis:
 
     # Parse components
     analysis.identified_components = parse_binwalk_output(binwalk_output)
+    analysis.add_metadata("identified_components", "binwalk", "binwalk output parsing")
 
     # Count component types (case-insensitive)
     analysis.squashfs_count = sum(

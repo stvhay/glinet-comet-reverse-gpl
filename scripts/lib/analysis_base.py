@@ -155,16 +155,16 @@ class AnalysisBase:
                 # Default: just use the value as-is
                 result[key] = value
 
-                # Add source metadata for simple fields
-                if key in self._source:
-                    result[f"{key}_source"] = self._source[key]
-                if key in self._method:
-                    result[f"{key}_method"] = self._method[key]
-                if key in self._reproducibility:
-                    result[f"{key}_reproducibility"] = self._reproducibility[key]
-                if key in self._hardware_metadata:
-                    hw = self._hardware_metadata[key]
-                    for hw_key in ("equipment", "procedure", "performed", "operator"):
-                        result[f"{key}_{hw_key}"] = hw[hw_key]
+            # Add source metadata for all fields (simple and complex)
+            if key in self._source:
+                result[f"{key}_source"] = self._source[key]
+            if key in self._method:
+                result[f"{key}_method"] = self._method[key]
+            if key in self._reproducibility:
+                result[f"{key}_reproducibility"] = self._reproducibility[key]
+            if key in self._hardware_metadata:
+                hw = self._hardware_metadata[key]
+                for hw_key in ("equipment", "procedure", "performed", "operator"):
+                    result[f"{key}_{hw_key}"] = hw[hw_key]
 
         return result

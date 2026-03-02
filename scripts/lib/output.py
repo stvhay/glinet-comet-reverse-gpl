@@ -54,6 +54,27 @@ def _auto_detect_fields(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     return simple, complex_
 
 
+def _add_metadata_comments(doc: tomlkit.TOMLDocument, data: dict[str, Any], key: str) -> None:
+    """Add source/method/reproducibility/hardware metadata comments for a field."""
+    if f"{key}_source" in data:
+        doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
+    if f"{key}_method" in data:
+        method = data[f"{key}_method"]
+        if len(method) > TOML_MAX_COMMENT_LENGTH:
+            doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
+        else:
+            doc.add(tomlkit.comment(f"Method: {method}"))
+    if f"{key}_reproducibility" in data:
+        doc.add(tomlkit.comment(f"Reproducibility: {data[f'{key}_reproducibility']}"))
+    for hw_field in ("equipment", "procedure", "performed", "operator"):
+        hw_key = f"{key}_{hw_field}"
+        if hw_key in data:
+            val = data[hw_key]
+            if len(val) > TOML_MAX_COMMENT_LENGTH:
+                val = val[:TOML_COMMENT_TRUNCATE_LENGTH] + "..."
+            doc.add(tomlkit.comment(f"{hw_field.title()}: {val}"))
+
+
 def _add_simple_fields(
     doc: tomlkit.TOMLDocument, data: dict[str, Any], simple_fields: list[str]
 ) -> None:
@@ -63,25 +84,7 @@ def _add_simple_fields(
             continue
 
         value = data[key]
-
-        if f"{key}_source" in data:
-            doc.add(tomlkit.comment(f"Source: {data[f'{key}_source']}"))
-        if f"{key}_method" in data:
-            method = data[f"{key}_method"]
-            if len(method) > TOML_MAX_COMMENT_LENGTH:
-                doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
-            else:
-                doc.add(tomlkit.comment(f"Method: {method}"))
-        if f"{key}_reproducibility" in data:
-            doc.add(tomlkit.comment(f"Reproducibility: {data[f'{key}_reproducibility']}"))
-        for hw_field in ("equipment", "procedure", "performed", "operator"):
-            hw_key = f"{key}_{hw_field}"
-            if hw_key in data:
-                val = data[hw_key]
-                if len(val) > TOML_MAX_COMMENT_LENGTH:
-                    val = val[:TOML_COMMENT_TRUNCATE_LENGTH] + "..."
-                doc.add(tomlkit.comment(f"{hw_field.title()}: {val}"))
-
+        _add_metadata_comments(doc, data, key)
         doc.add(key, value)
         doc.add(tomlkit.nl())
 
@@ -131,6 +134,7 @@ def output_toml(
         if key not in data or not data[key]:
             continue
 
+        _add_metadata_comments(doc, data, key)
         doc.add(tomlkit.comment(key.replace("_", " ").title()))
         doc.add(key, data[key])
         doc.add(tomlkit.nl())
