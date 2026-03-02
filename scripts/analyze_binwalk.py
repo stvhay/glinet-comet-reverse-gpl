@@ -14,6 +14,7 @@ Arguments:
     --format FORMAT   Output format: 'toml' (default) or 'json'
 """
 
+import hashlib
 import re
 import subprocess
 import sys
@@ -48,6 +49,7 @@ class BinwalkAnalysis(AnalysisBase):
 
     firmware_file: str
     firmware_size: int
+    firmware_sha256: str | None = None
     squashfs_count: int = 0
     gzip_count: int = 0
     dtb_count: int = 0
@@ -162,6 +164,14 @@ def analyze_firmware(firmware_path: str) -> BinwalkAnalysis:
     )
     analysis.add_metadata("firmware_file", "binwalk", "Path(firmware).name")
     analysis.add_metadata("firmware_size", "binwalk", "Path(firmware).stat().st_size")
+
+    # Compute firmware SHA256 hash (chunked to avoid loading entire file into memory)
+    sha256 = hashlib.sha256()
+    with firmware.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            sha256.update(chunk)
+    analysis.firmware_sha256 = sha256.hexdigest()
+    analysis.add_metadata("firmware_sha256", "filesystem", "hashlib.sha256 (chunked read)")
 
     # Parse components
     analysis.identified_components = parse_binwalk_output(binwalk_output)
@@ -293,6 +303,7 @@ def write_legacy_offsets_file(analysis: BinwalkAnalysis, output_dir: Path) -> No
 SIMPLE_FIELDS = [
     "firmware_file",
     "firmware_size",
+    "firmware_sha256",
     "squashfs_count",
     "gzip_count",
     "dtb_count",

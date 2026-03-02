@@ -43,6 +43,16 @@ class TestUBootAnalysis:
         assert analysis.third_party_urls == []
         assert analysis.recovery_modes == []
 
+    def test_uboot_build_date_default_none(self) -> None:
+        """Test that uboot_build_date defaults to None."""
+        analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
+        assert analysis.uboot_build_date is None
+
+    def test_uboot_git_commit_default_none(self) -> None:
+        """Test that uboot_git_commit defaults to None."""
+        analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
+        assert analysis.uboot_git_commit is None
+
     def test_analysis_with_optional_fields(self) -> None:
         """Test creating a UBootAnalysis with all optional fields."""
         analysis = UBootAnalysis(
@@ -293,6 +303,135 @@ class TestHttpdDetection:
         assert "httpd_server" not in toml_str
         assert "third_party_urls" not in toml_str
         assert "recovery_modes" not in toml_str
+
+
+class TestUBootGitCommitExtraction:
+    """Test extraction of uboot_git_commit from version strings."""
+
+    def test_extract_git_commit_from_version(self) -> None:
+        """Test extracting git commit hash from realistic version string."""
+        version = "U-Boot 2017.09-gfd8bfa2acd-dirty #vscode"
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
+        assert match is not None
+        assert match.group(1) == "fd8bfa2acd"
+
+    def test_extract_git_commit_short_hash(self) -> None:
+        """Test extracting shorter git commit hash (7 chars)."""
+        version = "U-Boot 2023.07-gabcdef0"
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
+        assert match is not None
+        assert match.group(1) == "abcdef0"
+
+    def test_no_git_commit_in_version(self) -> None:
+        """Test version string without git commit."""
+        version = "U-Boot 2023.07"
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
+        assert match is None
+
+    def test_git_commit_rejects_short_hex(self) -> None:
+        """Test that very short hex strings after -g are rejected."""
+        version = "U-Boot 2023.07-ga1b"
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
+        assert match is None
+
+    def test_git_commit_field_in_analysis(self) -> None:
+        """Test that uboot_git_commit can be set on analysis object."""
+        analysis = UBootAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            uboot_git_commit="fd8bfa2acd",
+        )
+        assert analysis.uboot_git_commit == "fd8bfa2acd"
+
+    def test_git_commit_in_toml_output(self) -> None:
+        """Test that uboot_git_commit appears in TOML output."""
+        analysis = UBootAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            uboot_git_commit="fd8bfa2acd",
+        )
+        analysis.add_metadata(
+            "uboot_git_commit", "strings", "regex '-g([0-9a-f]+)' on version string"
+        )
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+        parsed = tomlkit.loads(toml_str)
+        assert parsed["uboot_git_commit"] == "fd8bfa2acd"
+
+    def test_git_commit_excluded_when_none(self) -> None:
+        """Test that uboot_git_commit is excluded from TOML when None."""
+        analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+        assert "uboot_git_commit" not in toml_str
+
+
+class TestUBootBuildDateExtraction:
+    """Test extraction of uboot_build_date from build date strings."""
+
+    def test_parse_build_date_from_parenthesized(self) -> None:
+        """Test parsing build date from parenthesized format."""
+        build_date = "(Nov 27 2025 - 08:06:12 +0000)"
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        assert match is not None
+        assert match.group(1) == "Nov 27 2025 - 08:06:12 +0000"
+
+    def test_parse_build_date_different_timezone(self) -> None:
+        """Test parsing build date with non-zero timezone."""
+        build_date = "(Dec 15 2023 - 10:30:00 -0500)"
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        assert match is not None
+        assert match.group(1) == "Dec 15 2023 - 10:30:00 -0500"
+
+    def test_parse_build_date_space_padded_day(self) -> None:
+        """Test parsing build date with space-padded single-digit day (GCC __DATE__)."""
+        build_date = "(Jun  3 2025 - 08:06:12 +0000)"
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        assert match is not None
+        assert match.group(1) == "Jun  3 2025 - 08:06:12 +0000"
+
+    def test_no_match_without_parentheses(self) -> None:
+        """Test that non-parenthesized date strings don't match."""
+        build_date = "Nov 27 2025 - 08:06:12 +0000"
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        assert match is None
+
+    def test_build_date_field_in_analysis(self) -> None:
+        """Test that uboot_build_date can be set on analysis object."""
+        analysis = UBootAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            uboot_build_date="Nov 27 2025 - 08:06:12 +0000",
+        )
+        assert analysis.uboot_build_date == "Nov 27 2025 - 08:06:12 +0000"
+
+    def test_build_date_in_toml_output(self) -> None:
+        """Test that uboot_build_date appears in TOML output."""
+        analysis = UBootAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            uboot_build_date="Nov 27 2025 - 08:06:12 +0000",
+        )
+        analysis.add_metadata("uboot_build_date", "gzip_extraction", "parsed from build_date field")
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+        parsed = tomlkit.loads(toml_str)
+        assert parsed["uboot_build_date"] == "Nov 27 2025 - 08:06:12 +0000"
+
+    def test_build_date_excluded_when_none(self) -> None:
+        """Test that uboot_build_date is excluded from TOML when None."""
+        analysis = UBootAnalysis(firmware_file="test.img", firmware_size=1024)
+
+        toml_str = output_toml(
+            analysis, "U-Boot bootloader analysis", SIMPLE_FIELDS, COMPLEX_FIELDS
+        )
+        assert "uboot_build_date" not in toml_str
 
 
 class TestExtractStrings:

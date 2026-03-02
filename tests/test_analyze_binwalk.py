@@ -1,6 +1,8 @@
 """Tests for scripts/analyze-binwalk.py."""
 
+import hashlib
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -57,6 +59,62 @@ class TestBinwalkAnalysis:
         assert analysis.firmware_size == 1024
         assert analysis.squashfs_count == 0
         assert analysis.bootloader_fit_offset is None
+
+    def test_firmware_sha256_default_none(self) -> None:
+        """Test that firmware_sha256 defaults to None."""
+        analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
+        assert analysis.firmware_sha256 is None
+
+    def test_firmware_sha256_chunked_matches_whole_file(self) -> None:
+        """Test that chunked SHA256 produces same result as whole-file hash."""
+        content = b"test firmware content" * 1000
+
+        with tempfile.NamedTemporaryFile(suffix=".img", delete=False) as f:
+            f.write(content)
+            tmp_path = Path(f.name)
+
+        try:
+            # Whole-file reference hash
+            expected = hashlib.sha256(content).hexdigest()
+            # Chunked hash (same approach as production code)
+            sha256 = hashlib.sha256()
+            with tmp_path.open("rb") as fh:
+                for chunk in iter(lambda: fh.read(65536), b""):
+                    sha256.update(chunk)
+            assert sha256.hexdigest() == expected
+            assert len(expected) == 64
+        finally:
+            tmp_path.unlink()
+
+    def test_firmware_sha256_in_toml_output(self) -> None:
+        """Test that firmware_sha256 appears in TOML output when set."""
+        analysis = BinwalkAnalysis(
+            firmware_file="test.img",
+            firmware_size=1024,
+            firmware_sha256="abc123def456",
+        )
+        analysis.add_metadata("firmware_sha256", "filesystem", "hashlib.sha256()")
+
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
+        parsed = tomlkit.loads(toml_str)
+        assert parsed["firmware_sha256"] == "abc123def456"
+
+    def test_firmware_sha256_excluded_when_none(self) -> None:
+        """Test that firmware_sha256 is excluded from TOML when None."""
+        analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
+
+        toml_str = output_toml(
+            analysis,
+            title="Binwalk firmware analysis",
+            simple_fields=SIMPLE_FIELDS,
+            complex_fields=COMPLEX_FIELDS,
+        )
+        assert "firmware_sha256" not in toml_str
 
     def test_add_metadata(self) -> None:
         """Test adding source metadata."""

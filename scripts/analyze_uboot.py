@@ -41,6 +41,8 @@ SIMPLE_FIELDS = [
     "firmware_size",
     "version",
     "build_date",
+    "uboot_build_date",
+    "uboot_git_commit",
     "extraction_method",
     "extraction_offset",
 ]
@@ -63,6 +65,8 @@ class UBootAnalysis(AnalysisBase):
     firmware_size: int
     version: str | None = None
     build_date: str | None = None
+    uboot_build_date: str | None = None
+    uboot_git_commit: str | None = None
     boot_commands: list[str] = field(default_factory=list)
     environment_variables: list[str] = field(default_factory=list)
     supported_commands: list[str] = field(default_factory=list)
@@ -163,6 +167,30 @@ def _extract_uboot_version(
                 f"gzip decompression at offset {offset_hex}",
             )
             analysis.add_metadata("extraction_offset", "binwalk", "UBOOT_GZ_OFFSET")
+
+    # Extract git commit hash from version string (e.g., "2017.09-gfd8bfa2acd-dirty")
+    if analysis.version:
+        git_match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", analysis.version)
+        if git_match:
+            analysis.uboot_git_commit = git_match.group(1)
+            analysis.add_metadata(
+                "uboot_git_commit",
+                analysis._source.get("version", "strings"),
+                "regex '-g([0-9a-f]{7,40})' on version string",
+            )
+
+    # Parse build date to cleaner format from "(Mon DD YYYY - HH:MM:SS +ZZZZ)"
+    if analysis.build_date:
+        date_match = re.match(
+            r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", analysis.build_date
+        )
+        if date_match:
+            analysis.uboot_build_date = date_match.group(1)
+            analysis.add_metadata(
+                "uboot_build_date",
+                analysis._source.get("build_date", "strings"),
+                "parsed from build_date field, stripped parentheses",
+            )
 
     return uboot_strings
 
