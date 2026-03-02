@@ -7,7 +7,7 @@
 The Comet exposes HTTPS (443), SSH (22), and WebRTC services. The web API requires authentication except for the one-time initialization endpoint.
 
 **Platform:** Rockchip RV1126, Buildroot 2018.02-rc3, PiKVM-based
-**Firmware:** V1.7.2
+**Firmware:** V1.7.2 <!-- cite: results/binwalk.toml#firmware_file -->
 
 ## Key Attack Surface
 
@@ -64,15 +64,15 @@ The Comet exposes HTTPS (443), SSH (22), and WebRTC services. The web API requir
 
 #### 3. Janus Gateway - WebRTC
 - **Service**: Janus WebRTC gateway
-- **Version**: 2.0.6 (GPL-3.0)
+- **Version**: 2.0.6 (GPL-3.0) <!-- cite: results/rootfs.toml#shared_libraries -->
 - **Configuration**: Custom plugins in `/usr/lib/janus/`
 - **Libraries**:
-  - `libjanus_gelfevh.so.2.0.6` - Event handler
-  - `libjanus_wsevh.so.2.0.6` - WebSocket event handler
-  - `libjanus_nosip.so.2.0.6` - NoSIP plugin
-  - `libjanus_http.so.2.0.6` - HTTP transport
-  - `libjanus_pfunix.so.2.0.6` - Unix socket transport
-  - `libjanus_websockets.so.2.0.6` - WebSocket transport
+  - `libjanus_gelfevh.so.2.0.6` - Event handler <!-- cite: results/rootfs.toml#shared_libraries -->
+  - `libjanus_wsevh.so.2.0.6` - WebSocket event handler <!-- cite: results/rootfs.toml#shared_libraries -->
+  - `libjanus_nosip.so.2.0.6` - NoSIP plugin <!-- cite: results/rootfs.toml#shared_libraries -->
+  - `libjanus_http.so.2.0.6` - HTTP transport <!-- cite: results/rootfs.toml#shared_libraries -->
+  - `libjanus_pfunix.so.2.0.6` - Unix socket transport <!-- cite: results/rootfs.toml#shared_libraries -->
+  - `libjanus_websockets.so.2.0.6` - WebSocket transport <!-- cite: results/rootfs.toml#shared_libraries -->
 - **Purpose**: Real-time video/audio streaming via WebRTC
 - **Likely Port**: 8088/tcp (HTTP), 8089/tcp (HTTPS), 8188/tcp (WebSocket)
 
@@ -385,10 +385,10 @@ The device should be deployed on a management/OOB network, isolated from:
 ## References
 
 ### Analysis Sources
-- Firmware: `glkvm-RM1-1.7.2-1128-1764344791.img`
+- Firmware: `glkvm-RM1-1.7.2-1128-1764344791.img` <!-- cite: results/binwalk.toml#firmware_file -->
 - Build: Buildroot 2018.02-rc3
 - Model: GL.iNet Comet (GL-RM1)
-- Version: V1.7.2 release1
+- Version: V1.7.2 release1 <!-- cite: results/binwalk.toml#firmware_file -->
 
 ### External Documentation
 - [PiKVM HTTP API Reference](https://docs.pikvm.org/api/)

@@ -64,8 +64,8 @@ The firmware contains Rockchip media libraries for hardware-accelerated video en
 
 ### 2D Graphics Acceleration (RGA)
 
-#### 3. librga.so.2.1.0
-- **Full Path**: `/usr/lib/librga.so.2.1.0`
+#### 3. librga.so.2.1.0 <!-- cite: results/rootfs.toml#license_files -->
+- **Full Path**: `/usr/lib/librga.so.2.1.0` <!-- cite: results/rootfs.toml#license_files -->
 - **Vendor**: Rockchip
 - **Purpose**: Raster Graphics Acceleration - 2D graphics operations
 - **Functionality**:
@@ -254,7 +254,7 @@ The firmware contains Rockchip media libraries for hardware-accelerated video en
    - Alternative: Software encoding (too slow for real-time)
 
 ### HIGH (Important for Performance)
-2. **librga.so.2.1.0** - 2D graphics acceleration (OPEN SOURCE)
+2. **librga.so.2.1.0** - 2D graphics acceleration (OPEN SOURCE) <!-- cite: results/rootfs.toml#license_files -->
    - Function: Fast color conversion, scaling
    - Why: Enables low-latency video pipeline
    - Alternative: CPU-based conversion (higher latency, CPU usage)
@@ -365,7 +365,7 @@ Optional Features
 
 ### Open Source Libraries (Apache 2.0)
 - **librockchip_mpp.so.0** - Source available, Apache 2.0
-- **librga.so.2.1.0** - Source available, Apache 2.0
+- **librga.so.2.1.0** - Source available, Apache 2.0 <!-- cite: results/rootfs.toml#license_files -->
 - **libeasymedia.so.1.0.1** - Source available, Apache 2.0
 
 **Compliance Status**: COMPLIANT

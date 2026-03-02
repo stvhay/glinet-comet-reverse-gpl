@@ -6,14 +6,14 @@
 
 **GL.iNet has not released the GPL-required source code for the Comet (GL-RM1).**
 
-The firmware contains Linux kernel 4.19.111, U-Boot 2017.09, BusyBox, and other GPL components. Users have requested source code on the GL.iNet forum. As of December 2025, only the application layer (KVMD) has been released.
+The firmware contains Linux kernel 4.19.111, U-Boot 2017.09, BusyBox, and other GPL components. Users have requested source code on the GL.iNet forum. As of December 2025, only the application layer (KVMD) has been released. <!-- cite: results/rootfs.toml#kernel_version -->
 
 | Status | Components |
 |--------|------------|
 | **Not Released** | Linux kernel, U-Boot, BusyBox, bcmdhd WiFi driver |
 | **Released** | KVMD application ([github.com/gl-inet/glkvm](https://github.com/gl-inet/glkvm)) |
 
-**Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img
+**Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img <!-- cite: results/binwalk.toml#firmware_file -->
 **SHA256:** `6044860b839b7ba74de2ec77b2a0764cd0c16ae27ad0f94deb715429c37e8f19`
 
 ---
@@ -70,14 +70,14 @@ When distributing a product containing copyleft software, the distributor must:
 
 | Property | Value |
 |----------|-------|
-| **Version** | 4.19.111 |
+| **Version** | 4.19.111 | <!-- cite: results/rootfs.toml#kernel_version -->
 | **License** | GPL-2.0-only |
-| **Evidence** | Module vermagic: `4.19.111 SMP preempt mod_unload ARMv7 p2v8` |
+| **Evidence** | Module vermagic: `4.19.111 SMP preempt mod_unload ARMv7 p2v8` | <!-- cite: results/rootfs.toml#kernel_version -->
 | **Platform** | Rockchip RV1126 (ARM Cortex-A7) |
 
 **Source Code Status:** NOT PUBLICLY AVAILABLE
 
-The Linux kernel is the core of the operating system. This specific version (4.19.111) with Rockchip RV1126 support contains:
+The Linux kernel is the core of the operating system. This specific version (4.19.111) with Rockchip RV1126 support contains: <!-- cite: results/rootfs.toml#kernel_version -->
 - Board-specific device tree modifications
 - Rockchip-specific drivers and patches
 - Build configuration (.config)
@@ -115,7 +115,7 @@ The `-dirty` suffix indicates modifications were made beyond the tagged release.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.27.2 |
+| **Version** | 1.27.2 | <!-- cite: results/rootfs.toml#busybox_version -->
 | **License** | GPL-2.0-only |
 | **Build Date** | 2025-11-27 08:14:38 UTC |
 | **Evidence** | Version string in binary |
@@ -200,18 +200,18 @@ The following libraries are under LGPL, requiring source code for the library (i
 | Library | Version | License |
 |---------|---------|---------|
 | glibc | 2.28 | LGPL-2.1+ |
-| libstdc++ | 6.0.25 | GPL-3.0 with Runtime Exception |
+| libstdc++ | 6.0.25 | GPL-3.0 with Runtime Exception | <!-- cite: results/rootfs.toml#shared_libraries -->
 | GLib | 2.64.4 | LGPL-2.1+ |
 | D-Bus | 3.19.4 | GPL-2.0+ or AFL-2.1 |
 | BlueZ (libbluetooth) | 3.18.16 | GPL-2.0+ |
-| ALSA lib | 2.0.0 | LGPL-2.1+ |
-| libdrm | 2.4.0 | MIT (permissive) |
+| ALSA lib | 2.0.0 | LGPL-2.1+ | <!-- cite: results/rootfs.toml#shared_libraries -->
+| libdrm | 2.4.0 | MIT (permissive) | <!-- cite: results/rootfs.toml#license_files -->
 | libcurl | 4.7.0 | MIT/X derivate |
 | OpenSSL | 1.1 | OpenSSL License / Apache 2.0 |
 | GnuTLS | 30.14.9 | LGPL-2.1+ |
 | nettle | 6.4 | LGPL-3.0+ / GPL-2.0+ |
 | libevent | 2.1 | BSD-3-Clause |
-| Janus Gateway | 2.0.6 | GPL-3.0 |
+| Janus Gateway | 2.0.6 | GPL-3.0 | <!-- cite: results/rootfs.toml#shared_libraries -->
 | live555 | - | LGPL-3.0 |
 | libmad | 0.2.1 | GPL-2.0 |
 
@@ -268,7 +268,7 @@ To comply with copyleft license requirements, GL.iNet and/or Rockchip must provi
 
 ### Critical Priority (GPL-2.0 - Legally Required)
 
-1. **Linux Kernel 4.19.111**
+1. **Linux Kernel 4.19.111** <!-- cite: results/rootfs.toml#kernel_version -->
    - Complete source tree
    - Rockchip RV1126 board support
    - All patches and modifications
@@ -286,7 +286,7 @@ To comply with copyleft license requirements, GL.iNet and/or Rockchip must provi
    - Complete driver source
    - Makefile/build configuration
 
-4. **BusyBox 1.27.2**
+4. **BusyBox 1.27.2** <!-- cite: results/rootfs.toml#busybox_version -->
    - Source code (or upstream reference)
    - .config file
    - Any patches
@@ -344,15 +344,15 @@ The following may be used as a formal GPL source code request:
 ---
 
 **To:** GL.iNet Support / Legal Department
-**Subject:** GPL Source Code Request - GL-RM1 Comet Firmware v1.7.2
+**Subject:** GPL Source Code Request - GL-RM1 Comet Firmware v1.7.2 <!-- cite: results/binwalk.toml#firmware_file -->
 
 Dear GL.iNet,
 
-Pursuant to the GNU General Public License versions 2 and 3, I am requesting the complete corresponding source code for the GPL-licensed software distributed in the GL.iNet Comet (GL-RM1) device, firmware version 1.7.2.
+Pursuant to the GNU General Public License versions 2 and 3, I am requesting the complete corresponding source code for the GPL-licensed software distributed in the GL.iNet Comet (GL-RM1) device, firmware version 1.7.2. <!-- cite: results/binwalk.toml#firmware_file -->
 
 Specifically, I request source code for:
 
-1. Linux kernel 4.19.111 (GPL-2.0), including:
+1. Linux kernel 4.19.111 (GPL-2.0), including: <!-- cite: results/rootfs.toml#kernel_version -->
    - Complete kernel source tree
    - Rockchip RV1126 platform support code
    - Device tree sources (.dts files)
@@ -365,7 +365,7 @@ Specifically, I request source code for:
    - Device tree sources
    - Build instructions
 
-3. BusyBox 1.27.2 (GPL-2.0), including:
+3. BusyBox 1.27.2 (GPL-2.0), including: <!-- cite: results/rootfs.toml#busybox_version -->
    - Source code and configuration
 
 4. bcmdhd WiFi driver (GPL-2.0), including:
@@ -421,7 +421,7 @@ From the [Software Freedom Law Center's GPL Compliance Guide](https://softwarefr
 
 This analysis is based on technical examination of:
 
-1. **Firmware image:** `glkvm-RM1-1.7.2-1128-1764344791.img`
+1. **Firmware image:** `glkvm-RM1-1.7.2-1128-1764344791.img` <!-- cite: results/binwalk.toml#firmware_file -->
    - Source: https://fw.gl-inet.com/kvm/rm1/release/
    - SHA256: `6044860b839b7ba74de2ec77b2a0764cd0c16ae27ad0f94deb715429c37e8f19`
 

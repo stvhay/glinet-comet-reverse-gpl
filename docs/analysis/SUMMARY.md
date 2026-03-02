@@ -6,16 +6,16 @@
 
 These reports document what we found by extracting and analyzing the GL.iNet Comet firmware.
 
-**Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img
-**Platform:** Rockchip RV1126, Linux 4.19.111, Buildroot 2018.02-rc3
+**Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img <!-- cite: results/binwalk.toml#firmware_file -->
+**Platform:** Rockchip RV1126, Linux 4.19.111, Buildroot 2018.02-rc3 <!-- cite: results/rootfs.toml#kernel_version -->
 
 ## Key Components
 
 | Component | Version | License | Details |
 |-----------|---------|---------|---------|
-| Linux Kernel | 4.19.111 | GPL-2.0 | [kernel-version.md](kernel-version.md) |
+| Linux Kernel | 4.19.111 | GPL-2.0 | [kernel-version.md](kernel-version.md) | <!-- cite: results/rootfs.toml#kernel_version -->
 | U-Boot | 2017.09 | GPL-2.0+ | [uboot-version.md](uboot-version.md) |
-| BusyBox | 1.27.2 | GPL-2.0 | [gpl-binaries.md](gpl-binaries.md) |
+| BusyBox | 1.27.2 | GPL-2.0 | [gpl-binaries.md](gpl-binaries.md) | <!-- cite: results/rootfs.toml#busybox_version -->
 
 ## License Analysis
 

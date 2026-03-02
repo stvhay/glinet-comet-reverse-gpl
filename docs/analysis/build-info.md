@@ -4,7 +4,7 @@
 
 ---
 
-**Buildroot 2018.02-rc3** — Firmware V1.7.2 release1
+**Buildroot 2018.02-rc3** — Firmware V1.7.2 release1 <!-- cite: results/binwalk.toml#firmware_file -->
 
 ## Version Summary
 
@@ -12,7 +12,7 @@
 |----------|-------|
 | Build System | Buildroot 2018.02-rc3 |
 | Model | RM1 |
-| Firmware | V1.7.2 release1 |
+| Firmware | V1.7.2 release1 | <!-- cite: results/binwalk.toml#firmware_file -->
 
 ## /etc/os-release
 

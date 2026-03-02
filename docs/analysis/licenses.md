@@ -36,33 +36,33 @@ License types identified from LICENSE/COPYING file contents:
 | File | Detected License | Category |
 |------|------------------|----------|
 | `/usr/lib/python3.12/site-packages/shellingham-1.5.4.dist-info/LICENSE` | Unknown | Unknown |
-| `/usr/lib/python3.12/site-packages/async_lru-2.0.4.dist-info/LICENSE` | MIT | Permissive |
+| `/usr/lib/python3.12/site-packages/async_lru-2.0.4.dist-info/LICENSE` | MIT | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/scikit_build_core-0.10.7.dist-info/licenses/LICENSE` | Unknown | Unknown |
-| `/usr/lib/python3.12/site-packages/pexpect-4.9.0.dist-info/LICENSE` | ISC | Permissive |
+| `/usr/lib/python3.12/site-packages/pexpect-4.9.0.dist-info/LICENSE` | ISC | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/scikit_build_core/_vendor/pyproject_metadata/LICENSE` | MIT | Permissive |
-| `/usr/lib/python3.12/site-packages/netifaces-0.11.0.dist-info/LICENSE` | MIT | Permissive |
+| `/usr/lib/python3.12/site-packages/netifaces-0.11.0.dist-info/LICENSE` | MIT | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/python_periphery-2.4.1.dist-info/LICENSE` | MIT | Permissive |
 | `/usr/lib/python3.12/site-packages/zstandard-0.23.0.dist-info/LICENSE` | BSD | Permissive |
-| `/usr/lib/python3.12/site-packages/jaraco.classes-3.4.0.dist-info/LICENSE` | MIT | Permissive |
+| `/usr/lib/python3.12/site-packages/jaraco.classes-3.4.0.dist-info/LICENSE` | MIT | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/pyusb-1.2.1.dist-info/LICENSE` | BSD | Permissive |
-| `/usr/lib/python3.12/site-packages/multidict-6.1.0.dist-info/LICENSE` | Apache-2.0 | Permissive |
+| `/usr/lib/python3.12/site-packages/multidict-6.1.0.dist-info/LICENSE` | Apache-2.0 | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/ptyprocess-0.7.0.dist-info/LICENSE` | ISC | Permissive |
-| `/usr/lib/python3.12/site-packages/aiosignal-1.3.1.dist-info/LICENSE` | Unknown | Unknown |
+| `/usr/lib/python3.12/site-packages/aiosignal-1.3.1.dist-info/LICENSE` | Unknown | Unknown | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/rapidfuzz-3.10.0.dist-info/licenses/LICENSE` | MIT | Permissive |
-| `/usr/lib/python3.12/site-packages/crashtest-0.4.1.dist-info/LICENSE` | MIT | Permissive |
+| `/usr/lib/python3.12/site-packages/crashtest-0.4.1.dist-info/LICENSE` | MIT | Permissive | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/pygments-2.17.2.dist-info/licenses/LICENSE` | BSD | Permissive |
 | `/usr/lib/python3.12/site-packages/spidev-3.6.dist-info/LICENSE` | MIT | Permissive |
 | `/usr/lib/python3.12/site-packages/psutil-5.9.7.dist-info/LICENSE` | BSD-3-Clause | Permissive |
-| `/usr/lib/python3.12/site-packages/msgpack-1.1.0.dist-info/COPYING` | Apache-2.0 | Permissive |
+| `/usr/lib/python3.12/site-packages/msgpack-1.1.0.dist-info/COPYING` | Apache-2.0 | Permissive | <!-- cite: results/rootfs.toml#shared_libraries -->
 | `/usr/lib/python3.12/site-packages/kvmd-4.82.dist-info/LICENSE` | GPL-3.0 | Copyleft |
-| `/usr/lib/python3.12/site-packages/pillow-10.3.0.dist-info/LICENSE` | Unknown | Unknown |
+| `/usr/lib/python3.12/site-packages/pillow-10.3.0.dist-info/LICENSE` | Unknown | Unknown | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/requests-2.32.3.dist-info/LICENSE` | Unknown | Unknown |
-| `/usr/lib/python3.12/site-packages/asyncinotify-4.2.1.dist-info/LICENSE` | GPL-3.0 | Copyleft |
+| `/usr/lib/python3.12/site-packages/asyncinotify-4.2.1.dist-info/LICENSE` | GPL-3.0 | Copyleft | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/tomlkit-0.13.2.dist-info/LICENSE` | MIT | Permissive |
 | `/usr/lib/python3.12/site-packages/python_dateutil-2.6.0.dist-info/LICENSE` | BSD | Permissive |
-| `/usr/lib/python3.12/site-packages/aiohttp-3.10.5.dist-info/LICENSE.txt` | Apache-2.0 | Permissive |
-| `/usr/lib/python3.12/site-packages/six-1.16.0.dist-info/LICENSE` | MIT | Permissive |
-| `/usr/lib/python3.12/site-packages/aiohappyeyeballs-2.4.0.dist-info/LICENSE` | Unknown | Unknown |
+| `/usr/lib/python3.12/site-packages/aiohttp-3.10.5.dist-info/LICENSE.txt` | Apache-2.0 | Permissive | <!-- cite: results/rootfs.toml#license_files -->
+| `/usr/lib/python3.12/site-packages/six-1.16.0.dist-info/LICENSE` | MIT | Permissive | <!-- cite: results/rootfs.toml#license_files -->
+| `/usr/lib/python3.12/site-packages/aiohappyeyeballs-2.4.0.dist-info/LICENSE` | Unknown | Unknown | <!-- cite: results/rootfs.toml#license_files -->
 | `/usr/lib/python3.12/site-packages/pycares-4.4.0.dist-info/LICENSE` | MIT | Permissive |
 | `/usr/lib/python3.12/site-packages/pyserial_asyncio-0.6.dist-info/LICENSE.txt` | BSD-3-Clause | Permissive |
 
@@ -90,10 +90,10 @@ Licenses for shared libraries (from known database):
 | `libboost_unit_test_framework.so.1.66.0` | BSL-1.0 | Permissive | No |
 | `libavcodec.so.58.35.100` | LGPL-2.1 | Copyleft | Yes (library only) |
 | `libgobject-2.0.so.0.6400.4` | LGPL-2.1 | Copyleft | Yes (library only) |
-| `libdrm_rockchip.so.1.0.0` | MIT | Permissive | No |
+| `libdrm_rockchip.so.1.0.0` | MIT | Permissive | No | <!-- cite: results/rootfs.toml#shared_libraries -->
 | `libncurses.so.6.0` | MIT | Permissive | No |
 | `libavutil.so.56.22.100` | LGPL-2.1 | Copyleft | Yes (library only) |
-| `librga.so.2.1.0` | Apache-2.0 | Permissive | No |
+| `librga.so.2.1.0` | Apache-2.0 | Permissive | No | <!-- cite: results/rootfs.toml#license_files -->
 | `libbluetooth.so.3.18.16` | GPL-2.0 | Copyleft | Yes (full) |
 | `libswresample.so.3.3.100` | LGPL-2.1 | Copyleft | Yes (library only) |
 | `libeasymedia.so.1.0.1` | Apache-2.0 | Permissive | No |
@@ -103,7 +103,7 @@ Licenses for shared libraries (from known database):
 | `libpng16.so.16.37.0` | Zlib | Permissive | No |
 | `libboost_system.so.1.66.0` | BSL-1.0 | Permissive | No |
 | `libglib-2.0.so.0.6400.4` | LGPL-2.1 | Copyleft | Yes (library only) |
-| `libstdc++.so.6.0.25-gdb.py` | GPL-3.0-with-GCC-exception | Unknown | No |
+| `libstdc++.so.6.0.25-gdb.py` | GPL-3.0-with-GCC-exception | Unknown | No | <!-- cite: results/rootfs.toml#shared_libraries -->
 | `libgcc_s.so.1` | GPL-3.0-with-GCC-exception | Unknown | No |
 | `libpcreposix.so.0.0.5` | BSD-3-Clause | Permissive | No |
 
@@ -113,8 +113,8 @@ Licenses for shared libraries (from known database):
 
 The following components are under copyleft licenses and require source code disclosure:
 
-- File: /usr/lib/python3.12/site-packages/asyncinotify-4.2.1.dist-info/LICENSE (GPL-3.0)
-- File: /usr/lib/python3.12/site-packages/kvmd-4.82.dist-info/LICENSE (GPL-3.0)
+- File: /usr/lib/python3.12/site-packages/asyncinotify-4.2.1.dist-info/LICENSE (GPL-3.0) <!-- cite: results/rootfs.toml#license_files -->
+- File: /usr/lib/python3.12/site-packages/kvmd-4.82.dist-info/LICENSE (GPL-3.0) <!-- cite: results/rootfs.toml#license_files -->
 - Library: libavcodec.so.58.35.100 (LGPL-2.1)
 - Library: libavdevice.so.58.5.100 (LGPL-2.1)
 - Library: libavutil.so.56.22.100 (LGPL-2.1)

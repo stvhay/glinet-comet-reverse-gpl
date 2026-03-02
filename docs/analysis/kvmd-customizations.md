@@ -26,7 +26,7 @@ GL.iNet has forked KVMD to create GLKVM, their commercial KVM-over-IP product ba
 
 ### Version Information
 
-- **GL.iNet Version:** v1.7.2 (as of December 2025)
+- **GL.iNet Version:** v1.7.2 (as of December 2025) <!-- cite: results/binwalk.toml#firmware_file -->
   - Based on KVMD v4.16
   - 3,476 commits
   - 31 contributors
@@ -168,7 +168,7 @@ Based on release notes and commit history, GL.iNet has added several features:
 
 Tailscale provides secure remote access via WireGuard VPN. This feature is not present in upstream PiKVM.
 
-### 3. Enhanced Audio (v1.3.0 - v1.4.2)
+### 3. Enhanced Audio (v1.3.0 - v1.4.2) <!-- cite: results/rootfs.toml#shared_libraries -->
 
 - **OPUS audio codec** support
 - Fixed "OPUS mono audio in Chrome" issue
@@ -185,7 +185,7 @@ Upstream PiKVM supports audio, but GL.iNet has made specific improvements for:
 
 The RV1126's integrated H.264/H.265 encoder allows for more efficient video streaming than software encoding. This is a hardware-specific optimization.
 
-### 5. User Interface Enhancements (v1.3.0)
+### 5. User Interface Enhancements (v1.3.0) <!-- cite: results/rootfs.toml#shared_libraries -->
 
 - **Customizable keyboard shortcuts**
 - **Virtual keyboard repositioning**
@@ -227,8 +227,8 @@ This enables rapid iteration during development by directly replacing the KVMD P
 
 ### 8. Platform-Specific Fixes
 
-- **Linux EDID compatibility** improvements (v1.3.1)
-- **IPv6 support** (v1.3.1)
+- **Linux EDID compatibility** improvements (v1.3.1) <!-- cite: results/rootfs.toml#license_files -->
+- **IPv6 support** (v1.3.1) <!-- cite: results/rootfs.toml#license_files -->
 - **Intel graphics audio output** corrections (v1.2.3)
 - **UI rendering** enhancements (v1.1.1)
 
@@ -376,7 +376,7 @@ The customizations are primarily hardware adaptations (Rockchip vs Broadcom) and
 
 Key commit patterns from GL.iNet (2024-2025):
 
-- **Version releases:** 1.1.0 → 1.1.1 → 1.2.3 → 1.3.0 → 1.3.1 → 1.4.2 → 1.5.0 → 1.7.2
+- **Version releases:** 1.1.0 → 1.1.1 → 1.2.3 → 1.3.0 → 1.3.1 → 1.4.2 → 1.5.0 → 1.7.2 <!-- cite: results/binwalk.toml#firmware_file, results/rootfs.toml#license_files, results/rootfs.toml#shared_libraries -->
 - **Audio improvements:** "Fixed OPUS mono audio in Chrome"
 - **Device discovery:** Avahi integration and configuration
 - **Hardware support:** OLED sensor class

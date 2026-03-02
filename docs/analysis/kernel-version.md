@@ -4,13 +4,13 @@
 
 ---
 
-**Linux 4.19.111** — ARM 32-bit kernel with SMP and preemption support.
+**Linux 4.19.111** — ARM 32-bit kernel with SMP and preemption support. <!-- cite: results/rootfs.toml#kernel_version -->
 
 ## Version Details
 
 | Property | Value |
 |----------|-------|
-| Version | 4.19.111 |
+| Version | 4.19.111 | <!-- cite: results/rootfs.toml#kernel_version -->
 | Architecture | ARMv7 |
 | Config | SMP, preempt, mod_unload |
 | License | GPL-2.0 |

@@ -10,9 +10,9 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 
 | DTB | Size | Purpose |
 |-----|------|---------|
-| 0x1323B4 | 13 KB | U-Boot device tree |
-| 0x49B9B4 | 97 KB | Linux kernel DTB |
-| 0x28F1B4 | 2 KB | Bootloader FIT (Slot B) |
+| 0x1323B4 | 13 KB | U-Boot device tree | <!-- cite: results/binwalk.toml#identified_components -->
+| 0x49B9B4 | 97 KB | Linux kernel DTB | <!-- cite: results/binwalk.toml#kernel_fit_offset -->
+| 0x28F1B4 | 2 KB | Bootloader FIT (Slot B) | <!-- cite: results/binwalk.toml#identified_components -->
 
 **Compatible:** `rockchip,rv1126-evb-ddr3-v13`
 
@@ -20,21 +20,21 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 
 ## Device Trees Found
 
-## DTB #1: `system.dtb` (offset 0x1323B4)
+## DTB #1: `system.dtb` (offset 0x1323B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 13660 bytes
 - **Type:** U-Boot Device Tree
 - **Model:** Rockchip RV1126 Evaluation Board
 - **Compatible:** `rockchip,rv1126-evb`
 
-## DTB #2: `system.dtb` (offset 0x1C597B4)
+## DTB #2: `system.dtb` (offset 0x1C597B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 110972 bytes
 - **Type:** Device Tree
 - **Model:** Rockchip RV1126 EVB DDR3 V13 Board
 - **Compatible:** `rockchip,rv1126-evb-ddr3-v13`
 
-## DTB #3: `system.dtb` (offset 0x28F1B4)
+## DTB #3: `system.dtb` (offset 0x28F1B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 1893 bytes
 - **Type:** FIT Image (Flattened Image Tree)
@@ -60,14 +60,14 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 			description = "rv1126-evb";
 ```
 
-## DTB #4: `system.dtb` (offset 0x3323B4)
+## DTB #4: `system.dtb` (offset 0x3323B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 13660 bytes
 - **Type:** U-Boot Device Tree
 - **Model:** Rockchip RV1126 Evaluation Board
 - **Compatible:** `rockchip,rv1126-evb`
 
-## DTB #5: `system.dtb` (offset 0x49B1B4)
+## DTB #5: `system.dtb` (offset 0x49B1B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 1411 bytes
 - **Type:** FIT Image (Flattened Image Tree)
@@ -88,14 +88,14 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 			compression = "none";
 ```
 
-## DTB #6: `system.dtb` (offset 0x49B9B4)
+## DTB #6: `system.dtb` (offset 0x49B9B4) <!-- cite: results/binwalk.toml#kernel_fit_offset -->
 
 - **Size:** 110972 bytes
 - **Type:** Device Tree
 - **Model:** Rockchip RV1126 EVB DDR3 V13 Board
 - **Compatible:** `rockchip,rv1126-evb-ddr3-v13`
 
-## DTB #7: `system.dtb` (offset 0x8F1B4)
+## DTB #7: `system.dtb` (offset 0x8F1B4) <!-- cite: results/binwalk.toml#bootloader_fit_offset -->
 
 - **Size:** 1893 bytes
 - **Type:** FIT Image (Flattened Image Tree)
@@ -121,14 +121,14 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 			description = "rv1126-evb";
 ```
 
-## DTB #8: `system.dtb` (offset 0xC385B4)
+## DTB #8: `system.dtb` (offset 0xC385B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 110972 bytes
 - **Type:** Device Tree
 - **Model:** Rockchip RV1126 EVB DDR3 V13 Board
 - **Compatible:** `rockchip,rv1126-evb-ddr3-v13`
 
-## DTB #9: `system.dtb` (offset 0xCC91B4)
+## DTB #9: `system.dtb` (offset 0xCC91B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 1767 bytes
 - **Type:** FIT Image (Flattened Image Tree)
@@ -153,7 +153,7 @@ The firmware contains multiple DTBs for U-Boot and Linux, targeting the Rockchip
 			compression = "none";
 ```
 
-## DTB #10: `system.dtb` (offset 0xCC99B4)
+## DTB #10: `system.dtb` (offset 0xCC99B4) <!-- cite: results/binwalk.toml#identified_components -->
 
 - **Size:** 110972 bytes
 - **Type:** Device Tree

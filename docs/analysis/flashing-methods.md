@@ -34,7 +34,7 @@ The device supports over-the-air updates through the KVMD web interface.
 
 #### Update Package Format
 
-Based on binwalk analysis of `glkvm-RM1-1.7.2-*.img`:
+Based on binwalk analysis of `glkvm-RM1-1.7.2-*.img`: <!-- cite: results/binwalk.toml#firmware_file -->
 
 ```
 Offset      Size        Content

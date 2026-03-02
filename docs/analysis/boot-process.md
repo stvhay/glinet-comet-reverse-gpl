@@ -20,7 +20,7 @@ The Comet uses a Rockchip RV1126 SoC with A/B partition redundancy for OTA updat
 | Component | Version | Source |
 |-----------|---------|--------|
 | U-Boot | 2017.09-gfd8bfa2acd-dirty | Binary strings |
-| Linux Kernel | 4.19.111 | Module vermagic |
+| Linux Kernel | 4.19.111 | Module vermagic | <!-- cite: results/rootfs.toml#kernel_version -->
 | Buildroot | 2018.02-rc3-gd56bbacb | /etc/os-release |
 | OP-TEE | Present | FIT image |
 

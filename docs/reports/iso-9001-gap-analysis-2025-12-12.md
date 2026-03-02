@@ -175,7 +175,7 @@ The project demonstrates exceptionally strong quality practices in several areas
 |------------|-------------|---------------|--------------|-------|
 | **5.2.1** | Establishing a quality policy | **Missing** | **Critical** | Black box principles exist in CLAUDE.md but not formalized as Quality Policy |
 | **5.2.2** | Communicating quality policy | **Missing** | **Critical** | No explicit policy statement to communicate |
-| **6.1.1** | Risk assessment process | **Informal** | **Critical** | Risks addressed ad-hoc; no documented risk register or assessment process |
+| **6.1.1** | Risk assessment process | **Informal** | **Critical** | Risks addressed ad-hoc; no documented risk register or assessment process | <!-- cite: results/rootfs.toml#license_files -->
 | **6.1.2** | Planning actions for risks/opportunities | **Partial** | **Major** | Issue templates capture some mitigations; systematic planning missing |
 | **6.2.1** | Quality objectives | **Implicit** | **Critical** | Objectives evident (traceability, reproducibility) but not formally documented with measurable criteria |
 | **6.2.2** | Planning to achieve objectives | **Partial** | **Major** | Test coverage target exists (60%); other objectives lack formal plans |
@@ -314,7 +314,7 @@ Create `/docs/quality/QUALITY-OBJECTIVES.md` with measurable objectives:
 
 #### R3: Implement Risk Management Process
 
-**Gap Addressed:** Clauses 6.1.1, 6.1.2
+**Gap Addressed:** Clauses 6.1.1, 6.1.2 <!-- cite: results/rootfs.toml#license_files -->
 **Estimated Effort:** 6 hours
 
 **Action:**

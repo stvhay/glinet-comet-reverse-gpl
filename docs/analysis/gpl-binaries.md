@@ -10,7 +10,7 @@ The firmware contains BusyBox, GNU Coreutils, and several other GPL-licensed too
 
 | Property | Value |
 |----------|-------|
-| Version | 1.27.2 |
+| Version | 1.27.2 | <!-- cite: results/rootfs.toml#busybox_version -->
 | Build Date | 2025-11-27 08:14:38 UTC |
 | Location | /bin/busybox |
 | Size | 895,608 bytes |

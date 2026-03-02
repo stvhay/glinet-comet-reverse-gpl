@@ -10,13 +10,13 @@ The firmware contains two sets of bootloader FIT images (A/B redundancy), a kern
 
 | Offset | Type | Description |
 |--------|------|-------------|
-| 0x8F1B4 | FIT | Bootloader FIT (U-Boot + OP-TEE) - Slot A |
-| 0x28F1B4 | FIT | Bootloader FIT - Slot B (duplicate) |
-| 0x49B9B4 | FIT | Kernel FIT (kernel + DTB) |
-| 0x1465DB4 | gzip | Initramfs (rootfs.cpio, 8.3 MB) |
-| 0x1CEA1B4 | SquashFS | Root filesystem (231 MB) |
-| 0xF9E01B4 | EXT4 | OEM partition (6 MB) |
-| 0xFFE01B4 | EXT4 | Userdata partition (5 MB) |
+| 0x8F1B4 | FIT | Bootloader FIT (U-Boot + OP-TEE) - Slot A | <!-- cite: results/binwalk.toml#bootloader_fit_offset -->
+| 0x28F1B4 | FIT | Bootloader FIT - Slot B (duplicate) | <!-- cite: results/binwalk.toml#identified_components -->
+| 0x49B9B4 | FIT | Kernel FIT (kernel + DTB) | <!-- cite: results/binwalk.toml#kernel_fit_offset -->
+| 0x1465DB4 | gzip | Initramfs (rootfs.cpio, 8.3 MB) | <!-- cite: results/binwalk.toml#rootfs_cpio_offset -->
+| 0x1CEA1B4 | SquashFS | Root filesystem (231 MB) | <!-- cite: results/binwalk.toml#squashfs_offset -->
+| 0xF9E01B4 | EXT4 | OEM partition (6 MB) | <!-- cite: results/binwalk.toml#identified_components -->
+| 0xFFE01B4 | EXT4 | Userdata partition (5 MB) | <!-- cite: results/binwalk.toml#identified_components -->
 
 ## Raw Binwalk Output
 

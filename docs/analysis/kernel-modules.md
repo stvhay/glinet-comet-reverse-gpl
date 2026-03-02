@@ -18,7 +18,7 @@ The bcmdhd module is a Broadcom/Cypress WiFi driver licensed under GPL-2.0. GL.i
 
 - Complete driver source code
 - Build configuration
-- Integration with kernel 4.19.111
+- Integration with kernel 4.19.111 <!-- cite: results/rootfs.toml#kernel_version -->
 
 ## See Also
 
