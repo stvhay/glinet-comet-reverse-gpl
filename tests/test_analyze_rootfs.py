@@ -279,6 +279,17 @@ class TestRootfsAnalysis:
         assert result["gpl_binaries"][0]["license"] == "GPL-2.0"
         assert result["gpl_binaries"][0]["version"] == "1.36.1"
 
+    def test_to_dict_gpl_binary_without_version(self) -> None:
+        """Test to_dict omits None version from GplBinary serialization."""
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
+        analysis.gpl_binaries = [GplBinary(name="grep", path="/bin/grep", license="GPL-3.0+")]
+
+        result = analysis.to_dict()
+
+        assert len(result["gpl_binaries"]) == 1
+        assert result["gpl_binaries"][0]["name"] == "grep"
+        assert "version" not in result["gpl_binaries"][0]
+
     def test_to_dict_converts_license_files(self) -> None:
         """Test to_dict converts LicenseFile objects to dicts."""
         analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
