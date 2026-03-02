@@ -22,6 +22,8 @@ class AnalysisBase:
             field2: int
             _source: dict[str, str] = field(default_factory=dict)
             _method: dict[str, str] = field(default_factory=dict)
+            _reproducibility: dict[str, str] = field(default_factory=dict)
+            _hardware_metadata: dict[str, dict[str, str]] = field(default_factory=dict)
 
             def _convert_complex_field(
                 self, key: str, value: Any
@@ -34,20 +36,65 @@ class AnalysisBase:
 
     _source: dict[str, str]
     _method: dict[str, str]
+    _reproducibility: dict[str, str]
+    _hardware_metadata: dict[str, dict[str, str]]
 
-    def add_metadata(self, field_name: str, source: str, method: str) -> None:
+    def add_metadata(
+        self,
+        field_name: str,
+        source: str,
+        method: str,
+        reproducibility: str = "software",
+    ) -> None:
         """Add source metadata for a field.
 
         Args:
             field_name: Name of the field
             source: Source of the data (e.g., "U-Boot", "DTS")
             method: Method used to extract data (e.g., "strings | grep")
+            reproducibility: Reproducibility class ("software" or "hardware")
         """
         self._source[field_name] = source
         self._method[field_name] = method
+        self._reproducibility[field_name] = reproducibility
+
+    def add_hardware_metadata(
+        self,
+        field_name: str,
+        source: str,
+        method: str,
+        *,
+        equipment: str,
+        procedure: str,
+        performed: str,
+        operator: str,
+    ) -> None:
+        """Add hardware-dependent metadata for a field.
+
+        Args:
+            field_name: Name of the field
+            source: Source of the data
+            method: Method used to extract data
+            equipment: Equipment used (e.g., "UART adapter")
+            procedure: Procedure followed
+            performed: Date performed
+            operator: Person who performed the measurement
+        """
+        self.add_metadata(field_name, source, method, reproducibility="hardware")
+        self._hardware_metadata[field_name] = {
+            "equipment": equipment,
+            "procedure": procedure,
+            "performed": performed,
+            "operator": operator,
+        }
 
     def set_count_with_metadata(
-        self, field_name: str, items: list[Any], source: str, method: str
+        self,
+        field_name: str,
+        items: list[Any],
+        source: str,
+        method: str,
+        reproducibility: str = "software",
     ) -> None:
         """Set a count field to len(items) and add metadata.
 
@@ -58,9 +105,10 @@ class AnalysisBase:
             items: List to count
             source: Source of the data (e.g., "filesystem")
             method: Method used to extract data (e.g., "find ... -name '*.dtb'")
+            reproducibility: Reproducibility class ("software" or "hardware")
         """
         setattr(self, field_name, len(items))
-        self.add_metadata(field_name, source, method)
+        self.add_metadata(field_name, source, method, reproducibility)
 
     def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:  # noqa: ARG002
         """Convert a complex field to a serializable format.
@@ -112,5 +160,11 @@ class AnalysisBase:
                     result[f"{key}_source"] = self._source[key]
                 if key in self._method:
                     result[f"{key}_method"] = self._method[key]
+                if key in self._reproducibility:
+                    result[f"{key}_reproducibility"] = self._reproducibility[key]
+                if key in self._hardware_metadata:
+                    hw = self._hardware_metadata[key]
+                    for hw_key in ("equipment", "procedure", "performed", "operator"):
+                        result[f"{key}_{hw_key}"] = hw[hw_key]
 
         return result

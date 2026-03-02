@@ -17,6 +17,17 @@ from .logging import error
 TOML_MAX_COMMENT_LENGTH = 80
 TOML_COMMENT_TRUNCATE_LENGTH = 77
 
+# Metadata suffix patterns used to identify metadata keys
+METADATA_SUFFIXES = (
+    "_source",
+    "_method",
+    "_reproducibility",
+    "_equipment",
+    "_procedure",
+    "_performed",
+    "_operator",
+)
+
 
 def _auto_detect_fields(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     """Classify data fields into simple (primitives) and complex (lists/dicts).
@@ -28,9 +39,10 @@ def _auto_detect_fields(data: dict[str, Any]) -> tuple[list[str], list[str]]:
     complex_: list[str] = []
 
     for key, value in data.items():
-        # Skip metadata keys: {field}_source and {field}_method where {field} is another key
-        if key.endswith("_source") or key.endswith("_method"):
-            base_key = key.rsplit("_", 1)[0]
+        # Skip metadata keys where the base field exists in data
+        if any(key.endswith(suffix) for suffix in METADATA_SUFFIXES):
+            suffix = next(s for s in METADATA_SUFFIXES if key.endswith(s))
+            base_key = key[: -len(suffix)]
             if base_key in data:
                 continue
 
@@ -60,6 +72,15 @@ def _add_simple_fields(
                 doc.add(tomlkit.comment(f"Method: {method[:TOML_COMMENT_TRUNCATE_LENGTH]}..."))
             else:
                 doc.add(tomlkit.comment(f"Method: {method}"))
+        if f"{key}_reproducibility" in data:
+            doc.add(tomlkit.comment(f"Reproducibility: {data[f'{key}_reproducibility']}"))
+        for hw_field in ("equipment", "procedure", "performed", "operator"):
+            hw_key = f"{key}_{hw_field}"
+            if hw_key in data:
+                val = data[hw_key]
+                if len(val) > TOML_MAX_COMMENT_LENGTH:
+                    val = val[:TOML_COMMENT_TRUNCATE_LENGTH] + "..."
+                doc.add(tomlkit.comment(f"{hw_field.title()}: {val}"))
 
         doc.add(key, value)
         doc.add(tomlkit.nl())
