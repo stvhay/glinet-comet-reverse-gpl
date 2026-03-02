@@ -80,6 +80,33 @@ class DetectedLicense:
     detection_method: str
 
 
+@dataclass(frozen=True, slots=True)
+class LibraryVersion:
+    """A library with extracted version information."""
+
+    name: str
+    version: str | None
+    soname: str
+
+
+# Library version extraction patterns: (name, glob_pattern, regex_pattern or None for presence-only)
+LIBRARY_PATTERNS: list[tuple[str, str, str | None]] = [
+    ("glibc", "libc.so*", r"GNU C Library.*?(\d+\.\d+)"),
+    ("libavcodec", "libavcodec.so*", r"Lavc(\d+\.\d+\.\d+)"),
+    ("libavutil", "libavutil.so*", r"Lavu(\d+\.\d+\.\d+)"),
+    ("GLib", "libglib-2.0.so*", r"GLib[- ](\d+\.\d+\.\d+)"),
+    ("D-Bus", "libdbus-1.so*", r"D-Bus[- ](\d+\.\d+\.\d+)"),
+    ("BlueZ", "libbluetooth.so*", r"BlueZ[- ](\d+\.\d+\.\d+)"),
+    ("libcurl", "libcurl.so*", r"libcurl/(\d+\.\d+\.\d+)"),
+    ("OpenSSL", "libssl.so*", r"OpenSSL\s+(\d+\.\d+\.\d+\w*)"),
+    ("GnuTLS", "libgnutls.so*", r"GnuTLS[- ](\d+\.\d+\.\d+)"),
+    ("nettle", "libnettle.so*", r"nettle[- ](\d+\.\d+)"),
+    ("libevent", "libevent-*.so*", r"libevent[- /](\d+\.\d+\.\d+)"),
+    ("libmad", "libmad.so*", r"libmad[- ](\d+\.\d+\.\d+)"),
+    ("live555", "libliveMedia.so*", None),
+]
+
+
 @dataclass(slots=True)
 class RootfsAnalysis(AnalysisBase):
     """Results of root filesystem analysis."""
@@ -102,6 +129,7 @@ class RootfsAnalysis(AnalysisBase):
     gpl_binaries: list[GplBinary] = field(default_factory=list)
     license_files: list[LicenseFile] = field(default_factory=list)
     detected_licenses: list[DetectedLicense] = field(default_factory=list)
+    library_versions: list[LibraryVersion] = field(default_factory=list)
 
     # Source metadata for each field
     _source: dict[str, str] = field(default_factory=dict)
@@ -109,37 +137,23 @@ class RootfsAnalysis(AnalysisBase):
     _reproducibility: dict[str, str] = field(default_factory=dict)
     _hardware_metadata: dict[str, dict[str, str]] = field(default_factory=dict)
 
+    @staticmethod
+    def _dataclass_to_dict(obj: Any, field_names: list[str]) -> dict[str, Any]:
+        """Convert a dataclass instance to dict, filtering None values."""
+        return {k: v for k in field_names if (v := getattr(obj, k)) is not None}
+
     def _convert_complex_field(self, key: str, value: Any) -> tuple[bool, Any]:
         """Convert complex fields to serializable format."""
-        if key == "kernel_modules":
-            return True, [{"name": m.name, "path": m.path, "size": m.size} for m in value]
-        if key == "shared_libraries":
-            return True, [{"name": lib.name, "path": lib.path, "size": lib.size} for lib in value]
-        if key == "gpl_binaries":
-            return True, [
-                {
-                    k: v
-                    for k, v in {
-                        "name": b.name,
-                        "path": b.path,
-                        "license": b.license,
-                        "version": b.version,
-                    }.items()
-                    if v is not None
-                }
-                for b in value
-            ]
-        if key == "license_files":
-            return True, [{"path": lf.path, "content_preview": lf.content_preview} for lf in value]
-        if key == "detected_licenses":
-            return True, [
-                {
-                    "component": dl.component,
-                    "license": dl.license,
-                    "detection_method": dl.detection_method,
-                }
-                for dl in value
-            ]
+        field_map: dict[str, list[str]] = {
+            "kernel_modules": ["name", "path", "size"],
+            "shared_libraries": ["name", "path", "size"],
+            "gpl_binaries": ["name", "path", "license", "version"],
+            "license_files": ["path", "content_preview"],
+            "detected_licenses": ["component", "license", "detection_method"],
+            "library_versions": ["name", "version", "soname"],
+        }
+        if key in field_map:
+            return True, [self._dataclass_to_dict(item, field_map[key]) for item in value]
         return False, None
 
 
@@ -452,6 +466,54 @@ def detect_library_licenses(rootfs: Path, analysis: RootfsAnalysis) -> None:
     analysis.detected_licenses = detected  # Already sorted by dict iteration order
 
 
+def extract_library_versions(rootfs: Path, analysis: RootfsAnalysis) -> None:
+    """Extract version strings from shared libraries using strings command.
+
+    Iterates LIBRARY_PATTERNS, finds matching .so files, runs strings on them,
+    and extracts version numbers using regex patterns.
+
+    Args:
+        rootfs: Root filesystem path
+        analysis: RootfsAnalysis to populate
+    """
+    versions: list[LibraryVersion] = []
+
+    for name, glob_pattern, regex_pattern in LIBRARY_PATTERNS:
+        matches = find_files(rootfs, [glob_pattern], file_type="file")
+        if not matches:
+            continue
+
+        lib_path = matches[0]
+        soname = lib_path.name
+        version: str | None = None
+
+        if regex_pattern is not None:
+            try:
+                result = subprocess.run(
+                    ["strings", str(lib_path)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                for line in result.stdout.splitlines():
+                    match = re.search(regex_pattern, line)
+                    if match:
+                        version = match.group(1)
+                        break
+            except (OSError, subprocess.SubprocessError):
+                warn(f"Failed to extract version for {name}")
+
+        versions.append(LibraryVersion(name=name, version=version, soname=soname))
+
+    analysis.library_versions = versions
+    if versions:
+        analysis.add_metadata(
+            "library_versions",
+            "shared libraries",
+            "strings <lib> | grep <version_pattern>",
+        )
+
+
 def analyze_rootfs(firmware_path: str, rootfs: Path) -> RootfsAnalysis:
     """Analyze root filesystem and return structured results."""
     firmware = Path(firmware_path)
@@ -477,6 +539,9 @@ def analyze_rootfs(firmware_path: str, rootfs: Path) -> RootfsAnalysis:
 
     section("Shared Libraries")
     analyze_shared_libraries(rootfs, analysis)
+
+    section("Library Versions")
+    extract_library_versions(rootfs, analysis)
 
     section("GPL Binaries")
     analyze_busybox(rootfs, analysis)
@@ -511,6 +576,7 @@ SIMPLE_FIELDS = [
 COMPLEX_FIELDS = [
     "kernel_modules",
     "shared_libraries",
+    "library_versions",
     "gpl_binaries",
     "license_files",
     "detected_licenses",

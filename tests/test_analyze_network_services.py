@@ -20,6 +20,7 @@ from analyze_network_services import (
     PasswordEntry,
     ServiceBinary,
     _classify_password_hash,
+    _extract_janus_version,
     analyze_shadow_file,
     find_firewall_rules,
     find_init_scripts,
@@ -147,6 +148,7 @@ class TestNetworkServicesAnalysis:
         assert analysis.firewall_rules == []
         assert analysis.web_server_count == 0
         assert analysis.ssh_server_count == 0
+        assert analysis.janus_version is None
 
     def test_analysis_is_mutable(self) -> None:
         """Test that NetworkServicesAnalysis is mutable (not frozen)."""
@@ -670,6 +672,57 @@ class TestFindNetworkServices:
         result = find_network_services(rootfs)
 
         assert result == []
+
+
+class TestExtractJanusVersion:
+    """Test _extract_janus_version function."""
+
+    @patch("subprocess.run")
+    def test_extract_janus_version_found(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting Janus version from binary strings."""
+        rootfs = tmp_path / "rootfs"
+        sbin = rootfs / "usr" / "sbin"
+        sbin.mkdir(parents=True)
+        (sbin / "janus").write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(stdout="some text\njanus 0.11.8\nmore text\n")
+
+        analysis = NetworkServicesAnalysis(
+            firmware_file="test.img", firmware_size=1024, rootfs_path=str(rootfs)
+        )
+        _extract_janus_version(analysis, rootfs, "usr/sbin/janus")
+
+        assert analysis.janus_version == "0.11.8"
+        assert analysis._source["janus_version"] == "usr/sbin/janus"
+
+    @patch("subprocess.run")
+    def test_extract_janus_version_not_found(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting Janus version when pattern doesn't match."""
+        rootfs = tmp_path / "rootfs"
+        sbin = rootfs / "usr" / "sbin"
+        sbin.mkdir(parents=True)
+        (sbin / "janus").write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(stdout="no version info here\n")
+
+        analysis = NetworkServicesAnalysis(
+            firmware_file="test.img", firmware_size=1024, rootfs_path=str(rootfs)
+        )
+        _extract_janus_version(analysis, rootfs, "usr/sbin/janus")
+
+        assert analysis.janus_version is None
+
+    def test_extract_janus_version_file_missing(self, tmp_path: Path) -> None:
+        """Test extracting Janus version when binary doesn't exist."""
+        rootfs = tmp_path / "rootfs"
+        rootfs.mkdir(parents=True)
+
+        analysis = NetworkServicesAnalysis(
+            firmware_file="test.img", firmware_size=1024, rootfs_path=str(rootfs)
+        )
+        _extract_janus_version(analysis, rootfs, "usr/sbin/janus")
+
+        assert analysis.janus_version is None
 
 
 class TestAnalyzeShadowFile:
