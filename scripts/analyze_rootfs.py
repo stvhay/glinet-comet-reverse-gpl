@@ -14,6 +14,7 @@ This script performs GPL compliance analysis by:
 - Outputting structured data with source tracking
 """
 
+import re
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -88,11 +89,14 @@ class RootfsAnalysis(AnalysisBase):
     os_name: str | None = None
     os_version: str | None = None
     os_pretty_name: str | None = None
+    buildroot_version: str | None = None
     kernel_version: str | None = None
+    kernel_vermagic: str | None = None
     kernel_modules_count: int = 0
     shared_libraries_count: int = 0
     busybox_found: bool = False
     busybox_version: str | None = None
+    busybox_build_date: str | None = None
     kernel_modules: list[KernelModule] = field(default_factory=list)
     shared_libraries: list[SharedLibrary] = field(default_factory=list)
     gpl_binaries: list[GplBinary] = field(default_factory=list)
@@ -152,8 +156,15 @@ def parse_os_release(rootfs: Path, analysis: RootfsAnalysis) -> None:
                 analysis.os_name = line.split("=", 1)[1].strip('"')
                 analysis.add_metadata("os_name", "/etc/os-release", "NAME field")
             elif line.startswith("VERSION="):
-                analysis.os_version = line.split("=", 1)[1].strip('"')
+                version_value = line.split("=", 1)[1].strip('"')
+                analysis.os_version = version_value
                 analysis.add_metadata("os_version", "/etc/os-release", "VERSION field")
+                analysis.buildroot_version = version_value
+                analysis.add_metadata(
+                    "buildroot_version",
+                    "/etc/os-release",
+                    "VERSION field (Buildroot version with git commit)",
+                )
             elif line.startswith("PRETTY_NAME="):
                 analysis.os_pretty_name = line.split("=", 1)[1].strip('"')
                 analysis.add_metadata("os_pretty_name", "/etc/os-release", "PRETTY_NAME field")
@@ -188,6 +199,14 @@ def extract_kernel_version(rootfs: Path, analysis: RootfsAnalysis) -> None:
                     "kernel_version",
                     "kernel module",
                     f"strings {ko_file.name} | grep vermagic",
+                )
+                # Extract just the vermagic value (after "vermagic=")
+                vermagic_value = line.split("vermagic=", 1)[1]
+                analysis.kernel_vermagic = vermagic_value
+                analysis.add_metadata(
+                    "kernel_vermagic",
+                    "kernel module",
+                    f"strings {ko_file.name} | grep vermagic | cut -d= -f2",
                 )
                 break
     except Exception as e:
@@ -265,6 +284,15 @@ def analyze_busybox(rootfs: Path, analysis: RootfsAnalysis) -> None:
                     "/bin/busybox",
                     "strings /bin/busybox | grep 'BusyBox v'",
                 )
+                # Extract build date from parentheses
+                date_match = re.search(r"\(([^)]+)\)", line)
+                if date_match:
+                    analysis.busybox_build_date = date_match.group(1)
+                    analysis.add_metadata(
+                        "busybox_build_date",
+                        "/bin/busybox",
+                        "strings /bin/busybox | grep 'BusyBox v' | extract date from parens",
+                    )
                 break
 
         # Add to GPL binaries
@@ -467,11 +495,14 @@ SIMPLE_FIELDS = [
     "os_name",
     "os_version",
     "os_pretty_name",
+    "buildroot_version",
     "kernel_version",
+    "kernel_vermagic",
     "kernel_modules_count",
     "shared_libraries_count",
     "busybox_found",
     "busybox_version",
+    "busybox_build_date",
 ]
 
 COMPLEX_FIELDS = [

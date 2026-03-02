@@ -192,6 +192,14 @@ class TestRootfsAnalysis:
         assert analysis.kernel_modules_count == 0
         assert analysis.busybox_found is False
 
+    def test_new_fields_default_none(self) -> None:
+        """Test that kernel_vermagic, busybox_build_date, buildroot_version default to None."""
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path="/tmp/root")
+
+        assert analysis.kernel_vermagic is None
+        assert analysis.busybox_build_date is None
+        assert analysis.buildroot_version is None
+
     def test_rootfs_analysis_with_optional_fields(self) -> None:
         """Test creating a RootfsAnalysis with optional fields."""
         analysis = RootfsAnalysis(
@@ -388,6 +396,22 @@ class TestParseOsRelease:
         assert analysis._source["os_name"] == "/etc/os-release"
         assert analysis._method["os_name"] == "NAME field"
 
+    def test_parse_os_release_extracts_buildroot_version(self, tmp_path: Path) -> None:
+        """Test that VERSION field is also stored as buildroot_version."""
+        rootfs = tmp_path / "rootfs"
+        etc_dir = rootfs / "etc"
+        etc_dir.mkdir(parents=True)
+
+        os_release = etc_dir / "os-release"
+        os_release.write_text('NAME="Buildroot"\nVERSION="2018.02-rc3-gd56bbacb"\n')
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        parse_os_release(rootfs, analysis)
+
+        assert analysis.buildroot_version == "2018.02-rc3-gd56bbacb"
+        assert analysis._source["buildroot_version"] == "/etc/os-release"
+        assert "Buildroot version" in analysis._method["buildroot_version"]
+
     def test_parse_os_release_missing_file(self, tmp_path: Path) -> None:
         """Test parsing when /etc/os-release doesn't exist."""
         rootfs = tmp_path / "rootfs"
@@ -442,6 +466,27 @@ class TestExtractKernelVersion:
         assert analysis._source["kernel_version"] == "kernel module"
         assert "strings" in analysis._method["kernel_version"]
 
+    @patch("subprocess.run")
+    def test_extract_kernel_vermagic(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting kernel_vermagic (value after vermagic=)."""
+        rootfs = tmp_path / "rootfs"
+        lib_modules = rootfs / "lib/modules/4.19.111"
+        lib_modules.mkdir(parents=True)
+
+        ko_file = lib_modules / "test.ko"
+        ko_file.write_text("dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nvermagic=4.19.111 SMP preempt mod_unload ARMv7 p2v8\nmore text\n"
+        )
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_kernel_version(rootfs, analysis)
+
+        assert analysis.kernel_vermagic == "4.19.111 SMP preempt mod_unload ARMv7 p2v8"
+        assert analysis._source["kernel_vermagic"] == "kernel module"
+        assert "cut -d= -f2" in analysis._method["kernel_vermagic"]
+
     def test_extract_kernel_version_no_modules(self, tmp_path: Path) -> None:
         """Test extracting kernel version when no modules exist."""
         rootfs = tmp_path / "rootfs"
@@ -452,6 +497,7 @@ class TestExtractKernelVersion:
 
         # Should not crash, version should remain None
         assert analysis.kernel_version is None
+        assert analysis.kernel_vermagic is None
 
 
 class TestAnalyzeKernelModules:
@@ -579,6 +625,24 @@ class TestAnalyzeBusybox:
         assert analysis.gpl_binaries[0].name == "busybox"
         assert analysis.gpl_binaries[0].license == "GPL-2.0"
 
+    @patch("subprocess.run")
+    def test_analyze_busybox_extracts_build_date(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting busybox_build_date from version string."""
+        rootfs = tmp_path / "rootfs"
+        bin_dir = rootfs / "bin"
+        bin_dir.mkdir(parents=True)
+
+        busybox = bin_dir / "busybox"
+        busybox.write_bytes(b"dummy binary")
+
+        mock_run.return_value = MagicMock(stdout="BusyBox v1.27.2 (2025-11-27 08:14:38 UTC)\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        analyze_busybox(rootfs, analysis)
+
+        assert analysis.busybox_build_date == "2025-11-27 08:14:38 UTC"
+        assert analysis._source["busybox_build_date"] == "/bin/busybox"
+
     def test_analyze_busybox_not_found(self, tmp_path: Path) -> None:
         """Test analyzing when BusyBox doesn't exist."""
         rootfs = tmp_path / "rootfs"
@@ -589,6 +653,7 @@ class TestAnalyzeBusybox:
 
         assert analysis.busybox_found is False
         assert analysis.busybox_version is None
+        assert analysis.busybox_build_date is None
 
 
 class TestAnalyzeGplBinaries:
@@ -840,6 +905,26 @@ class TestOutputToml:
         assert "os_name" not in toml_str
         assert "kernel_version" not in toml_str
         assert "busybox_version" not in toml_str
+        assert "kernel_vermagic" not in toml_str
+        assert "busybox_build_date" not in toml_str
+        assert "buildroot_version" not in toml_str
+
+    def test_toml_includes_new_metadata_fields(self) -> None:
+        """Test that kernel_vermagic, busybox_build_date, buildroot_version appear in TOML."""
+        analysis = RootfsAnalysis(
+            firmware_file="test.img",
+            rootfs_path="/tmp/root",
+            kernel_vermagic="4.19.111 SMP preempt mod_unload ARMv7 p2v8",
+            busybox_build_date="2025-11-27 08:14:38 UTC",
+            buildroot_version="2018.02-rc3-gd56bbacb",
+        )
+
+        toml_str = output_toml(analysis, "Root filesystem analysis", SIMPLE_FIELDS, COMPLEX_FIELDS)
+        parsed = tomlkit.loads(toml_str)
+
+        assert parsed["kernel_vermagic"] == "4.19.111 SMP preempt mod_unload ARMv7 p2v8"
+        assert parsed["busybox_build_date"] == "2025-11-27 08:14:38 UTC"
+        assert parsed["buildroot_version"] == "2018.02-rc3-gd56bbacb"
 
     def test_toml_includes_arrays(self) -> None:
         """Test that arrays (kernel_modules, etc.) are included."""
