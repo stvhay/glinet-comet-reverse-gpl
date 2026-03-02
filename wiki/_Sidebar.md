@@ -5,6 +5,7 @@
 ### Getting Started
 
 - [Usage Guide](Usage-Guide)
+- [Contributing with Claude Code](Contributing-with-Claude-Code)
 
 ### GPL Compliance
 
