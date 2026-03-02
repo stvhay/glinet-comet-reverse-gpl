@@ -159,17 +159,20 @@ def parse_os_release(rootfs: Path, analysis: RootfsAnalysis) -> None:
                 version_value = line.split("=", 1)[1].strip('"')
                 analysis.os_version = version_value
                 analysis.add_metadata("os_version", "/etc/os-release", "VERSION field")
-                analysis.buildroot_version = version_value
-                analysis.add_metadata(
-                    "buildroot_version",
-                    "/etc/os-release",
-                    "VERSION field (Buildroot version with git commit)",
-                )
             elif line.startswith("PRETTY_NAME="):
                 analysis.os_pretty_name = line.split("=", 1)[1].strip('"')
                 analysis.add_metadata("os_pretty_name", "/etc/os-release", "PRETTY_NAME field")
     except Exception as e:
         warn(f"Failed to parse /etc/os-release: {e}")
+
+    # Set buildroot_version only when OS is actually Buildroot
+    if analysis.os_name and analysis.os_name.lower() == "buildroot" and analysis.os_version:
+        analysis.buildroot_version = analysis.os_version
+        analysis.add_metadata(
+            "buildroot_version",
+            "/etc/os-release",
+            "VERSION field (set only when NAME=Buildroot)",
+        )
 
 
 def extract_kernel_version(rootfs: Path, analysis: RootfsAnalysis) -> None:
@@ -284,8 +287,8 @@ def analyze_busybox(rootfs: Path, analysis: RootfsAnalysis) -> None:
                     "/bin/busybox",
                     "strings /bin/busybox | grep 'BusyBox v'",
                 )
-                # Extract build date from parentheses
-                date_match = re.search(r"\(([^)]+)\)", line)
+                # Extract build date from parentheses (validate it looks like a date)
+                date_match = re.search(r"\((\d{4}-\d{2}-\d{2}\s[^)]+)\)", line)
                 if date_match:
                     analysis.busybox_build_date = date_match.group(1)
                     analysis.add_metadata(

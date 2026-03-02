@@ -410,7 +410,22 @@ class TestParseOsRelease:
 
         assert analysis.buildroot_version == "2018.02-rc3-gd56bbacb"
         assert analysis._source["buildroot_version"] == "/etc/os-release"
-        assert "Buildroot version" in analysis._method["buildroot_version"]
+        assert "Buildroot" in analysis._method["buildroot_version"]
+
+    def test_parse_os_release_non_buildroot_skips_buildroot_version(self, tmp_path: Path) -> None:
+        """Test that buildroot_version is not set for non-Buildroot OS."""
+        rootfs = tmp_path / "rootfs"
+        etc_dir = rootfs / "etc"
+        etc_dir.mkdir(parents=True)
+
+        os_release = etc_dir / "os-release"
+        os_release.write_text('NAME="OpenWrt"\nVERSION="23.05.0"\n')
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        parse_os_release(rootfs, analysis)
+
+        assert analysis.os_version == "23.05.0"
+        assert analysis.buildroot_version is None
 
     def test_parse_os_release_missing_file(self, tmp_path: Path) -> None:
         """Test parsing when /etc/os-release doesn't exist."""
@@ -642,6 +657,24 @@ class TestAnalyzeBusybox:
 
         assert analysis.busybox_build_date == "2025-11-27 08:14:38 UTC"
         assert analysis._source["busybox_build_date"] == "/bin/busybox"
+
+    @patch("subprocess.run")
+    def test_analyze_busybox_non_date_parens_skipped(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test that non-date parenthesized content is not captured as build date."""
+        rootfs = tmp_path / "rootfs"
+        bin_dir = rootfs / "bin"
+        bin_dir.mkdir(parents=True)
+
+        busybox = bin_dir / "busybox"
+        busybox.write_bytes(b"dummy binary")
+
+        mock_run.return_value = MagicMock(stdout="BusyBox v1.27.2 (compiled by GCC)\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        analyze_busybox(rootfs, analysis)
+
+        assert analysis.busybox_found is True
+        assert analysis.busybox_build_date is None
 
     def test_analyze_busybox_not_found(self, tmp_path: Path) -> None:
         """Test analyzing when BusyBox doesn't exist."""
