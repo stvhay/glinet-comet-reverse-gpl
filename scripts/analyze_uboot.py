@@ -170,19 +170,19 @@ def _extract_uboot_version(
 
     # Extract git commit hash from version string (e.g., "2017.09-gfd8bfa2acd-dirty")
     if analysis.version:
-        git_match = re.search(r"-g([0-9a-f]+)", analysis.version)
+        git_match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", analysis.version)
         if git_match:
             analysis.uboot_git_commit = git_match.group(1)
             analysis.add_metadata(
                 "uboot_git_commit",
                 analysis._source.get("version", "strings"),
-                "regex '-g([0-9a-f]+)' on version string",
+                "regex '-g([0-9a-f]{7,40})' on version string",
             )
 
     # Parse build date to cleaner format from "(Mon DD YYYY - HH:MM:SS +ZZZZ)"
     if analysis.build_date:
         date_match = re.match(
-            r"\((\w+ \d+ \d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", analysis.build_date
+            r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", analysis.build_date
         )
         if date_match:
             analysis.uboot_build_date = date_match.group(1)

@@ -311,21 +311,27 @@ class TestUBootGitCommitExtraction:
     def test_extract_git_commit_from_version(self) -> None:
         """Test extracting git commit hash from realistic version string."""
         version = "U-Boot 2017.09-gfd8bfa2acd-dirty #vscode"
-        match = re.search(r"-g([0-9a-f]+)", version)
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
         assert match is not None
         assert match.group(1) == "fd8bfa2acd"
 
     def test_extract_git_commit_short_hash(self) -> None:
-        """Test extracting shorter git commit hash."""
+        """Test extracting shorter git commit hash (7 chars)."""
         version = "U-Boot 2023.07-gabcdef0"
-        match = re.search(r"-g([0-9a-f]+)", version)
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
         assert match is not None
         assert match.group(1) == "abcdef0"
 
     def test_no_git_commit_in_version(self) -> None:
         """Test version string without git commit."""
         version = "U-Boot 2023.07"
-        match = re.search(r"-g([0-9a-f]+)", version)
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
+        assert match is None
+
+    def test_git_commit_rejects_short_hex(self) -> None:
+        """Test that very short hex strings after -g are rejected."""
+        version = "U-Boot 2023.07-ga1b"
+        match = re.search(r"-g([0-9a-f]{7,40})(?:-|$|\s)", version)
         assert match is None
 
     def test_git_commit_field_in_analysis(self) -> None:
@@ -370,21 +376,28 @@ class TestUBootBuildDateExtraction:
     def test_parse_build_date_from_parenthesized(self) -> None:
         """Test parsing build date from parenthesized format."""
         build_date = "(Nov 27 2025 - 08:06:12 +0000)"
-        match = re.match(r"\((\w+ \d+ \d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
         assert match is not None
         assert match.group(1) == "Nov 27 2025 - 08:06:12 +0000"
 
     def test_parse_build_date_different_timezone(self) -> None:
         """Test parsing build date with non-zero timezone."""
         build_date = "(Dec 15 2023 - 10:30:00 -0500)"
-        match = re.match(r"\((\w+ \d+ \d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
         assert match is not None
         assert match.group(1) == "Dec 15 2023 - 10:30:00 -0500"
+
+    def test_parse_build_date_space_padded_day(self) -> None:
+        """Test parsing build date with space-padded single-digit day (GCC __DATE__)."""
+        build_date = "(Jun  3 2025 - 08:06:12 +0000)"
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        assert match is not None
+        assert match.group(1) == "Jun  3 2025 - 08:06:12 +0000"
 
     def test_no_match_without_parentheses(self) -> None:
         """Test that non-parenthesized date strings don't match."""
         build_date = "Nov 27 2025 - 08:06:12 +0000"
-        match = re.match(r"\((\w+ \d+ \d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
+        match = re.match(r"\((\w+\s+\d+\s+\d{4} - \d{2}:\d{2}:\d{2} [+-]\d{4})\)", build_date)
         assert match is None
 
     def test_build_date_field_in_analysis(self) -> None:

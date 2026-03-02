@@ -65,19 +65,24 @@ class TestBinwalkAnalysis:
         analysis = BinwalkAnalysis(firmware_file="test.img", firmware_size=1024)
         assert analysis.firmware_sha256 is None
 
-    def test_firmware_sha256_computation(self) -> None:
-        """Test SHA256 computation on a known file."""
-        content = b"test firmware content"
-        expected_hash = hashlib.sha256(content).hexdigest()
+    def test_firmware_sha256_chunked_matches_whole_file(self) -> None:
+        """Test that chunked SHA256 produces same result as whole-file hash."""
+        content = b"test firmware content" * 1000
 
         with tempfile.NamedTemporaryFile(suffix=".img", delete=False) as f:
             f.write(content)
             tmp_path = Path(f.name)
 
         try:
-            computed_hash = hashlib.sha256(tmp_path.read_bytes()).hexdigest()
-            assert computed_hash == expected_hash
-            assert len(computed_hash) == 64  # SHA256 hex digest is 64 chars
+            # Whole-file reference hash
+            expected = hashlib.sha256(content).hexdigest()
+            # Chunked hash (same approach as production code)
+            sha256 = hashlib.sha256()
+            with tmp_path.open("rb") as fh:
+                for chunk in iter(lambda: fh.read(65536), b""):
+                    sha256.update(chunk)
+            assert sha256.hexdigest() == expected
+            assert len(expected) == 64
         finally:
             tmp_path.unlink()
 

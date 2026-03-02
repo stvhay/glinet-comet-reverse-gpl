@@ -165,11 +165,13 @@ def analyze_firmware(firmware_path: str) -> BinwalkAnalysis:
     analysis.add_metadata("firmware_file", "binwalk", "Path(firmware).name")
     analysis.add_metadata("firmware_size", "binwalk", "Path(firmware).stat().st_size")
 
-    # Compute firmware SHA256 hash
-    analysis.firmware_sha256 = hashlib.sha256(firmware.read_bytes()).hexdigest()
-    analysis.add_metadata(
-        "firmware_sha256", "filesystem", "hashlib.sha256(firmware.read_bytes()).hexdigest()"
-    )
+    # Compute firmware SHA256 hash (chunked to avoid loading entire file into memory)
+    sha256 = hashlib.sha256()
+    with firmware.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            sha256.update(chunk)
+    analysis.firmware_sha256 = sha256.hexdigest()
+    analysis.add_metadata("firmware_sha256", "filesystem", "hashlib.sha256 (chunked read)")
 
     # Parse components
     analysis.identified_components = parse_binwalk_output(binwalk_output)
