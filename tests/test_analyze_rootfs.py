@@ -1037,6 +1037,66 @@ class TestExtractLibraryVersions:
         assert openssl.soname == "libssl.so.1.1"
 
     @patch("subprocess.run")
+    def test_extract_library_versions_libcurl(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test extracting libcurl version with precise pattern."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libcurl.so.4").write_bytes(b"dummy")
+
+        mock_run.return_value = MagicMock(
+            stdout="some text\nlibcurl/7.80.0 OpenSSL/1.1.1k\nmore text\n"
+        )
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        curl = next((lv for lv in analysis.library_versions if lv.name == "libcurl"), None)
+        assert curl is not None
+        assert curl.version == "7.80.0"
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_rejects_ip_address(
+        self, mock_run: Any, tmp_path: Path
+    ) -> None:
+        """Test that prefixed patterns reject bare numeric strings like IP addresses."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libglib-2.0.so.0").write_bytes(b"dummy")
+
+        # IP address appears first, then real version with prefix
+        mock_run.return_value = MagicMock(stdout="192.168.1.1\nGLib-2.72.3\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        glib = next((lv for lv in analysis.library_versions if lv.name == "GLib"), None)
+        assert glib is not None
+        assert glib.version == "2.72.3"
+
+    @patch("subprocess.run")
+    def test_extract_library_versions_nettle_anchored(self, mock_run: Any, tmp_path: Path) -> None:
+        """Test that nettle version requires 'nettle' prefix."""
+        rootfs = tmp_path / "rootfs"
+        lib_dir = rootfs / "lib"
+        lib_dir.mkdir(parents=True)
+
+        (lib_dir / "libnettle.so.8").write_bytes(b"dummy")
+
+        # First line has bare version, second has prefixed version
+        mock_run.return_value = MagicMock(stdout="3.14\nnettle 3.7\n")
+
+        analysis = RootfsAnalysis(firmware_file="test.img", rootfs_path=str(rootfs))
+        extract_library_versions(rootfs, analysis)
+
+        nettle = next((lv for lv in analysis.library_versions if lv.name == "nettle"), None)
+        assert nettle is not None
+        assert nettle.version == "3.7"
+
+    @patch("subprocess.run")
     def test_extract_library_versions_adds_metadata(self, mock_run: Any, tmp_path: Path) -> None:
         """Test that metadata is added when versions are found."""
         rootfs = tmp_path / "rootfs"

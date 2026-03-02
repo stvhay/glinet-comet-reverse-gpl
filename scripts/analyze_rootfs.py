@@ -92,17 +92,17 @@ class LibraryVersion:
 # Library version extraction patterns: (name, glob_pattern, regex_pattern or None for presence-only)
 LIBRARY_PATTERNS: list[tuple[str, str, str | None]] = [
     ("glibc", "libc.so*", r"GNU C Library.*?(\d+\.\d+)"),
-    ("libavcodec", "libavcodec.so*", r"(\d+\.\d+\.\d+)"),
-    ("libavutil", "libavutil.so*", r"(\d+\.\d+\.\d+)"),
-    ("GLib", "libglib-2.0.so*", r"(\d+\.\d+\.\d+)"),
-    ("D-Bus", "libdbus-1.so*", r"(\d+\.\d+\.\d+)"),
-    ("BlueZ", "libbluetooth.so*", r"(\d+\.\d+\.\d+)"),
-    ("libcurl", "libcurl.so*", r"libcurl/(\d+[\d.]+)"),
+    ("libavcodec", "libavcodec.so*", r"Lavc(\d+\.\d+\.\d+)"),
+    ("libavutil", "libavutil.so*", r"Lavu(\d+\.\d+\.\d+)"),
+    ("GLib", "libglib-2.0.so*", r"GLib[- ](\d+\.\d+\.\d+)"),
+    ("D-Bus", "libdbus-1.so*", r"D-Bus[- ](\d+\.\d+\.\d+)"),
+    ("BlueZ", "libbluetooth.so*", r"BlueZ[- ](\d+\.\d+\.\d+)"),
+    ("libcurl", "libcurl.so*", r"libcurl/(\d+\.\d+\.\d+)"),
     ("OpenSSL", "libssl.so*", r"OpenSSL\s+(\d+\.\d+\.\d+\w*)"),
-    ("GnuTLS", "libgnutls.so*", r"(\d+\.\d+\.\d+)"),
-    ("nettle", "libnettle.so*", r"(\d+\.\d+)"),
-    ("libevent", "libevent-*.so*", r"(\d+\.\d+\.\d+)"),
-    ("libmad", "libmad.so*", r"(\d+\.\d+\.\d+)"),
+    ("GnuTLS", "libgnutls.so*", r"GnuTLS[- ](\d+\.\d+\.\d+)"),
+    ("nettle", "libnettle.so*", r"nettle[- ](\d+\.\d+)"),
+    ("libevent", "libevent-*.so*", r"libevent[- /](\d+\.\d+\.\d+)"),
+    ("libmad", "libmad.so*", r"libmad[- ](\d+\.\d+\.\d+)"),
     ("live555", "libliveMedia.so*", None),
 ]
 
