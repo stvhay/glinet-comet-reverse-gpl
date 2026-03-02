@@ -1,0 +1,38 @@
+# Secure Boot Analysis
+# Generated: 2026-03-02T00:42:30.319943+00:00
+
+# Source: secure_boot
+# Method: Path(firmware).name
+# Reproducibility: software
+firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
+
+# Source: secure_boot
+# Method: Path(firmware).stat().st_size
+# Reproducibility: software
+firmware_size = 273547736
+
+# Source: binwalk
+# Method: loaded from binwalk-offsets.sh BOOTLOADER_FIT_OFFSET
+# Reproducibility: software
+bootloader_fit_offset = "0x8F1B4"
+
+# Source: binwalk
+# Method: loaded from binwalk-offsets.sh KERNEL_FIT_OFFSET
+# Reproducibility: software
+kernel_fit_offset = "0x49B9B4"
+
+# Source: binwalk
+# Method: loaded from binwalk-offsets.sh UBOOT_GZ_OFFSET
+# Reproducibility: software
+uboot_offset = "0x901B4"
+
+# Source: binwalk
+# Method: loaded from binwalk-offsets.sh OPTEE_GZ_OFFSET
+# Reproducibility: software
+optee_offset = "0xFD5B4"
+
+has_otp_node = false
+
+has_crypto_node = false
+
+

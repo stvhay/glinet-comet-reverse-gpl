@@ -1,41 +1,64 @@
 # U-Boot bootloader analysis
-# Generated: 2026-03-01T17:18:04.256355+00:00
+# Generated: 2026-03-02T00:42:37.213347+00:00
 
 # Source: filesystem
 # Method: Path(firmware).name
+# Reproducibility: software
 firmware_file = "glkvm-RM1-1.7.2-1128-1764344791.img"
 
 # Source: filesystem
 # Method: Path(firmware).stat().st_size
+# Reproducibility: software
 firmware_size = 273547736
 
 # Source: gzip_extraction
 # Method: gunzip data at offset 0x901B4 | strings
+# Reproducibility: software
 version = "U-Boot 2017.09-gfd8bfa2acd-dirty #vscode"
 
 # Source: binwalk
 # Method: gzip decompression at offset 0x901B4
+# Reproducibility: software
 extraction_method = "gzip_decompression"
 
 # Source: binwalk
 # Method: UBOOT_GZ_OFFSET
+# Reproducibility: software
 extraction_offset = "0x901B4"
 
+# Source: gzip_extraction
+# Method: strings matching '^boot(cmd|args|delay)='
+# Reproducibility: software
 # Boot Commands
 boot_commands = ["bootcmd=boot_fit;boot_android ${devtype} ${devnum};", "bootdelay=1"]
 
+# Source: gzip_extraction
+# Method: strings matching '^[a-z_]+=' excluding boot commands
+# Reproducibility: software
 # Environment Variables
 environment_variables = ["nh=!0F_", "f=K3g=K", "a=I(F", "root=", "initrd=", "earlycon=", "soc=%d%%, threshold soc=%d%%", "voltage=%dmv, threshold voltage=%dmv", "baudrate=1500000", "ipaddr=192.168.1.1", "serverip=192.168.1.2", "autoload=no", "preboot=", "gatewayip=192.168.1.1", "netmask=255.255.255.0", "arch=arm", "cpu=armv7", "board=evb_rv1126", "board_name=evb_rv1126", "vendor=rockchip"]
 
+# Source: gzip_extraction
+# Method: strings matching '^(mmc|usb|tftp|nfs|dhcp|ping|md|mw|sf|nand)' | sort -u
+# Reproducibility: software
 # Supported Commands
 supported_commands = ["dhcp", "md5 : not support sign image.", "mdio", "mdio read <phydev> [<devad>.]<reg> - read PHY's register at <devad>.<reg>", "mdio rx <phydev> [<devad>.]<reg> - read PHY's extended register at <devad>.<reg>", "mdio write <phydev> [<devad>.]<reg> <data> - write PHY's register at <devad>.<reg>", "mdio wx <phydev> [<devad>.]<reg> <data> - write PHY's extended register at <devad>.<reg>", "mdio_alloc() failed", "mdio_register() failed: %d", "mdio_register: non unique device name '%s'", "mmc dev 0", "mmc dev 1", "mmc dev [dev] [part] - show or set current mmc device [partition]", "mmc erase blk# cnt", "mmc erase failed", "mmc fail to send stop cmd", "mmc hwpartition [args...] - does hardware partitioning", "mmc list - lists available devices", "mmc part - lists available partition on current mmc device", "mmc read addr blk# cnt"]
 
+# Source: gzip_extraction
+# Method: strings matching HTTP server/httpd/web server patterns
+# Reproducibility: software
 # Httpd Server
 httpd_server = ["## Error: HTTP ugrade failed!", "HTTP server is ready!", "HTTP server is starting at IP: %ld.%ld.%ld.%ld", "HTTP ugrade is done! Rebooting...", "HTTP/1.0 200 OK", "HTTP/1.0 404 File not found", "Start HTTP server for firmware update...", "httpd", "httpd failed; host %s is not alive", "start web server for firmware recovery"]
 
+# Source: gzip_extraction
+# Method: GitHub URLs extracted from embedded HTML/strings
+# Reproducibility: software
 # Third Party Urls
 third_party_urls = ["https://github.com/pepe2k/u-boot_mod"]
 
+# Source: gzip_extraction
+# Method: strings matching '^boot mode: recovery'
+# Reproducibility: software
 # Recovery Modes
 recovery_modes = ["boot mode: recovery (cmd)", "boot mode: recovery (env)", "boot mode: recovery (key)", "boot mode: recovery (misc)", "boot mode: recovery (usb)"]
 
