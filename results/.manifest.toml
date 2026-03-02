@@ -1,12 +1,42 @@
 # Analysis results manifest
 # Tracks firmware and script hashes for cache invalidation
 
-[test]
-firmware_hash = "no-firmware-yet"
-script_hash = "de1db430c048fdcd"
-last_updated = "2025-12-11T17:49:44.178431"
+[binwalk]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "93cfbb60ab2903d4"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
 
-[device_tree_diff]
-firmware_hash = "no-firmware-yet"
-script_hash = "3651b918d08a9a5a"
-last_updated = "2025-12-11T22:41:32.908528"
+[boot_process]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "d0da22cf15951ad4"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[device_trees]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "47d5c224aab093dd"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[network_services]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "e169aef9764b0890"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[proprietary_blobs]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "be3760adef93d99c"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[rootfs]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "c7b475c6cd0af7ef"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[secure_boot]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "ad165b4c8ae90580"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
+
+[uboot]
+firmware_hash = "6044860b839b7ba7"
+script_hash = "3fbb30e102b4de6c"
+last_updated = "2026-03-02T00:49:58.875134+00:00"
