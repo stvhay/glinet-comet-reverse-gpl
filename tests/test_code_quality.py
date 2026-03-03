@@ -124,9 +124,9 @@ class TestShellScripts:
 
     def test_shellcheck(self) -> None:
         """Test that all bash scripts pass shellcheck."""
-        # Find all .sh files in scripts/
-        script_dir = Path(__file__).parent.parent / "scripts"
-        shell_scripts = list(script_dir.glob("*.sh"))
+        repo_root = Path(__file__).parent.parent
+        shell_scripts = list((repo_root / "scripts").glob("*.sh"))
+        shell_scripts += list((repo_root / ".claude" / "skills").rglob("*.sh"))
 
         if not shell_scripts:
             pytest.skip("No shell scripts found")
