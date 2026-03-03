@@ -33,7 +33,7 @@ The Comet (GL-RM1) contains at least 10 GPL-licensed components. GL.iNet has pub
 | FFmpeg 58.x | LGPL-2.1+ | :x: No | In BSP Buildroot, configure flags missing |
 | BlueZ 3.18.16 | GPL-2.0+ | :x: No | In BSP Buildroot, RM1 config missing |
 | Janus Gateway 2.0.6 | GPL-3.0 | :x: No | In BSP Buildroot, RM1 config missing |
-| glibc 2.28 | LGPL-2.1+ | :x: No | BSP has 2.29; firmware uses 2.28 from external toolchain |
+| glibc 2.28 | LGPL-2.1+ | :x: No | Version mismatch: BSP ships 2.29, firmware uses 2.28 (external toolchain) |
 | Buildroot 2018.02-rc3 | GPL-2.0+ | :x: No | [BSP published](https://github.com/gl-inet/buildroot-2018), RM1 defconfig missing <!-- cite: results/bsp_repos.toml#buildroot_rm1_defconfig_found --> |
 | KVMD Application | GPL-3.0 | :white_check_mark: [Yes](https://github.com/gl-inet/glkvm) | |
 
