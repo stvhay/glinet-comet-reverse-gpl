@@ -169,13 +169,13 @@ The following GPL-licensed utilities were identified in the firmware:
 
 | Tool | License | Status |
 |------|---------|--------|
-| bash | GPL-3.0+ | Source not provided |
-| gzip | GPL-3.0+ | Source not provided |
-| tar | GPL-3.0+ | Source not provided |
-| grep | GPL-3.0+ | Source not provided |
-| sed | GPL-3.0+ | Source not provided |
-| awk (gawk) | GPL-3.0+ | Source not provided |
-| vim | Vim License (GPL-compatible) | Source not provided |
+| bash | GPL-3.0+ | Base BSP only, RM1 config missing |
+| gzip | GPL-3.0+ | Base BSP only, RM1 config missing |
+| tar | GPL-3.0+ | Base BSP only, RM1 config missing |
+| grep | GPL-3.0+ | Base BSP only, RM1 config missing |
+| sed | GPL-3.0+ | Base BSP only, RM1 config missing |
+| awk (gawk) | GPL-3.0+ | Base BSP only, RM1 config missing |
+| vim | Vim License (GPL-compatible) | Base BSP only, RM1 config missing |
 
 ### 7. FFmpeg Libraries (LGPL/GPL)
 
@@ -220,7 +220,7 @@ The following libraries are under LGPL, requiring source code for the library (i
 
 **Note:** BlueZ, D-Bus, libmad, and Janus Gateway are GPL-licensed, requiring full source disclosure.
 
-**Source Code Status:** BASE BSP PUBLISHED (except glibc) — BlueZ 5.50 (with 17 Rockchip patches), Janus v0.2.6, and other libraries are in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but RM1-specific build configurations are missing. glibc 2.28 is NOT in the BSP (which has 2.29); it likely comes from the external prebuilt toolchain.
+**Source Code Status:** BASE BSP PUBLISHED (except glibc) — BlueZ 5.50 (soname 3.18.16, with 17 Rockchip patches), Janus v0.2.6 (soname 2.0.6), and other libraries are in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but RM1-specific build configurations are missing. glibc 2.28 is NOT in the BSP (which has 2.29); it likely comes from the external prebuilt toolchain.
 
 **Required Disclosure:**
 - Source code for all LGPL/GPL libraries
@@ -268,7 +268,7 @@ This repository contains only the userspace KVMD application, which is a derivat
   - Kernel .config used for RM1 build
   - GL.iNet-specific patches or modifications
   - Build instructions
-- **Open issue:** [kernel-4.19#1](https://github.com/gl-inet/kernel-4.19/issues/1) — Missing GL.inet changes
+- **Open issue:** [kernel-4.19#1](https://github.com/gl-inet/kernel-4.19/issues/1) — Missing GL.iNet changes
 
 ### Buildroot (gl-inet/buildroot-2018) — January 2026
 - **Contents:** Unmodified Rockchip BSP Buildroot (2018.02-rc3)
