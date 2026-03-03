@@ -77,6 +77,9 @@ htmlcov/
 !.claude/skills/writing-plans/
 !.claude/skills/writing-skills/
 
+# Plans - local working directory, not committed (see CONTRIBUTING.md)
+docs/plans/
+
 # Git worktrees
 .worktrees/
 

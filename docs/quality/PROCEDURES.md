@@ -1130,7 +1130,7 @@ Problem Occurs → Correction (fix it now)
 
 ---
 
-*Procedure 5 (Session Management and Status Tracking) was removed 2026-03-01. The scratchpad staleness enforcement system was part of the Epic #77 checkpoint/QMS approach, which has been superseded by the traceability enforcement design. See `docs/plans/2026-03-01-traceability-enforcement-design.md`.*
+*Procedure 5 (Session Management and Status Tracking) was removed 2026-03-01. The scratchpad staleness enforcement system was part of the Epic #77 checkpoint/QMS approach, which has been superseded by the traceability enforcement design.*
 
 
 ---
