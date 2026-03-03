@@ -16,7 +16,7 @@ import fnmatch
 import subprocess
 import sys
 import tempfile
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import tomlkit
@@ -195,7 +195,7 @@ def build_toml() -> str:
     """Run verification and return TOML string."""
     doc = tomlkit.document()
     doc.add(tomlkit.comment("BSP repository verification results"))
-    doc.add(tomlkit.comment(f"Generated: {datetime.now(datetime.UTC).isoformat()}"))
+    doc.add(tomlkit.comment(f"Generated: {datetime.now(UTC).isoformat()}"))
     doc.add(
         tomlkit.comment(
             "Method: git clone --depth=1 --no-checkout --filter=blob:none, git ls-tree -r HEAD"
