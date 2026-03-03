@@ -435,6 +435,33 @@ This project adheres to professional standards:
 
 ---
 
+## FAQ
+
+### Do I need to be an expert in reverse engineering?
+
+No. We welcome contributors at all skill levels. If you can write Python, analyze binary files, or improve documentation, you can contribute. The QMS and issue templates guide you through the process.
+
+### What if I find something manually (not via script)?
+
+Encode your discovery method into a script:
+1. You manually discover kernel version at offset 0x2000
+2. Write a script: `binwalk -e firmware.img | grep "Kernel"` to find it automatically
+3. Submit the script that outputs the finding with source metadata
+
+### How long does PR review take?
+
+Typically 1--3 days for small PRs, up to a week for large changes. Complex changes may require multiple review rounds.
+
+### Can I contribute if I work for GL.iNet?
+
+Yes. This project welcomes all contributors. However, be aware that findings may be used to demonstrate GPL compliance obligations.
+
+### Why so many templates and procedures?
+
+GPL compliance analysis has legal implications. Our QMS ensures every finding is defensible, reproducible, and accurately documented. This rigor protects both the project and contributors.
+
+---
+
 ## Getting Help
 
 - **Questions**: Open a [GitHub Discussion](https://github.com/stvhay/glinet-comet-reverse-gpl/discussions)
