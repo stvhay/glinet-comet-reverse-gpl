@@ -256,7 +256,7 @@ def test_extract_kernel_version():
 **Best practices:**
 - Use pytest with clear test names
 - Test both success and error paths
-- Aim for >=60% coverage (enforced)
+- Aim for ≥60% coverage (enforced)
 - Include edge cases
 
 ### Commits
@@ -311,7 +311,7 @@ If you contribute a skill derived from another source, add appropriate attributi
 This project follows an **ISO 9001-aligned Quality Management System**. Key principles:
 
 - **100% Reproducibility** — All findings traceable to scripts
-- **>=60% Test Coverage** — Automated validation
+- **≥60% Test Coverage** — Automated validation
 - **Evidence-Based Documentation** — Jinja templates auto-cite sources
 - **Continuous Improvement** — Regular refactoring to reduce technical debt
 
@@ -337,7 +337,7 @@ Full QMS documentation in [docs/quality/](docs/quality/):
 
 ## Path to Maintainership
 
-**External Contributor -> Maintainer**
+**External Contributor → Maintainer**
 
 ### Step 1: Contribute Quality Work
 

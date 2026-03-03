@@ -47,7 +47,7 @@ The firmware builds from a standard Rockchip SDK with sibling directories: `buil
 
 ## Quality Management
 
-This project follows an ISO 9001:2015-aligned QMS. See [`docs/quality/`](docs/quality/) for policies, procedures (P1-P4), risk register, and quality objectives. Key targets: 100% reproducibility, >=60% test coverage, zero linting errors.
+This project follows an ISO 9001:2015-aligned QMS. See [`docs/quality/`](docs/quality/) for policies, procedures (P1-P4), risk register, and quality objectives. Key targets: 100% reproducibility, ≥60% test coverage, zero linting errors.
 
 ## Documentation System
 
