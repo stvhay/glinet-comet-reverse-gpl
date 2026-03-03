@@ -425,7 +425,13 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ### Code of Conduct
 
-Be kind, be constructive, assume good intent.
+This project adheres to professional standards:
+
+- **Be respectful**: Critique code, not people
+- **Be constructive**: Suggest improvements, don't just criticize
+- **Be collaborative**: We're all working toward the same goal
+- **Be evidence-based**: Support claims with data and methodology
+- **Be transparent**: Share your reasoning and process
 
 ---
 
