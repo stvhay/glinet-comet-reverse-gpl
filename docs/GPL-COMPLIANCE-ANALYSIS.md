@@ -4,14 +4,17 @@
 
 ---
 
-**GL.iNet has not released the GPL-required source code for the Comet (GL-RM1).**
+**GL.iNet has not released complete GPL-required source code for the Comet (GL-RM1).**
 
-The firmware contains Linux kernel 4.19.111, U-Boot 2017.09, BusyBox, and other GPL components. Users have requested source code on the GL.iNet forum. As of December 2025, only the application layer (KVMD) has been released. <!-- cite: results/rootfs.toml#kernel_version -->
+The firmware contains Linux kernel 4.19.111, U-Boot 2017.09, BusyBox, and other GPL components. In January 2026, GL.iNet published [kernel](https://github.com/gl-inet/kernel-4.19) and [Buildroot](https://github.com/gl-inet/buildroot-2018) repositories, but these contain only unmodified Rockchip BSP code without RM1-specific modifications or build configurations. See open issues: [kernel-4.19#1](https://github.com/gl-inet/kernel-4.19/issues/1), [buildroot-2018#1](https://github.com/gl-inet/buildroot-2018/issues/1). <!-- cite: results/rootfs.toml#kernel_version -->
 
 | Status | Components |
 |--------|------------|
-| **Not Released** | Linux kernel, U-Boot, BusyBox, bcmdhd WiFi driver |
+| **Not Released** | U-Boot, glibc (version mismatch with BSP) |
+| **Base BSP Only** | Linux kernel, BusyBox, Buildroot, bcmdhd, FFmpeg, BlueZ, Janus, Coreutils |
 | **Released** | KVMD application ([github.com/gl-inet/glkvm](https://github.com/gl-inet/glkvm)) |
+
+**Base BSP Only** means GL.iNet published the unmodified Rockchip SDK source but not the RM1-specific device trees, defconfigs, patches, or build instructions needed to reproduce the shipped firmware.
 
 **Firmware:** glkvm-RM1-1.7.2-1128-1764344791.img <!-- cite: results/binwalk.toml#firmware_file -->
 **SHA256:** `6044860b839b7ba74de2ec77b2a0764cd0c16ae27ad0f94deb715429c37e8f19`
@@ -75,7 +78,7 @@ When distributing a product containing copyleft software, the distributor must:
 | **Evidence** | Module vermagic: `4.19.111 SMP preempt mod_unload ARMv7 p2v8` | <!-- cite: results/rootfs.toml#kernel_version -->
 | **Platform** | Rockchip RV1126 (ARM Cortex-A7) |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE
+**Source Code Status:** BASE BSP PUBLISHED — [gl-inet/kernel-4.19](https://github.com/gl-inet/kernel-4.19) contains the Rockchip BSP kernel source (4.19.111), but RM1-specific device tree, kernel .config, and GL.iNet patches are missing.
 
 The Linux kernel is the core of the operating system. This specific version (4.19.111) with Rockchip RV1126 support contains: <!-- cite: results/rootfs.toml#kernel_version -->
 - Board-specific device tree modifications
@@ -98,7 +101,7 @@ The Linux kernel is the core of the operating system. This specific version (4.1
 | **Build Date** | Nov 27 2025 - 08:06:12 +0000 |
 | **Evidence** | String extracted from decompressed bootloader binary |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE
+**Source Code Status:** NOT PUBLICLY AVAILABLE — GL.iNet has not published any U-Boot source repository for the RV1126/RM1.
 
 The `-dirty` suffix indicates modifications were made beyond the tagged release. The bootloader includes:
 - RV1126 board support
@@ -120,7 +123,7 @@ The `-dirty` suffix indicates modifications were made beyond the tagged release.
 | **Build Date** | 2025-11-27 08:14:38 UTC |
 | **Evidence** | Version string in binary |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE (as configured/built)
+**Source Code Status:** BASE BSP PUBLISHED — BusyBox 1.27.2 source and Rockchip patches are in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but the RM1-specific BusyBox .config is missing.
 
 While upstream BusyBox source is available, the specific configuration used to build this binary determines which applets are included. The build configuration must be provided.
 
@@ -137,7 +140,7 @@ While upstream BusyBox source is available, the specific configuration used to b
 | **License** | GPL-3.0+ |
 | **Evidence** | Binary present at `/usr/bin/coreutils` |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE (as configured/built)
+**Source Code Status:** BASE BSP PUBLISHED — Coreutils package definition is in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but RM1 Buildroot defconfig confirming package selection is missing.
 
 **Required Disclosure:**
 - Source code or reference to upstream version
@@ -152,7 +155,7 @@ While upstream BusyBox source is available, the specific configuration used to b
 | **Location** | `/system/lib/modules/bcmdhd.ko` |
 | **Evidence** | Kernel module in firmware |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE
+**Source Code Status:** BASE BSP PUBLISHED — bcmdhd driver source is in the [BSP kernel tree](https://github.com/gl-inet/kernel-4.19) under `drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/`, but the kernel .config confirming build options is missing.
 
 This is a Broadcom wireless driver that must be distributed with source code when included in a GPL kernel.
 
@@ -184,7 +187,7 @@ The following GPL-licensed utilities were identified in the firmware:
 | libavdevice | 58.5.100 | LGPL-2.1+ |
 | libavutil | 56.22.100 | LGPL-2.1+ |
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE
+**Source Code Status:** BASE BSP PUBLISHED — FFmpeg 4.1.3 source and 20 Rockchip patches are in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but configure flags and any GL.iNet-specific patches are missing.
 
 FFmpeg's license depends on build configuration. If built with `--enable-gpl` or linked against GPL libraries (e.g., x264), the entire binary is GPL. Source must be provided either way.
 
@@ -217,7 +220,7 @@ The following libraries are under LGPL, requiring source code for the library (i
 
 **Note:** BlueZ, D-Bus, libmad, and Janus Gateway are GPL-licensed, requiring full source disclosure.
 
-**Source Code Status:** NOT PUBLICLY AVAILABLE (as configured/built)
+**Source Code Status:** BASE BSP PUBLISHED (except glibc) — BlueZ 5.50 (with 17 Rockchip patches), Janus v0.2.6, and other libraries are in [gl-inet/buildroot-2018](https://github.com/gl-inet/buildroot-2018), but RM1-specific build configurations are missing. glibc 2.28 is NOT in the BSP (which has 2.29); it likely comes from the external prebuilt toolchain.
 
 **Required Disclosure:**
 - Source code for all LGPL/GPL libraries
@@ -234,13 +237,14 @@ The following libraries are under LGPL, requiring source code for the library (i
 | **Buildroot Commit** | gd56bbacb |
 | **SDK Base** | Rockchip RV1126/RV1109 Linux SDK |
 
-The firmware is built using Buildroot, which is itself GPL-licensed. The complete Buildroot configuration, including:
-- Package selections
-- Kernel configuration
-- Toolchain configuration
+The firmware is built using Buildroot, which is itself GPL-licensed. GL.iNet has [published the Buildroot source](https://github.com/gl-inet/buildroot-2018), but it contains only the unmodified Rockchip BSP (commit `a439fb32`). The complete Buildroot configuration needed to reproduce the RM1 firmware, including:
+- RM1-specific defconfig (e.g., `configs/rockchip_rv1126_glrm1_defconfig`)
+- Package selections and overrides
+- Board overlay directory
 - Custom packages
+- Toolchain configuration
 
-...should be provided to enable recipients to reproduce the build.
+...has not been provided. See [buildroot-2018#1](https://github.com/gl-inet/buildroot-2018/issues/1).
 
 ---
 
@@ -253,12 +257,33 @@ GL.iNet has released the following on GitHub:
 - **Contents:** Application-layer daemon (Python, JavaScript, C)
 - **URL:** https://github.com/gl-inet/glkvm
 
-This repository contains only the userspace KVMD application, which is a derivative of the PiKVM project. It does **not** contain:
-- Linux kernel source
-- U-Boot source
-- Buildroot configuration
-- Device tree sources
-- Kernel module sources
+This repository contains only the userspace KVMD application, which is a derivative of the PiKVM project.
+
+### Kernel Source (gl-inet/kernel-4.19) — January 2026
+- **Contents:** Unmodified Rockchip RV1126 BSP kernel tree (4.19.111)
+- **URL:** https://github.com/gl-inet/kernel-4.19
+- **Verified as:** 1:1 match with Rockchip BSP commit `cc9228323509bf2bd59ed73ade9dd3276c97549c`
+- **Missing for RM1 compliance:**
+  - RM1 device tree (firmware ships `model = "rm1"`, no matching DTS in repo)
+  - Kernel .config used for RM1 build
+  - GL.iNet-specific patches or modifications
+  - Build instructions
+- **Open issue:** [kernel-4.19#1](https://github.com/gl-inet/kernel-4.19/issues/1) — Missing GL.inet changes
+
+### Buildroot (gl-inet/buildroot-2018) — January 2026
+- **Contents:** Unmodified Rockchip BSP Buildroot (2018.02-rc3)
+- **URL:** https://github.com/gl-inet/buildroot-2018
+- **Verified as:** 1:1 match with Rockchip BSP commit `a439fb32a06a78a2283aa03e32cabb6e531e73bd`
+- **Missing for RM1 compliance:**
+  - RM1 Buildroot defconfig (none of the 30 existing defconfigs target the RM1)
+  - Board overlay directory (`board/rockchip/` referenced by defconfigs is absent)
+  - Any GL.iNet/RM1-specific packages or patches
+  - Build instructions
+- **Open issue:** [buildroot-2018#1](https://github.com/gl-inet/buildroot-2018/issues/1) — Missing GL-RM1 build configuration
+
+### Still Not Released
+- **U-Boot 2017.09** — No source repository published. GL.iNet has U-Boot repos for other platforms (IPQ, MTK, QCA) but not RV1126/RM1.
+- **glibc 2.28** — The BSP Buildroot contains glibc 2.29, but the firmware uses 2.28 (likely from the external prebuilt ARM toolchain). Neither the toolchain nor its glibc source is published.
 
 ---
 
@@ -447,6 +472,8 @@ Supporting evidence files:
 - [GL.iNet GLKVM GitHub Repository](https://github.com/gl-inet/glkvm)
 - [Rockchip Open Source Documentation](https://opensource.rock-chips.com/)
 - [Rockchip U-Boot Repository](https://github.com/rockchip-linux/u-boot)
+- [GL.iNet Kernel 4.19 Repository](https://github.com/gl-inet/kernel-4.19)
+- [GL.iNet Buildroot 2018 Repository](https://github.com/gl-inet/buildroot-2018)
 
 ---
 
@@ -455,3 +482,4 @@ Supporting evidence files:
 | Version | Date | Changes |
 |---------|------|---------|
 | 0.3 | December 2025 | Initial analysis; added LGPL components, FFmpeg, clarified responsible parties |
+| 0.4 | March 2026 | Updated for GL.iNet's January 2026 BSP repo publications; documented remaining compliance gaps |
