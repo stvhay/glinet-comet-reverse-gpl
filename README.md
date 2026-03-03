@@ -15,7 +15,7 @@
 
 ---
 
-**GL.iNet ships GPL-licensed software in their Comet KVM device. In January 2026, they published kernel and Buildroot repositories, but these contain only unmodified Rockchip BSP code — the RM1-specific modifications, configurations, and build instructions required for GPL compliance have not been released.**
+**GL.iNet ships GPL-licensed software in their Comet KVM device. In January 2026, they published kernel and Buildroot repositories, but these contain only unmodified Rockchip BSP code — the RM1-specific modifications, configurations, and build instructions required for GPL compliance have not been released.** <!-- cite: results/bsp_repos.toml#kernel_rm1_dts_found --> <!-- cite: results/bsp_repos.toml#buildroot_rm1_defconfig_found -->
 
 This project analyzes the firmware to document what source code GL.iNet must provide under the GPL license.
 
@@ -25,7 +25,7 @@ The Comet (GL-RM1) contains at least 10 GPL-licensed components. GL.iNet has pub
 
 | Component | License | Source Released? | Notes |
 |-----------|---------|:---:|---|
-| Linux Kernel 4.19.111 | GPL-2.0 | :x: No | [Base BSP published](https://github.com/gl-inet/kernel-4.19), RM1 config/DTS missing |
+| Linux Kernel 4.19.111 | GPL-2.0 | :x: No | [Base BSP published](https://github.com/gl-inet/kernel-4.19), RM1 config/DTS missing | <!-- cite: results/bsp_repos.toml#kernel_rm1_dts_found -->
 | U-Boot 2017.09 | GPL-2.0+ | :x: No | Not published |
 | BusyBox 1.27.2 | GPL-2.0 | :x: No | In [BSP Buildroot](https://github.com/gl-inet/buildroot-2018), RM1 config missing |
 | GNU Coreutils | GPL-3.0+ | :x: No | In BSP Buildroot, RM1 config missing |
@@ -34,7 +34,7 @@ The Comet (GL-RM1) contains at least 10 GPL-licensed components. GL.iNet has pub
 | BlueZ 3.18.16 | GPL-2.0+ | :x: No | In BSP Buildroot, RM1 config missing |
 | Janus Gateway 2.0.6 | GPL-3.0 | :x: No | In BSP Buildroot, RM1 config missing |
 | glibc 2.28 | LGPL-2.1+ | :x: No | BSP has 2.29; firmware uses 2.28 from external toolchain |
-| Buildroot 2018.02-rc3 | GPL-2.0+ | :x: No | [BSP published](https://github.com/gl-inet/buildroot-2018), RM1 defconfig missing |
+| Buildroot 2018.02-rc3 | GPL-2.0+ | :x: No | [BSP published](https://github.com/gl-inet/buildroot-2018), RM1 defconfig missing | <!-- cite: results/bsp_repos.toml#buildroot_rm1_defconfig_found -->
 | KVMD Application | GPL-3.0 | :white_check_mark: [Yes](https://github.com/gl-inet/glkvm) | |
 
 Users have [requested source code on the GL.iNet forum](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955). As of March 2026, GL.iNet has published base Rockchip BSP repositories but has not provided the RM1-specific source code or build configurations needed for compliance.
