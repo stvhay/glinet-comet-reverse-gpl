@@ -24,7 +24,7 @@ Closes #
 - [ ] Linked to a GitHub issue
 - [ ] Implementation plan included above
 - [ ] `pytest` passes (tests, linting, formatting, shellcheck, coverage)
-- [ ] Conventional commit messages used
+- [ ] Conventional commit messages used (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`)
 - [ ] No binary files or proprietary data committed
 - [ ] New analysis results include `_source` and `_method` metadata
 - [ ] `/verification-before-completion` — all claims verified with evidence
