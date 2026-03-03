@@ -260,16 +260,16 @@ The glkvm repository is **publicly available** under GPL-3.0, satisfying the lic
 
 Under GPL-3.0, GL.iNet must:
 
-1. **Provide source code** for all GPL-licensed components ✓
+1. **Provide source code** for all GPL-licensed components — met
    - KVMD source is available at https://github.com/gl-inet/glkvm
 
-2. **Preserve copyright notices** ✓
+2. **Preserve copyright notices** — met
    - Repository maintains original author attribution (Maxim Devaev)
 
-3. **Distribute under same license** ✓
+3. **Distribute under same license** — met
    - Repository is GPL-3.0 licensed
 
-4. **Provide complete corresponding source** ?
+4. **Provide complete corresponding source** — unclear
    - The glkvm repository contains KVMD userspace code
    - **Missing:** Kernel drivers, device trees, bootloader, and other GPL components
    - These should be available per GPL requirements (see other analysis documents)

@@ -56,7 +56,7 @@ Offset      Size        Content
 
 #### Creating Custom Update
 
-✅ **Verified:** Updates do NOT require cryptographic signatures.
+**Verified:** Updates do NOT require cryptographic signatures.
 
 Analysis of the firmware validation binaries (`check_image_validity` and `updateEngine`) shows:
 - Only MD5 checksums and CRC32 are used for integrity verification
@@ -94,7 +94,7 @@ Standard methods for RV1126:
 3. **Software method:** Corrupt bootloader to force maskrom
 4. **U-Boot command:** `rockusb 0 mmc 0` (if U-Boot accessible)
 
-⚠️ **Needs verification:** Which method works on GL-RM1 ([#17](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/17))
+**Needs verification:** Which method works on GL-RM1 ([#17](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/17))
 
 #### USB IDs (Expected)
 
@@ -138,7 +138,7 @@ Some RV1126 boards support booting from SD card, which can be used for recovery.
 dd if=sdcard-update.img of=/dev/sdX bs=4M
 ```
 
-⚠️ **Needs verification:** Whether GL-RM1 has SD card slot or supports SD boot ([#19](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/19))
+**Needs verification:** Whether GL-RM1 has SD card slot or supports SD boot ([#19](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/19))
 
 ### 4. UART Console Access ⚠️
 
@@ -166,7 +166,7 @@ Look for:
 - Test points near SoC labeled TX, RX, GND
 - Unpopulated header footprint
 
-⚠️ **Needs verification:** UART pin locations on GL-RM1 PCB ([#9](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/9))
+**Needs verification:** UART pin locations on GL-RM1 PCB ([#9](https://github.com/stvhay/glinet-comet-reverse-gpl/issues/9))
 
 #### Using UART for Flashing
 
@@ -328,7 +328,7 @@ The device includes OP-TEE (Trusted Execution Environment):
 1. **Try OTA first** - Least risk, no hardware needed
    - Extract rootfs from .img
    - Modify and repack with correct checksums
-   - ✅ Device accepts unsigned updates (verified via binary analysis)
+   - Device accepts unsigned updates (verified via binary analysis)
 
 2. **Check for recovery mode** - Look for button combinations
    - Hold reset while powering on

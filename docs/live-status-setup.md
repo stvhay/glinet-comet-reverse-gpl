@@ -162,12 +162,12 @@ Or embed it (if wiki allows iframes):
 
 ## Benefits
 
-✅ **No authentication hassles** - Uses `gh` CLI (already authenticated)
-✅ **Instant updates** - GitHub API is fast
-✅ **No git repo needed** - Pure API-driven
-✅ **Public & shareable** - Anyone can view status
-✅ **Crash recovery** - Scratchpad survives crashes
-✅ **Clean URLs** - Readable gist.github.com links
+- **No authentication hassles** — Uses `gh` CLI (already authenticated)
+- **Instant updates** — GitHub API is fast
+- **No git repo needed** — Pure API-driven
+- **Public and shareable** — Anyone can view status
+- **Crash recovery** — Scratchpad survives crashes
+- **Clean URLs** — Readable gist.github.com links
 
 ## Example Output
 
