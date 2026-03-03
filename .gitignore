@@ -56,8 +56,26 @@ htmlcov/
 .claude/etc/
 .claude/commands/
 .claude/scripts/
-.claude/skills/
 .claude/work/
+
+# Claude Code skills - whitelist tracked skills
+.claude/skills/*
+!.claude/skills/UPSTREAM-superpowers.md
+!.claude/skills/brainstorming/
+!.claude/skills/code-simplification/
+!.claude/skills/dispatching-parallel-agents/
+!.claude/skills/executing-plans/
+!.claude/skills/finishing-a-development-branch/
+!.claude/skills/receiving-code-review/
+!.claude/skills/requesting-code-review/
+!.claude/skills/subagent-driven-development/
+!.claude/skills/systematic-debugging/
+!.claude/skills/test-driven-development/
+!.claude/skills/using-git-worktrees/
+!.claude/skills/verification-before-completion/
+!.claude/skills/writing-clearly-and-concisely/
+!.claude/skills/writing-plans/
+!.claude/skills/writing-skills/
 
 # Git worktrees
 .worktrees/
