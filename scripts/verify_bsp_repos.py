@@ -17,7 +17,8 @@ import subprocess
 import sys
 import tempfile
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from urllib.parse import urlparse
 
 import tomlkit
 
@@ -125,9 +126,15 @@ def list_defconfigs(files: list[str], prefix: str) -> list[str]:
     return sorted(f for f in files if f.startswith(prefix) and "defconfig" in f)
 
 
+def repo_name_from_url(url: str) -> str:
+    """Extract repository name from a git URL."""
+    path = PurePosixPath(urlparse(url).path)
+    return path.stem  # strips .git suffix and returns last component
+
+
 def verify_repo(url: str, tmpdir: str) -> tuple[dict[str, str], list[str], int]:
     """Clone and return (commit_info, file_list, commit_count)."""
-    name = url.rstrip("/").split("/")[-1].replace(".git", "")
+    name = repo_name_from_url(url)
     repo = Path(tmpdir) / name
     print(f"Cloning {url} ...", file=sys.stderr)
     clone_shallow(url, repo)
