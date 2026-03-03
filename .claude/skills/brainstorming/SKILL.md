@@ -94,6 +94,8 @@ digraph brainstorming {
 
 ## Evaluating UX Design Need
 
+> **Note:** `ux-design-agent` is not available in this project. When the criteria below suggest UX design, skip to writing-plans and note the UX considerations in the design doc instead.
+
 After validating the design direction, evaluate whether detailed UX design is needed:
 
 **Recommend ux-design-agent when:**
