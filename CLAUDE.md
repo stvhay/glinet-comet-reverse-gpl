@@ -117,7 +117,7 @@ Follow the Completed Staff Work doctrine when reporting findings or making recom
 
 ## Traceability
 
-Every factual claim must trace to a script output. See [`docs/plans/2026-03-01-traceability-enforcement-design.md`](docs/plans/2026-03-01-traceability-enforcement-design.md) for the enforcement design. Use `<!-- cite: results/<file>.toml#<field> -->` in hand-written docs; use `| src` filter in Jinja templates.
+Every factual claim must trace to a script output. Use `<!-- cite: results/<file>.toml#<field> -->` in hand-written docs; use `| src` filter in Jinja templates.
 
 ## CI/CD
 
