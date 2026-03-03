@@ -15,6 +15,8 @@ import tomlkit
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from verify_bsp_repos import (
+    BUILDROOT_KNOWN_TREE_SHA,
+    KERNEL_KNOWN_TREE_SHA,
     build_toml,
     clone_shallow,
     count_commits,
@@ -411,12 +413,14 @@ class TestBuildToml:
         assert parsed["kernel_rm1_dts_files"] == []
         assert parsed["kernel_rm1_defconfig_found"] is False
         assert parsed["kernel_glinet_files_found"] is False
+        assert parsed["kernel_tree_sha_unchanged"] is False  # test SHA != known SHA
         assert parsed["kernel_total_files"] == 3
 
         assert parsed["buildroot_head_commit"] == "4a4f065a"
         assert parsed["buildroot_is_squashed_import"] is True
         assert parsed["buildroot_rm1_defconfig_found"] is False
         assert parsed["buildroot_glinet_files_found"] is False
+        assert parsed["buildroot_tree_sha_unchanged"] is False  # test SHA != known SHA
         assert parsed["buildroot_total_files"] == 2
 
     @patch("verify_bsp_repos.verify_repo")
@@ -454,6 +458,37 @@ class TestBuildToml:
         assert "rv1126-rm1.dts" in parsed["kernel_rm1_dts_files"][0]
         assert parsed["kernel_rm1_defconfig_found"] is True
         assert parsed["buildroot_rm1_defconfig_found"] is True
+
+    @patch("verify_bsp_repos.verify_repo")
+    def test_tree_sha_unchanged_when_matching(self, mock_verify: Any) -> None:
+        """Test that tree_sha_unchanged is True when tree SHA matches known value."""
+        kernel_info = {
+            "commit": "fc316e95",
+            "author_name": "xiaojiang2017",
+            "author_email": "xj@example.com",
+            "author_date": "2026-01-15T10:00:00+08:00",
+            "subject": "first commit",
+            "tree_sha": KERNEL_KNOWN_TREE_SHA,
+        }
+        buildroot_info = {
+            "commit": "4a4f065a",
+            "author_name": "xiaojiang2017",
+            "author_email": "xj@example.com",
+            "author_date": "2026-01-15T10:00:00+08:00",
+            "subject": "first commit",
+            "tree_sha": BUILDROOT_KNOWN_TREE_SHA,
+        }
+
+        mock_verify.side_effect = [
+            (kernel_info, [], 1),
+            (buildroot_info, [], 1),
+        ]
+
+        result = build_toml()
+        parsed = tomlkit.loads(result)
+
+        assert parsed["kernel_tree_sha_unchanged"] is True
+        assert parsed["buildroot_tree_sha_unchanged"] is True
 
     @patch("verify_bsp_repos.verify_repo")
     def test_not_squashed_when_multiple_commits(self, mock_verify: Any) -> None:

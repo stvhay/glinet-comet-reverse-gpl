@@ -43,6 +43,10 @@ kernel_glinet_files_files = []
 # Method: list existing RV1126 defconfigs
 kernel_rv1126_defconfigs = ["arch/arm/configs/rv1126_defconfig", "arch/arm/configs/rv1126_robot_defconfig"]
 
+# Source: compare tree SHA against known value
+# Method: True if tree SHA matches 1dc3d7b37ac2410a89b20d376c3c43012f7baa24
+kernel_tree_sha_unchanged = true
+
 # Source: external verification
 # Method: diff between GL.iNet commit and BSP reference (by samueldr)
 kernel_diff_gist_url = "https://gist.github.com/samueldr/b68142df0b7843263294e913fee4f037"
@@ -87,6 +91,10 @@ buildroot_board_overlay_present = false
 
 # Source: git ls-tree -r HEAD
 # Method: list existing RV1126 defconfigs (none target RM1)
+# Source: compare tree SHA against known value
+# Method: True if tree SHA matches 7c66b4fcb991a19aed0d51bdfa7ab77c27b08bc8
+buildroot_tree_sha_unchanged = true
+
 buildroot_rv1126_defconfigs = ["configs/rockchip_rv1126_battery_evb_defconfig", "configs/rockchip_rv1126_battery_evb_v10_defconfig", "configs/rockchip_rv1126_battery_ipc_defconfig", "configs/rockchip_rv1126_evb_dualcam_tb_defconfig", "configs/rockchip_rv1126_evb_spi_nor_tb_defconfig", "configs/rockchip_rv1126_evb_tb_defconfig", "configs/rockchip_rv1126_robot_defconfig", "configs/rockchip_rv1126_robot_recovery_defconfig", "configs/rockchip_rv1126_rv1109_ab_defconfig", "configs/rockchip_rv1126_rv1109_cvr_defconfig", "configs/rockchip_rv1126_rv1109_defconfig", "configs/rockchip_rv1126_rv1109_facial_gate_defconfig", "configs/rockchip_rv1126_rv1109_libs_defconfig", "configs/rockchip_rv1126_rv1109_pcba_defconfig", "configs/rockchip_rv1126_rv1109_ramboot_uvcc_defconfig", "configs/rockchip_rv1126_rv1109_recovery_defconfig", "configs/rockchip_rv1126_rv1109_sl_defconfig", "configs/rockchip_rv1126_rv1109_spi_nand_defconfig", "configs/rockchip_rv1126_rv1109_spi_nand_recovery_defconfig", "configs/rockchip_rv1126_rv1109_systemd_defconfig", "configs/rockchip_rv1126_rv1109_tiny_defconfig", "configs/rockchip_rv1126_rv1109_toolchain_defconfig", "configs/rockchip_rv1126_rv1109_uvcc_defconfig", "configs/rockchip_rv1126_rv1109_uvcc_mult_defconfig", "configs/rockchip_rv1126_rv1109_uvcc_spi_nand_defconfig", "configs/rockchip_rv1126_rv1109_uvcc_spi_nor_defconfig", "configs/rockchip_rv1126_rv1109_weston_qt_defconfig", "configs/rockchip_rv1126_sllock_defconfig", "configs/rockchip_rv1126_snapshot_defconfig", "configs/rockchip_rv1126_tb_recovery_defconfig"]
 
 buildroot_total_files = 15835
