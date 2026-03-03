@@ -466,7 +466,7 @@ GPL compliance analysis has legal implications. Our QMS ensures every finding is
 
 - **Questions**: Open a [GitHub Discussion](https://github.com/stvhay/glinet-comet-reverse-gpl/discussions)
 - **Bugs**: Use [Bug Report template](.github/ISSUE_TEMPLATE/bug.yml)
-- **Feature Ideas**: Open an issue with your proposal
+- **Feature Ideas**: Open an issue with your proposal ([Completed Staff Work](standards/Completed%20Staff%20Work.txt) format appreciated)
 
 ---
 
