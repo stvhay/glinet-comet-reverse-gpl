@@ -127,7 +127,7 @@ last_updated = "2025-12-11T10:31:00Z"
 ### 4. What Gets Committed
 
 ```
-✅ Commit:
+Commit:
 - templates/wiki/*.md.j2          (template source)
 - scripts/analyze_*.sh or *.py    (analysis scripts)
 - scripts/analysis.py             (Python analysis framework)
@@ -136,7 +136,7 @@ last_updated = "2025-12-11T10:31:00Z"
 - results/.manifest.toml          (hashes proving results derivation)
 - wiki/*.md                       (rendered docs for GitHub)
 
-❌ Don't commit:
+Don't commit:
 - downloads/*.img                 (firmware binaries)
 - output/*.img                    (extracted binaries)
 - __pycache__/                    (Python bytecode)
@@ -484,10 +484,10 @@ devShells.default = pkgs.mkShell {
 
 ## Design Decisions (Resolved)
 
-1. ✅ **Cache invalidation:** Hash-based with manifest file (`results/.manifest.toml`)
-2. ✅ **Script language:** Wrap bash during transition, opportunistically refactor to Python
-3. ✅ **TOML library:** `tomlkit` (handles read/write, preserves comments)
-4. ✅ **Parallel rendering:** Implement if easy using `concurrent.futures`
+1. **Cache invalidation:** Hash-based with manifest file (`results/.manifest.toml`)
+2. **Script language:** Wrap bash during transition, opportunistically refactor to Python
+3. **TOML library:** `tomlkit` (handles read/write, preserves comments)
+4. **Parallel rendering:** Implement if easy using `concurrent.futures`
 
 ## Additional Implementation Details
 

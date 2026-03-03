@@ -183,7 +183,7 @@ For significant changes:
 
 ### What Worked Well
 
-#### ✅ Automated Testing as Source of Truth
+#### Automated Testing as Source of Truth
 
 **Insight**: 647+ automated tests provide better quality assurance than manual review
 
@@ -197,7 +197,7 @@ For significant changes:
 - Fixed regressions before committing
 - Merged with confidence (all tests green)
 
-#### ✅ Source Tracking with Jinja Templates
+#### Source Tracking with Jinja Templates
 
 **Insight**: Auto-generated footnotes eliminate "magic numbers"
 
@@ -222,7 +222,7 @@ The kernel is at offset {{ kernel.offset | src }}.
 
 See: [Jinja Documentation Design](../design-jinja-documentation.md)
 
-#### ✅ Git-Based Audit Trail
+#### Git-Based Audit Trail
 
 **Insight**: Version control provides free audit trail
 
@@ -281,9 +281,9 @@ A quarterly review involves:
 **Example**: Issue templates require more upfront thought than "quick PR"
 
 **Finding the Balance**:
-- ✅ Use templates for complex work (analysis, infrastructure)
-- ⚠️ Allow lightweight process for trivial fixes (typos, comments)
-- ❌ Don't require full QMS overhead for tiny docs updates
+- Use templates for complex work (analysis, infrastructure)
+- Allow lightweight process for trivial fixes (typos, comments)
+- Don't require full QMS overhead for tiny docs updates
 
 **Lesson**: Process should match risk (GPL analysis = high risk = full process)
 
@@ -661,15 +661,15 @@ This project took 6 weeks to reach ISO 9001 alignment across 3 phases:
 4. **Continuous Improvement** - Regular reviews identify process friction
 
 **When to Use This Approach**:
-- ✅ Legal/compliance work requiring audit trail
-- ✅ Security-sensitive projects
-- ✅ Research requiring reproducibility
-- ✅ Projects with distributed/AI contributors
+- Legal/compliance work requiring audit trail
+- Security-sensitive projects
+- Research requiring reproducibility
+- Projects with distributed/AI contributors
 
 **When NOT to Use**:
-- ❌ Exploratory prototypes (too much overhead)
-- ❌ Throwaway code (process cost > benefit)
-- ❌ Projects with external QMS requirements (use their framework)
+- Exploratory prototypes (too much overhead)
+- Throwaway code (process cost > benefit)
+- Projects with external QMS requirements (use their framework)
 
 **Next Steps for This Project**:
 1. Complete refactoring epic (reduce code duplication)

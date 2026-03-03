@@ -5,7 +5,7 @@
 
 ---
 
-> **⏸️ PROJECT PAUSED** - December 2025
+> **PROJECT PAUSED** — December 2025
 >
 > This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **conditionally achieved** - GL.iNet has [agreed](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955/21) to release source code.
 >
@@ -89,4 +89,4 @@ This project is licensed under the GNU Affero General Public License v3.0 with a
 - [LICENSE.ADDENDUM.md](LICENSE.ADDENDUM.md) - Additional restrictions
 - [RELICENSING.md](RELICENSING.md) - Relicensing notice (from GPL-2.0)
 
-⚠️ **Non-OSI Compliant:** The additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.
+**Non-OSI Compliant:** The additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.
