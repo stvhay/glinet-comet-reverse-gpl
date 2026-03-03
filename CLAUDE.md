@@ -107,6 +107,10 @@ Use commands from `.claude/settings.local.json` authorization list. Prefer autho
 | `code-reviewer` | Opus | Thorough code review after significant changes |
 | `quick-task` | Haiku | Typos, simple edits, basic commands |
 
+## Skills
+
+Contributing workflow skills ship with the repo in `.claude/skills/` and are loaded automatically by Claude Code. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and skill reference.
+
 ## Completed Staff Work
 
 Follow the Completed Staff Work doctrine when reporting findings or making recommendations. Present solutions, not problems. See [`standards/COMPLETED-STAFF-WORK.md`](standards/COMPLETED-STAFF-WORK.md).
