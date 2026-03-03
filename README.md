@@ -7,7 +7,7 @@
 
 > **PROJECT PAUSED** — December 2025
 >
-> This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **conditionally achieved** - GL.iNet has [agreed](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955/21) to release source code.
+> This project is currently on hold due to other priorities. The initial goal of identifying GPL compliance issues has been **partially achieved** — GL.iNet has [published](https://github.com/gl-inet/kernel-4.19) [source repositories](https://github.com/gl-inet/buildroot-2018) but they contain only unmodified Rockchip BSP code without RM1-specific configurations, device trees, or build instructions. U-Boot source remains unpublished. See open issues on [kernel-4.19](https://github.com/gl-inet/kernel-4.19/issues/1) and [buildroot-2018](https://github.com/gl-inet/buildroot-2018/issues/1).
 >
 > **Potential Purpose Evolution:** This project may evolve into a pilot for validating agentic ISO 9001 QMS tooling implementation using ARM board reverse engineering as the application domain.
 >
@@ -15,29 +15,29 @@
 
 ---
 
-**GL.iNet ships GPL-licensed software in their Comet KVM device but has not released the required source code.**
+**GL.iNet ships GPL-licensed software in their Comet KVM device. In January 2026, they published kernel and Buildroot repositories, but these contain only unmodified Rockchip BSP code — the RM1-specific modifications, configurations, and build instructions required for GPL compliance have not been released.**
 
 This project analyzes the firmware to document what source code GL.iNet must provide under the GPL license.
 
 ## Key Findings
 
-The Comet (GL-RM1) contains at least 10 GPL-licensed components. GL.iNet has released source code for only one of them.
+The Comet (GL-RM1) contains at least 10 GPL-licensed components. GL.iNet has published base Rockchip BSP source for several, but none include the RM1-specific modifications needed for GPL compliance.
 
-| Component | License | Source Released? |
-|-----------|---------|:----------------:|
-| Linux Kernel 4.19.111 | GPL-2.0 | :x: No |
-| U-Boot 2017.09 | GPL-2.0+ | :x: No |
-| BusyBox 1.27.2 | GPL-2.0 | :x: No |
-| GNU Coreutils | GPL-3.0+ | :x: No |
-| bcmdhd WiFi Driver | GPL-2.0 | :x: No |
-| FFmpeg 58.x | LGPL-2.1+ | :x: No |
-| BlueZ 3.18.16 | GPL-2.0+ | :x: No |
-| Janus Gateway 2.0.6 | GPL-3.0 | :x: No |
-| glibc 2.28 | LGPL-2.1+ | :x: No |
-| Buildroot 2018.02-rc3 | GPL-2.0+ | :x: No |
-| KVMD Application | GPL-3.0 | :white_check_mark: [Yes](https://github.com/gl-inet/glkvm) |
+| Component | License | Source Released? | Notes |
+|-----------|---------|:---:|---|
+| Linux Kernel 4.19.111 | GPL-2.0 | :x: No | [Base BSP published](https://github.com/gl-inet/kernel-4.19), RM1 config/DTS missing |
+| U-Boot 2017.09 | GPL-2.0+ | :x: No | Not published |
+| BusyBox 1.27.2 | GPL-2.0 | :x: No | In [BSP Buildroot](https://github.com/gl-inet/buildroot-2018), RM1 config missing |
+| GNU Coreutils | GPL-3.0+ | :x: No | In BSP Buildroot, RM1 config missing |
+| bcmdhd WiFi Driver | GPL-2.0 | :x: No | In BSP kernel tree, build config missing |
+| FFmpeg 58.x | LGPL-2.1+ | :x: No | In BSP Buildroot, configure flags missing |
+| BlueZ 3.18.16 | GPL-2.0+ | :x: No | In BSP Buildroot, RM1 config missing |
+| Janus Gateway 2.0.6 | GPL-3.0 | :x: No | In BSP Buildroot, RM1 config missing |
+| glibc 2.28 | LGPL-2.1+ | :x: No | BSP has 2.29; firmware uses 2.28 from external toolchain |
+| Buildroot 2018.02-rc3 | GPL-2.0+ | :x: No | [BSP published](https://github.com/gl-inet/buildroot-2018), RM1 defconfig missing |
+| KVMD Application | GPL-3.0 | :white_check_mark: [Yes](https://github.com/gl-inet/glkvm) | |
 
-Users have [requested source code on the GL.iNet forum](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955). As of December 2025, GL.iNet has not provided it.
+Users have [requested source code on the GL.iNet forum](https://forum.gl-inet.com/t/comet-gl-rm1-and-open-source/55955). As of March 2026, GL.iNet has published base Rockchip BSP repositories but has not provided the RM1-specific source code or build configurations needed for compliance.
 
 ## Who Must Provide Source Code?
 
