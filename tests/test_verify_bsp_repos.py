@@ -26,6 +26,7 @@ from verify_bsp_repos import (
     list_defconfigs,
     list_files,
     main,
+    repo_name_from_url,
     verify_repo,
 )
 
@@ -362,6 +363,26 @@ class TestVerifyRepo:
         # clone_shallow should be called with dest = tmpdir / "kernel-4.19"
         clone_dest = mock_clone.call_args[0][1]
         assert clone_dest == tmp_path / "kernel-4.19"
+
+
+class TestRepoNameFromUrl:
+    """Test repo_name_from_url() function."""
+
+    def test_strips_git_suffix(self) -> None:
+        """Test that .git suffix is stripped."""
+        assert repo_name_from_url("https://github.com/gl-inet/kernel-4.19.git") == "kernel-4.19"
+
+    def test_no_git_suffix(self) -> None:
+        """Test URL without .git suffix."""
+        assert repo_name_from_url("https://github.com/gl-inet/buildroot-2018") == "buildroot-2018"
+
+    def test_trailing_slash(self) -> None:
+        """Test URL with trailing slash."""
+        assert repo_name_from_url("https://github.com/gl-inet/kernel-4.19.git/") == "kernel-4.19"
+
+    def test_url_with_query_params(self) -> None:
+        """Test URL with query parameters."""
+        assert repo_name_from_url("https://github.com/gl-inet/repo.git?ref=main") == "repo"
 
 
 class TestBuildToml:
