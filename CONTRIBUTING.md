@@ -1,42 +1,90 @@
 # Contributing to GL.iNet Comet GPL Compliance Analysis
 
-Thank you for your interest in contributing! This project uses black box reverse engineering to identify GPL-licensed components in firmware. We welcome contributions that improve analysis accuracy, expand coverage, or enhance methodology.
-
----
+This project uses [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills to maintain contribution quality and uses black box reverse engineering to identify GPL-licensed components in firmware. Contributors are expected to use Claude Code with the project's bundled skills.
 
 ## Quick Start
 
-### 1. Set Up Development Environment
+1. Clone the repo and run `direnv allow` (requires [Nix](https://nixos.org/download.html))
+2. Run `uv run pytest` to verify the environment (647+ tests)
+3. The contributing workflow skills ship with the repo in `.claude/skills/`
 
-This project requires [Nix](https://nixos.org/download.html) for reproducible builds.
+## Workflow
 
-```bash
-# Clone repository
-git clone https://github.com/stvhay/glinet-comet-reverse-gpl.git
-cd glinet-comet-reverse-gpl
+Every change — feature, fix, refactor, docs, or skill — follows this process:
 
-# Enter development environment (all tools provided)
-nix develop
+### 1. File a GitHub issue
 
-# Run analysis
-./scripts/analyze.sh
-```
+File a GitHub issue describing the problem and proposed solution. Use the appropriate template:
 
-### 2. Run Tests
+- **[Analysis Task](.github/ISSUE_TEMPLATE/analysis.yml)** — New analysis scripts
+- **[Bug Report](.github/ISSUE_TEMPLATE/bug.yml)** — Issues with scripts or framework
+- **[Documentation](.github/ISSUE_TEMPLATE/documentation.yml)** — Template/wiki updates
+- **[Infrastructure](.github/ISSUE_TEMPLATE/infrastructure.yml)** — Tooling improvements
+- **[Chore](.github/ISSUE_TEMPLATE/chore.yml)** — Maintenance, dependencies, refactoring
 
-All contributions must pass tests and quality checks.
+Small fixes can reference an existing issue. [Completed Staff Work](standards/Completed%20Staff%20Work.txt) format preferred.
 
-```bash
-# Run full test suite (647+ tests)
-pytest
+### 2. Create a branch
 
-# This includes:
-# - All unit tests
-# - Code formatting checks (ruff format)
-# - Code linting checks (ruff check)
-# - Shellcheck for bash scripts
-# - Coverage measurement (≥60% required)
-```
+Use `/using-git-worktrees` to create an isolated worktree for your work, or create a branch manually.
+
+### 3. Brainstorm the design
+
+Run `/brainstorming` to explore the problem space before writing code. This skill asks clarifying questions, considers alternatives, and produces a design you can review before committing to an approach.
+
+### 4. Write an implementation plan
+
+Run `/writing-plans` to produce a structured plan in `docs/plans/` (a local working directory, not committed). The plan breaks the work into 2-3 self-contained tasks with exact file paths, code, and test commands. Paste the plan into your PR body when you open it.
+
+### 5. Execute the plan
+
+Run `/executing-plans` to implement the plan with checkpoints between tasks.
+
+### 6. Verify before claiming done
+
+`/verification-before-completion` triggers automatically before any completion claim. It requires running verification commands and confirming output — no "it should work" allowed.
+
+### 7. Self-review
+
+Run `/requesting-code-review` to dispatch a code review subagent that checks your work against the plan and project standards.
+
+### 8. Finalize
+
+`/finishing-a-development-branch` triggers automatically when work is complete. It guides you through merge prep, PR creation, or cleanup.
+
+### 9. Open a pull request
+
+Use the PR template. Include:
+- Reference to the GitHub issue
+- The implementation plan (paste into the collapsible details block)
+- Atomic commits — one logical change per commit
+
+---
+
+## Skill Reference
+
+These skills ship with the repo in `.claude/skills/`. They are loaded automatically by Claude Code.
+
+### Auto-triggered (no explicit invocation needed)
+
+| Skill | When it triggers |
+|---|---|
+| `/verification-before-completion` | Before any success or completion claim |
+| `/code-simplification` | After verification passes, as a pipeline step |
+| `/finishing-a-development-branch` | When implementation is complete and tests pass |
+
+### Explicit invocation
+
+| Skill | When to use |
+|---|---|
+| `/brainstorming` | Before creative work — features, components, behavior changes |
+| `/writing-plans` | When you have requirements and need an implementation plan |
+| `/executing-plans` | To execute a written plan with checkpoints |
+| `/requesting-code-review` | Before submitting a PR, to self-review |
+| `/systematic-debugging` | When encountering bugs or test failures |
+| `/using-git-worktrees` | To create an isolated worktree for feature work |
+| `/writing-clearly-and-concisely` | Final editing pass on prose (docs, commit messages) |
+| `/writing-skills` | When creating or modifying skills in `.claude/skills/` |
 
 ---
 
@@ -70,53 +118,21 @@ result = {"kernel_version": "5.10.110"}
 
 ---
 
-## How to Contribute
+## Types of Contributions
 
-### Types of Contributions
-
-1. **Analysis Scripts** - New firmware analysis capabilities
-2. **Bug Fixes** - Fix incorrect analysis or broken scripts
-3. **Documentation** - Improve clarity or add examples
-4. **Infrastructure** - CI/CD, tooling, quality improvements
-5. **Tests** - Expand test coverage or add edge cases
-
-### Contribution Workflow
-
-#### Step 1: Create an Issue First
-
-**Before writing code**, create an issue using the appropriate template:
-
-- **[Analysis Task](.github/ISSUE_TEMPLATE/analysis.yml)** - New analysis scripts
-- **[Bug Report](.github/ISSUE_TEMPLATE/bug.yml)** - Issues with scripts or framework
-- **[Documentation](.github/ISSUE_TEMPLATE/documentation.yml)** - Template/wiki updates
-- **[Infrastructure](.github/ISSUE_TEMPLATE/infrastructure.yml)** - Tooling improvements
-- **[Chore](.github/ISSUE_TEMPLATE/chore.yml)** - Maintenance, dependencies, refactoring
-
-Describe the problem and proposed solution ([Completed Staff Work](standards/Completed%20Staff%20Work.txt) format preferred).
-
-#### Step 2: Follow Quality Standards
-
-- Write tests for new code (≥60% coverage required)
-- Use conventional commits (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`)
-- Run `pytest` before committing (pre-push hook enforces this)
-- Follow existing code patterns:
-  - **Python**: PEP 8, type hints for public APIs
-  - **Bash**: Quote variables, use `shellcheck`
-
-#### Step 3: Submit Pull Request
-
-- Reference issue number in PR description
-- Ensure CI passes (all tests, linting, formatting)
-- Respond to review feedback
-- Wait for maintainer approval
+1. **Analysis Scripts** — New firmware analysis capabilities
+2. **Bug Fixes** — Fix incorrect analysis or broken scripts
+3. **Documentation** — Improve clarity or add examples
+4. **Infrastructure** — CI/CD, tooling, quality improvements
+5. **Tests** — Expand test coverage or add edge cases
 
 ---
 
-## Issue Templates Explained
+## Issue Templates
 
 We use structured issue templates to maintain quality. Each enforces our black box methodology and quality standards.
 
-### Analysis Task Template
+### Analysis Task
 
 **When to use**: Adding new analysis capabilities (e.g., identify Bluetooth drivers, extract firmware signatures)
 
@@ -126,14 +142,7 @@ We use structured issue templates to maintain quality. Each enforces our black b
 - **Expected outputs**: TOML format with `_source` and `_method` metadata
 - **Source metadata compliance**: Every value must include how it was discovered
 
-**Example:**
-```yaml
-Purpose: Identify Bluetooth driver version
-Methodology: Search rootfs for bluetooth binaries, extract version from strings output
-Expected output: bluetooth_driver, bluetooth_version (with _source and _method fields)
-```
-
-### Bug Report Template
+### Bug Report
 
 **When to use**: Scripts producing incorrect results, analysis failures, broken functionality
 
@@ -143,7 +152,7 @@ Expected output: bluetooth_driver, bluetooth_version (with _source and _method f
 - **Root cause analysis**: Initial hypothesis about why this occurs
 - **Proposed fix**: How you think this should be fixed
 
-### Documentation Template
+### Documentation
 
 **When to use**: Improving templates, wiki pages, or documentation
 
@@ -154,7 +163,7 @@ Expected output: bluetooth_driver, bluetooth_version (with _source and _method f
 
 **Note**: Documentation follows code. Scripts are the source of truth, documentation explains them.
 
-### Infrastructure Template
+### Infrastructure
 
 **When to use**: Improving CI/CD, tooling, build process, quality checks
 
@@ -163,7 +172,7 @@ Expected output: bluetooth_driver, bluetooth_version (with _source and _method f
 - **Proposed solution**: How will you address it?
 - **Testing approach**: How will you validate the improvement?
 
-### Chore Template
+### Chore
 
 **When to use**: Refactoring, dependency updates, code cleanup, maintenance
 
@@ -247,13 +256,14 @@ def test_extract_kernel_version():
 **Best practices:**
 - Use pytest with clear test names
 - Test both success and error paths
-- Aim for ≥60% coverage (enforced)
+- Aim for >=60% coverage (enforced)
 - Include edge cases
 
 ### Commits
 
+**Atomic commits** with conventional types: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
+
 ```bash
-# Good commit message
 git commit -m "feat: Add Bluetooth driver version extraction
 
 - Extract version from /usr/bin/bluetoothd strings output
@@ -263,12 +273,36 @@ git commit -m "feat: Add Bluetooth driver version extraction
 Closes #123"
 ```
 
-**Conventional commit types:**
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation only
-- `refactor:` - Code refactoring (no behavior change)
-- `chore:` - Maintenance, dependencies, tooling
+---
+
+## Project-Specific Guidelines
+
+- **Dependencies.** If you add a dependency, update `flake.nix` (Nix) and test commands in `README.md`.
+- **Documentation.** If your change affects analysis output, update the relevant Jinja templates and TOML results. Documentation follows code — scripts are the source of truth.
+- **Analysis results.** All new TOML fields must include `_source` and `_method` metadata.
+
+---
+
+## Contributing Skills
+
+Skills live in `.claude/skills/<skill-name>/SKILL.md`. To add or modify a skill:
+
+1. Use `/writing-skills` — it applies TDD to process documentation
+2. Follow the same issue, plan, PR workflow as any other contribution
+3. Test the skill by running it in a fresh Claude Code session
+
+---
+
+## Attribution
+
+Several skills are derived from upstream open-source projects:
+
+- **obra/superpowers** — The following skills originate from [obra/superpowers](https://github.com/obra/superpowers). MIT License. See [LICENSE.superpowers](LICENSE.superpowers). Sync status tracked in `.claude/skills/UPSTREAM-superpowers.md`.
+  - Tracked in this repo: `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, `writing-skills`
+  - Available locally (not committed): `using-superpowers`
+- **writing-clearly-and-concisely** — Based on William Strunk Jr.'s *The Elements of Style* (1918, public domain).
+
+If you contribute a skill derived from another source, add appropriate attribution and a license file.
 
 ---
 
@@ -276,18 +310,18 @@ Closes #123"
 
 This project follows an **ISO 9001-aligned Quality Management System**. Key principles:
 
-- **100% Reproducibility** - All findings traceable to scripts
-- **≥60% Test Coverage** - Automated validation
-- **Evidence-Based Documentation** - Jinja templates auto-cite sources
-- **Continuous Improvement** - Regular refactoring to reduce technical debt
+- **100% Reproducibility** — All findings traceable to scripts
+- **>=60% Test Coverage** — Automated validation
+- **Evidence-Based Documentation** — Jinja templates auto-cite sources
+- **Continuous Improvement** — Regular refactoring to reduce technical debt
 
 ### For Contributors
 
 Follow the procedures in [docs/quality/PROCEDURES.md](docs/quality/PROCEDURES.md):
 
-- **P1: Analysis Script Development** - How to develop and validate analysis scripts
-- **P2: Documentation Generation** - How to update templates and wiki pages
-- **P3: Quality Assurance** - Quality gates and validation process
+- **P1: Analysis Script Development** — How to develop and validate analysis scripts
+- **P2: Documentation Generation** — How to update templates and wiki pages
+- **P3: Quality Assurance** — Quality gates and validation process
 
 These procedures integrate with GitHub Issues, CI/CD, and pytest.
 
@@ -303,7 +337,7 @@ Full QMS documentation in [docs/quality/](docs/quality/):
 
 ## Path to Maintainership
 
-**External Contributor → Maintainer**
+**External Contributor -> Maintainer**
 
 ### Step 1: Contribute Quality Work
 
@@ -325,8 +359,8 @@ Full QMS documentation in [docs/quality/](docs/quality/):
 
 ### Step 4: Profile Creation
 
-- **Agent reference profile** - AI collaboration context (`.claude/agents/<username>.md`)
-- **QMS competency profile** - ISO 9001 evidence (`docs/quality/maintainers/<username>.md`)
+- **Agent reference profile** — AI collaboration context (`.claude/agents/<username>.md`)
+- **QMS competency profile** — ISO 9001 evidence (`docs/quality/maintainers/<username>.md`)
 - Integration with quarterly/annual reviews
 
 ### Maintainer Benefits
@@ -336,14 +370,6 @@ Full QMS documentation in [docs/quality/](docs/quality/):
 - Pull request approval authority
 - AI agent collaboration context (personalized workflow)
 - Participate in QMS management reviews
-
----
-
-## Getting Help
-
-- **Questions**: Open a [GitHub Discussion](https://github.com/stvhay/glinet-comet-reverse-gpl/discussions)
-- **Bugs**: Use [Bug Report template](.github/ISSUE_TEMPLATE/bug.yml)
-- **Feature Ideas**: Open an issue with your proposal ([Completed Staff Work](standards/Completed%20Staff%20Work.txt) format appreciated!)
 
 ---
 
@@ -369,11 +395,11 @@ Full QMS documentation in [docs/quality/](docs/quality/):
 
 This project is licensed under the GNU Affero General Public License v3.0 with additional restrictions prohibiting military, weapons, and paramilitary use.
 
-- [LICENSE.md](LICENSE.md) - Full AGPL-3.0 text
-- [LICENSE.ADDENDUM.md](LICENSE.ADDENDUM.md) - Additional restrictions
-- [RELICENSING.md](RELICENSING.md) - Relicensing notice (from GPL-2.0)
+- [LICENSE.md](LICENSE.md) — Full AGPL-3.0 text
+- [LICENSE.ADDENDUM.md](LICENSE.ADDENDUM.md) — Additional restrictions
+- [RELICENSING.md](RELICENSING.md) — Relicensing notice (from GPL-2.0)
 
-⚠️ **Non-OSI Compliant**: The additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.
+**Non-OSI Compliant**: The additional restrictions make this license non-compliant with the Open Source Definition. This is intentional.
 
 By contributing, you agree that your contributions will be licensed under the same terms.
 
@@ -399,53 +425,21 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ### Code of Conduct
 
-This project adheres to professional standards:
-
-- **Be respectful**: Critique code, not people
-- **Be constructive**: Suggest improvements, don't just criticize
-- **Be collaborative**: We're all working toward the same goal
-- **Be evidence-based**: Support claims with data and methodology
-- **Be transparent**: Share your reasoning and process
+Be kind, be constructive, assume good intent.
 
 ---
 
-## FAQ
+## Getting Help
 
-### Q: Do I need to be an expert in reverse engineering?
-
-**A:** No! We welcome contributors at all skill levels. If you can write Python, analyze binary files, or improve documentation, you can contribute. The QMS and issue templates guide you through the process.
-
-### Q: What if I find something manually (not via script)?
-
-**A:** Encode your discovery method into a script! For example:
-1. You manually discover kernel version at offset 0x2000
-2. Write script: `binwalk -e firmware.img | grep "Kernel"`  to find it automatically
-3. Submit script that outputs the finding with source metadata
-
-### Q: How long does PR review take?
-
-**A:** Typically 1-3 days for small PRs, up to a week for large changes. Complex changes may require multiple review rounds.
-
-### Q: Can I contribute if I work for GL.iNet?
-
-**A:** Yes! This project welcomes all contributors. However, be aware that findings may be used to demonstrate GPL compliance obligations.
-
-### Q: Why so many templates and procedures?
-
-**A:** GPL compliance analysis has legal implications. Our QMS ensures every finding is defensible, reproducible, and accurately documented. This rigor protects both the project and contributors.
+- **Questions**: Open a [GitHub Discussion](https://github.com/stvhay/glinet-comet-reverse-gpl/discussions)
+- **Bugs**: Use [Bug Report template](.github/ISSUE_TEMPLATE/bug.yml)
+- **Feature Ideas**: Open an issue with your proposal
 
 ---
 
 ## Additional Resources
 
-- **[CLAUDE.md](CLAUDE.md)** - Full project methodology and black box principles
-- **[README.md](README.md)** - Project overview and key findings
-- **[docs/quality/](docs/quality/)** - Complete QMS documentation
-- **[Wiki](https://github.com/stvhay/glinet-comet-reverse-gpl/wiki)** - Detailed analysis reports
-- **[Completed Staff Work](standards/Completed%20Staff%20Work.txt)** - Communication standard
-
----
-
-**Thank you for contributing to open source GPL compliance!**
-
-For questions, open an issue or discussion. We're here to help.
+- **[CLAUDE.md](CLAUDE.md)** — Full project methodology and black box principles
+- **[README.md](README.md)** — Project overview and key findings
+- **[docs/quality/](docs/quality/)** — Complete QMS documentation
+- **[Wiki](https://github.com/stvhay/glinet-comet-reverse-gpl/wiki)** — Detailed analysis reports
