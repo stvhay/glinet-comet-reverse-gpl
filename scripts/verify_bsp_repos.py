@@ -21,9 +21,19 @@ from pathlib import Path
 
 import tomlkit
 
-# Known Rockchip BSP commit hashes (referenced in GL.iNet repo issues)
+# Known Rockchip BSP commit hashes.
+# Source: samueldr's diff analysis (KERNEL_DIFF_GIST below) compared GL.iNet's
+# squashed commit against the Rockchip SDK release and found near-identical content.
+# The Rockchip BSP SDK is distributed privately to partners; these commits are NOT
+# reachable from the public rockchip-linux/kernel GitHub repo, so automated
+# verification against upstream is not feasible.
 KERNEL_BSP_COMMIT = "cc9228323509bf2bd59ed73ade9dd3276c97549c"
 BUILDROOT_BSP_COMMIT = "a439fb32a06a78a2283aa03e32cabb6e531e73bd"
+
+# Known tree SHAs from GL.iNet repos (content-addressable).
+# If these change on a future run, GL.iNet has modified their repos.
+KERNEL_KNOWN_TREE_SHA = "1dc3d7b37ac2410a89b20d376c3c43012f7baa24"
+BUILDROOT_KNOWN_TREE_SHA = "7c66b4fcb991a19aed0d51bdfa7ab77c27b08bc8"
 
 # Repository URLs
 KERNEL_REPO_URL = "https://github.com/gl-inet/kernel-4.19.git"
@@ -206,6 +216,13 @@ def build_toml() -> str:
     with tempfile.TemporaryDirectory(prefix="bsp_verify_") as tmpdir:
         # --- Kernel ---
         k_info, k_files, k_count = verify_repo(KERNEL_REPO_URL, tmpdir)
+        k_tree_unchanged = k_info["tree_sha"] == KERNEL_KNOWN_TREE_SHA
+        if not k_tree_unchanged:
+            print(
+                f"  WARNING: tree SHA changed! expected {KERNEL_KNOWN_TREE_SHA}, "
+                f"got {k_info['tree_sha']}",
+                file=sys.stderr,
+            )
         k_rm1_dts = find_matching(k_files, KERNEL_RM1_DTS_PATTERNS)
         k_rm1_defconfig = find_matching(k_files, KERNEL_RM1_DEFCONFIG_PATTERNS)
         k_glinet_files = find_matching(k_files, GLINET_PATTERNS)
@@ -249,6 +266,12 @@ def build_toml() -> str:
                     k_rv1126_defconfigs,
                 ),
                 (
+                    "tree_sha_unchanged",
+                    "compare tree SHA against known value",
+                    f"True if tree SHA matches {KERNEL_KNOWN_TREE_SHA}",
+                    k_tree_unchanged,
+                ),
+                (
                     "diff_gist_url",
                     "external verification",
                     "diff between GL.iNet commit and BSP reference (by samueldr)",
@@ -261,6 +284,13 @@ def build_toml() -> str:
 
         # --- Buildroot ---
         b_info, b_files, b_count = verify_repo(BUILDROOT_REPO_URL, tmpdir)
+        b_tree_unchanged = b_info["tree_sha"] == BUILDROOT_KNOWN_TREE_SHA
+        if not b_tree_unchanged:
+            print(
+                f"  WARNING: tree SHA changed! expected {BUILDROOT_KNOWN_TREE_SHA}, "
+                f"got {b_info['tree_sha']}",
+                file=sys.stderr,
+            )
         b_rm1_defconfig = find_matching(b_files, BUILDROOT_RM1_DEFCONFIG_PATTERNS)
         b_glinet_files = find_matching(b_files, GLINET_PATTERNS)
         b_rv1126_defconfigs = list_defconfigs(b_files, "configs/rockchip_rv1126")
@@ -302,6 +332,12 @@ def build_toml() -> str:
                     "git ls-tree -r HEAD",
                     "list existing RV1126 defconfigs (none target RM1)",
                     b_rv1126_defconfigs,
+                ),
+                (
+                    "tree_sha_unchanged",
+                    "compare tree SHA against known value",
+                    f"True if tree SHA matches {BUILDROOT_KNOWN_TREE_SHA}",
+                    b_tree_unchanged,
                 ),
             ],
         )
