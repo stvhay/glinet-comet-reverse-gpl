@@ -21,6 +21,7 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+extend-exclude = ["scripts/ghidra/"]  # Jython scripts (Python 2.7, Ghidra globals)
 
 [tool.ruff.lint]
 select = [

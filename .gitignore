@@ -62,3 +62,8 @@ docs/plans/
 
 # Session memory (local-only, not for version control)
 MEMORY.md
+
+# Ghidra analysis artifacts (generated, not committed)
+results/ghidra/
+artifacts/headers/
+artifacts/defconfig
