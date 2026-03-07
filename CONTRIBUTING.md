@@ -1,12 +1,12 @@
 # Contributing to GL.iNet Comet GPL Compliance Analysis
 
-This project uses [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills to maintain contribution quality and uses black box reverse engineering to identify GPL-licensed components in firmware. Contributors are expected to use Claude Code with the project's bundled skills.
+This project uses [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with plugins from `github:stvhay/my-claude-plugins` to maintain contribution quality. It uses black box reverse engineering to identify GPL-licensed components in firmware.
 
 ## Quick Start
 
 1. Clone the repo and run `direnv allow` (requires [Nix](https://nixos.org/download.html))
 2. Run `uv run pytest` to verify the environment (647+ tests)
-3. The contributing workflow skills ship with the repo in `.claude/skills/`
+3. Install Claude Code plugins from `github:stvhay/my-claude-plugins` (see [CLAUDE.md](CLAUDE.md#plugins) for the list)
 
 ## Workflow
 
@@ -61,30 +61,20 @@ Use the PR template. Include:
 
 ---
 
-## Skill Reference
+## Plugin Reference
 
-These skills ship with the repo in `.claude/skills/`. They are loaded automatically by Claude Code.
+Workflow skills are provided by plugins from `github:stvhay/my-claude-plugins`. See [CLAUDE.md](CLAUDE.md#plugins) for the full list. Key skills used in the workflow above:
 
-### Auto-triggered (no explicit invocation needed)
-
-| Skill | When it triggers |
-|---|---|
-| `/verification-before-completion` | Before any success or completion claim |
-| `/code-simplification` | After verification passes, as a pipeline step |
-| `/finishing-a-development-branch` | When implementation is complete and tests pass |
-
-### Explicit invocation
-
-| Skill | When to use |
-|---|---|
-| `/brainstorming` | Before creative work — features, components, behavior changes |
-| `/writing-plans` | When you have requirements and need an implementation plan |
-| `/executing-plans` | To execute a written plan with checkpoints |
-| `/requesting-code-review` | Before submitting a PR, to self-review |
-| `/systematic-debugging` | When encountering bugs or test failures |
-| `/using-git-worktrees` | To create an isolated worktree for feature work |
-| `/writing-clearly-and-concisely` | Final editing pass on prose (docs, commit messages) |
-| `/writing-skills` | When creating or modifying skills in `.claude/skills/` |
+| Skill | Plugin | When to use |
+|---|---|---|
+| `brainstorming` | `dev-workflow-toolkit` | Before creative work — features, components, behavior changes |
+| `writing-plans` | `dev-workflow-toolkit` | When you have requirements and need an implementation plan |
+| `executing-plans` | `dev-workflow-toolkit` | To execute a written plan with checkpoints |
+| `verification-before-completion` | `dev-workflow-toolkit` | Before any success or completion claim (auto-triggered) |
+| `requesting-code-review` | `dev-workflow-toolkit` | Before submitting a PR, to self-review |
+| `systematic-debugging` | `dev-workflow-toolkit` | When encountering bugs or test failures |
+| `using-git-worktrees` | `dev-workflow-toolkit` | To create an isolated worktree for feature work |
+| `writing-clearly-and-concisely` | `writing-toolkit` | Final editing pass on prose (docs, commit messages) |
 
 ---
 
@@ -282,27 +272,6 @@ Closes #123"
 - **Analysis results.** All new TOML fields must include `_source` and `_method` metadata.
 
 ---
-
-## Contributing Skills
-
-Skills live in `.claude/skills/<skill-name>/SKILL.md`. To add or modify a skill:
-
-1. Use `/writing-skills` — it applies TDD to process documentation
-2. Follow the same issue, plan, PR workflow as any other contribution
-3. Test the skill by running it in a fresh Claude Code session
-
----
-
-## Attribution
-
-Several skills are derived from upstream open-source projects:
-
-- **obra/superpowers** — The following skills originate from [obra/superpowers](https://github.com/obra/superpowers). MIT License. See [LICENSE.superpowers](LICENSE.superpowers). Sync status tracked in `.claude/skills/UPSTREAM-superpowers.md`.
-  - Tracked in this repo: `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, `writing-skills`
-  - Available locally (not committed): `using-superpowers`
-- **writing-clearly-and-concisely** — Based on William Strunk Jr.'s *The Elements of Style* (1918, public domain).
-
-If you contribute a skill derived from another source, add appropriate attribution and a license file.
 
 ---
 
