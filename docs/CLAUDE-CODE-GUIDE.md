@@ -44,4 +44,4 @@ The project is pre-configured for Claude Code through several mechanisms:
 
 Claude selects these automatically based on CLAUDE.md guidance, but you can also request them directly (e.g., "use the code-reviewer agent to review this change").
 
-**Skills** are project-specific workflows in `.claude/skills/`. Invoke them with `/skill-name` (e.g., `/brainstorm`, `/commit`). Browse the directory to see what's available -- skills change as the project evolves.
+**Skills** are provided by plugins from `github:stvhay/my-claude-plugins`. Invoke them with `/skill-name` (e.g., `/brainstorming`, `/systematic-debugging`). See [CLAUDE.md](CLAUDE.md#plugins) for the full plugin list.
