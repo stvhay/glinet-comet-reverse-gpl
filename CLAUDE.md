@@ -116,7 +116,7 @@ This project requires Claude Code plugins from `github:stvhay/my-claude-plugins`
 | `dev-workflow-toolkit` | Brainstorming, TDD, debugging, code review, planning, worktrees, verification |
 | `thinking-toolkit` | First-principles reasoning, ideation |
 | `writing-toolkit` | Clear and concise writing |
-| `multi-agent-toolkit` | Multi-source parallel research |
+| `multi-agent-toolkit` | Multi-agent coordination: council debates and parallel research |
 | `skill-creator` | Creating and testing skills |
 | `stamp` | STPA/CAST safety and security analysis |
 | `ux-toolkit` | UX design, trust calibration, failure choreography |
