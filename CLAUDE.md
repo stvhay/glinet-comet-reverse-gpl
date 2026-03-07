@@ -107,9 +107,22 @@ Use commands from `.claude/settings.local.json` authorization list. Prefer autho
 | `code-reviewer` | Opus | Thorough code review after significant changes |
 | `quick-task` | Haiku | Typos, simple edits, basic commands |
 
-## Skills
+## Plugins
 
-Contributing workflow skills ship with the repo in `.claude/skills/` and are loaded automatically by Claude Code. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and skill reference.
+This project requires Claude Code plugins from `github:stvhay/my-claude-plugins`:
+
+| Plugin | Provides |
+|--------|----------|
+| `dev-workflow-toolkit` | Brainstorming, TDD, debugging, code review, planning, worktrees, verification |
+| `thinking-toolkit` | First-principles reasoning, ideation |
+| `writing-toolkit` | Clear and concise writing |
+| `multi-agent-toolkit` | Multi-source parallel research |
+| `skill-creator` | Creating and testing skills |
+| `stamp` | STPA/CAST safety and security analysis |
+| `ux-toolkit` | UX design, trust calibration, failure choreography |
+| `redteam` | Adversarial analysis |
+
+Project-specific agents remain in `.claude/agents/`.
 
 ## Completed Staff Work
 
