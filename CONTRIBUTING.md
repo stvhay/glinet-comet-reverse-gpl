@@ -71,10 +71,14 @@ Workflow skills are provided by plugins from `github:stvhay/my-claude-plugins`. 
 | `writing-plans` | `dev-workflow-toolkit` | When you have requirements and need an implementation plan |
 | `executing-plans` | `dev-workflow-toolkit` | To execute a written plan with checkpoints |
 | `verification-before-completion` | `dev-workflow-toolkit` | Before any success or completion claim (auto-triggered) |
+| `code-simplification` | `dev-workflow-toolkit` | After verification passes, as a pipeline step (auto-triggered) |
+| `finishing-a-development-branch` | `dev-workflow-toolkit` | When implementation is complete and tests pass (auto-triggered) |
 | `requesting-code-review` | `dev-workflow-toolkit` | Before submitting a PR, to self-review |
 | `systematic-debugging` | `dev-workflow-toolkit` | When encountering bugs or test failures |
+| `test-driven-development` | `dev-workflow-toolkit` | Before writing implementation code |
 | `using-git-worktrees` | `dev-workflow-toolkit` | To create an isolated worktree for feature work |
 | `writing-clearly-and-concisely` | `writing-toolkit` | Final editing pass on prose (docs, commit messages) |
+| `skill-creator` | `skill-creator` | When creating or modifying skills |
 
 ---
 
