@@ -62,6 +62,7 @@
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               # Linux-only tools
               rkdeveloptool
+              ghidra
             ];
 
             shellHook = ''
