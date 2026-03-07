@@ -273,8 +273,6 @@ Closes #123"
 
 ---
 
----
-
 ## Quality Management System (QMS)
 
 This project follows an **ISO 9001-aligned Quality Management System**. Key principles:
