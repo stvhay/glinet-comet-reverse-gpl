@@ -1,0 +1,69 @@
+{# Ghidra Binary Analysis Wiki Page #}
+{# Consumes: results/ghidra_analysis.toml, results/cross_reference.toml #}
+{% set g = analyze('ghidra_analysis') %}
+{% set xref = analyze('cross_reference') %}
+
+# Ghidra Binary Analysis
+
+## Overview
+
+Headless Ghidra analysis of firmware binaries extracted from the GL.iNet Comet (RM1) firmware image.
+
+| Metric | Value |
+|--------|-------|
+| Kernel modules analyzed | {{ g.kernel_modules_analyzed | src }} |
+| U-Boot analyzed | {{ g.uboot_analyzed | src }} |
+| Total functions found | {{ g.total_functions_found | src }} |
+| GPL strings found | {{ g.total_gpl_strings_found | src }} |
+
+## Kernel Module Interfaces
+
+{% if g.kernel_module_interfaces %}
+{% for mi in g.kernel_module_interfaces %}
+### {{ mi.name }}
+
+- **Init:** `{{ mi.init_function or 'unknown' }}`
+- **Exit:** `{{ mi.exit_function or 'unknown' }}`
+- **Exported symbols:** {{ mi.exported_symbols | length }}
+- **GPL symbols:** {{ mi.gpl_symbols | length }}
+- **IOCTL handlers:** {{ mi.ioctl_handlers | length }}
+
+{% endfor %}
+{% else %}
+*No kernel modules analyzed yet.*
+{% endif %}
+
+## GPL Symbol Usage
+
+{% if g.gpl_symbol_usage %}
+| Symbol | Binary | GPL-only |
+|--------|--------|----------|
+{% for ref in g.gpl_symbol_usage %}
+| `{{ ref.symbol }}` | {{ ref.binary }} | {{ ref.is_gpl_only }} |
+{% endfor %}
+{% else %}
+*No GPL symbol references found.*
+{% endif %}
+
+## Upstream Cross-Reference
+
+{% if xref %}
+| Classification | Count |
+|---------------|-------|
+| Total analyzed | {{ xref.total_functions_analyzed | src }} |
+| Upstream match | {{ xref.unmodified_count | src }} |
+| Vendor added | {{ xref.vendor_added_count | src }} |
+
+### Vendor Modules
+
+{% if xref.vendor_modules %}
+{% for vm in xref.vendor_modules %}
+- **{{ vm.name }}** — {{ vm.function_count }} functions{% if vm.gpl_symbols_used %}, uses GPL symbols: {{ vm.gpl_symbols_used | join(', ') }}{% endif %}
+
+{% endfor %}
+{% else %}
+*No vendor-only modules identified.*
+{% endif %}
+{% else %}
+*Cross-reference analysis not yet available. Run `scripts/cross_reference.py`.*
+{% endif %}
