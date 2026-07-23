@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare wiki content
         run: |
@@ -61,7 +61,8 @@ jobs:
           done
 
       - name: Sync to wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        uses: Andrew-Chen-Wang/github-wiki-action@v5
         with:
           path: wiki-build/
           token: ${{ secrets.GITHUB_TOKEN }}
+          preprocess: false
